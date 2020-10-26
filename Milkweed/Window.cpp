@@ -1,0 +1,55 @@
+/*
+* File: Window.cpp
+* Author: Keegan MacDonald (keeganm742@gmail.com)
+* Date: 2020.10.20.2025
+*/
+
+#include "MW.h"
+#include "Window.h"
+
+namespace MW {
+	bool Window::init(const WindowAttributes& attrib) {
+		// Get the video mode (description of the monitor displaying this
+		// application)
+		const GLFWvidmode* videoMode
+			= glfwGetVideoMode(glfwGetPrimaryMonitor());
+
+		if (!attrib.fullScreen) {
+			// Create the window in windowed mode
+			m_window = glfwCreateWindow(attrib.dimensions.x,
+				attrib.dimensions.y, attrib.title.c_str(), NULL, NULL);
+			if (m_window == NULL) {
+				// The window could not be created
+				App::Log("GLFW failed to create window");
+				return false;
+			}
+			// Center the window in the screen
+			glfwSetWindowPos(m_window,
+				(videoMode->width - attrib.dimensions.x) / 2,
+				(videoMode->height - attrib.dimensions.y) / 2);
+
+			// Set the dimensions of the window
+			m_dimensions = attrib.dimensions;
+		}
+		else {
+			// Create the window in fullscreen mode
+			m_window = glfwCreateWindow(videoMode->width, videoMode->height,
+				attrib.title.c_str(), glfwGetPrimaryMonitor(), NULL);
+			if (m_window == NULL) {
+				// The window could not be created
+				App::Log("GLFW failed to create fullscreen window");
+				return false;
+			}
+
+			// Set the dimensions of the window
+			m_dimensions = glm::ivec2(videoMode->width, videoMode->height);
+		}
+
+		App::Log("Opened window with dimensions ("
+			+ std::to_string(m_dimensions.x) + ", "
+			+ std::to_string(m_dimensions.y) + ")");
+
+		// The window was successfully created
+		return true;
+	}
+}

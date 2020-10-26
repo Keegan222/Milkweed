@@ -190,7 +190,7 @@ namespace MW {
 		// The button is not down, attempt to find it in the previous frame's
 		// map
 		std::unordered_map<int, bool>::iterator it = m_prevButtons.find(button);
-		if (it == m_prevButtons.find(button)) {
+		if (it == m_prevButtons.end()) {
 			// The button is not in the previous frame, it has not been released
 			return false;
 		}

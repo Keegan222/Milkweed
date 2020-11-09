@@ -151,6 +151,10 @@
   <ItemGroup>
     <ClInclude Include="MWTest.h" />
   </ItemGroup>
+  <ItemGroup>
+    <None Include="Assets\Shaders\fragment_shader.glsl" />
+    <None Include="Assets\Shaders\vertex_shader.glsl" />
+  </ItemGroup>
   <Import Project="$(VCTargetsPath)\Microsoft.Cpp.targets" />
   <ImportGroup Label="ExtensionTargets">
   </ImportGroup>

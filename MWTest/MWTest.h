@@ -15,6 +15,7 @@ public:
 private:
 	float m_timer = 0.0f;
 	double m_startTime = 0.0;
+	unsigned int m_frames = 0, m_seconds = 0;
 };
 
 class MWTest {

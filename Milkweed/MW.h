@@ -8,10 +8,11 @@
 
 #include <string>
 #include <fstream>
-#include <list>
+#include <vector>
 
 #include "Window.h"
 #include "InputManager.h"
+#include "Renderer.h"
 
 namespace MW {
 	/*
@@ -62,6 +63,8 @@ namespace MW {
 		static Window WINDOW;
 		// The application's input manager
 		static InputManager INPUT;
+		// The application's renderer
+		static Renderer RENDERER;
 
 		/*
 		* Log a message with the Milkweed engine to the current log file and the
@@ -80,7 +83,7 @@ namespace MW {
 		* @param scene: The initial scene to be active in the application
 		*/
 		static void Init(const WindowAttributes& windowAttrib, float physicsUPS,
-			const std::list<Scene*>& scenes, Scene* scene);
+			const std::vector<Scene*>& scenes, Scene* scene);
 		/*
 		* Change the active scene of this application
 		* 
@@ -96,7 +99,7 @@ namespace MW {
 		// The number of physics upates per second
 		static float PHYSICS_SPU;
 		// The set of scenes in this application
-		static std::list<Scene*> SCENES;
+		static std::vector<Scene*> SCENES;
 		// The active scene in this application
 		static Scene* SCENE;
 

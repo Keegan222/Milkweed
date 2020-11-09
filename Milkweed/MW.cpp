@@ -14,11 +14,12 @@ namespace MW {
 	// Instantiate the application's public static members
 	Window App::WINDOW;
 	InputManager App::INPUT;
+	Renderer App::RENDERER;
 
 	// Instantiate the application's private static members
 	std::ofstream App::LOG_STREAM;
 	float App::PHYSICS_SPU;
-	std::list<Scene*> App::SCENES;
+	std::vector<Scene*> App::SCENES;
 	Scene* App::SCENE = nullptr;
 
 	std::string App::GetDate() {
@@ -45,7 +46,7 @@ namespace MW {
 	}
 
 	void App::Init(const WindowAttributes& windowAttrib, float physicsUPS,
-		const std::list<Scene*>& scenes, Scene* scene) {
+		const std::vector<Scene*>& scenes, Scene* scene) {
 		// Initialize the logging system
 		_mkdir("mwlog/");
 		LOG_STREAM.open("mwlog/" + GetDate() + ".mwlog");
@@ -80,9 +81,13 @@ namespace MW {
 			Log("Failed to initialize GLEW");
 			return;
 		}
+
 		const GLubyte* version = glGetString(GL_VERSION);
 		Log("OpenGL version: " + std::string((char*)version));
 		
+		// Initialize the renderer
+		RENDERER.init(glm::vec3(0.0f, 0.0f, 0.0f));
+
 		// Initialize the application's scenes and set the initial scene
 		for (Scene* s : scenes) {
 			SCENES.push_back(s);
@@ -152,7 +157,9 @@ namespace MW {
 	}
 
 	void App::Draw() {
+		RENDERER.begin();
 		SCENE->draw();
+		RENDERER.end();
 		glfwSwapBuffers(WINDOW.getWindowHandle());
 	}
 
@@ -167,12 +174,15 @@ namespace MW {
 
 	void App::Destroy() {
 		Log("Milkweed engine application stopped, cleaning up");
-
+		
 		// Exit the active scene and destroy all the scenes
 		SCENE->exit();
 		for (Scene* s : SCENES) {
 			s->destroy();
 		}
+
+		// Destroy the renderer
+		RENDERER.destroy();
 
 		Log("Milkweed engine stopped");
 

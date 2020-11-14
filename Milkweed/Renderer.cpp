@@ -5,30 +5,55 @@
 */
 
 #include <GL/glew.h>
+#include <glm/gtc/matrix_transform.hpp>
 
 #include "MW.h"
 #include "Renderer.h"
 
 namespace MW {
+	void Camera::init(const glm::ivec2& windowDimensions) {
+		m_orthoMatrix = glm::ortho(
+			0.0f, (float)windowDimensions.x,
+			0.0f, (float)windowDimensions.y);
+	}
+
 	void Renderer::init(const glm::vec3& clearColor) {
 		// Set the clear color
 		glClearColor(clearColor.x, clearColor.y, clearColor.z, 1.0f);
 		m_vertices = {
 			// Triangle 1
-			// Position 1
-			1.0f, 1.0f,
-			// Position 2
-			0.0f, 1.0f,
-			// Position 3
+			// Vertex 1
+			// Position
+			800.0f, 600.0f,
+			// Color
+			1.0f, 0.0f, 0.0f,
+			// Vertex 2
+			// Position
+			0.0f, 600.0f,
+			// Color
+			0.0f, 1.0f, 0.0f,
+			// Vertex 3
+			// Position
 			0.0f, 0.0f,
+			// Color
+			0.0f, 0.0f, 1.0f,
 
 			// Triangle 2
-			// Position 1
-			1.0f, 1.0f,
-			// Position 2
+			// Vertex 1
+			// Position
+			800.0f, 600.0f,
+			// Color
+			1.0f, 0.0f, 0.0f,
+			// Vertex 2
+			// Position
 			0.0f, 0.0f,
-			// Position 3
-			1.0f, 0.0f
+			// Color
+			0.0f, 1.0f, 0.0f,
+			// Vertex 3
+			// Position
+			800.0f, 0.0f,
+			// Color
+			0.0f, 0.0f, 1.0f,
 		};
 
 		// Create and bind the VAO and VBO
@@ -37,10 +62,22 @@ namespace MW {
 		glGenBuffers(1, &m_VBOID);
 		glBindBuffer(GL_ARRAY_BUFFER, m_VBOID);
 
-		m_shader.init("Assets/Shaders/vertex_shader.glsl",
+		// Initialize the shader and the camera
+		// TODO: Remove this later
+		m_shader.init(
+			"Assets/Shaders/vertex_shader.glsl",
 			"Assets/Shaders/fragment_shader.glsl",
-			{ VertexAttribute("inPosition", 2, GL_FLOAT, GL_FALSE,
-				2 * sizeof(float), 0) });
+
+			{
+				// Position
+				VertexAttribute("inPosition", 2, GL_FLOAT, GL_FALSE,
+					5 * sizeof(float), 0),
+				// Color
+				VertexAttribute("inColor", 3, GL_FLOAT, GL_FALSE,
+					5 * sizeof(float), 2 * sizeof(float)),
+			}
+		);
+		m_camera.init(glm::ivec2(800, 600));
 	}
 
 	void Renderer::begin() {
@@ -50,6 +87,8 @@ namespace MW {
 
 	void Renderer::end() {
 		m_shader.begin();
+
+		m_shader.upload4x4Matrix("cameraMatrix", m_camera.getCameraMatrix());
 
 		glBufferData(GL_ARRAY_BUFFER, sizeof(float) * m_vertices.size(),
 			&(m_vertices[0]), GL_STATIC_DRAW);

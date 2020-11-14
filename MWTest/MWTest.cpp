@@ -17,12 +17,7 @@ void TestScene1::draw() {
 }
 
 void TestScene1::processInput() {
-	if (MW::App::INPUT.isButtonPressed(GLFW_MOUSE_BUTTON_1)) {
-		MW::App::Log("Pressed button 1");
-	}
-	if (MW::App::INPUT.isButtonReleased(GLFW_MOUSE_BUTTON_1)) {
-		MW::App::Log("Released button 1");
-	}
+
 }
 
 void TestScene1::update(float deltaTime) {

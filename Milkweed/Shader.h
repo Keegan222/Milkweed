@@ -93,6 +93,22 @@ namespace MW {
 		*/
 		bool uploadFloat(const std::string& name, float value);
 		/*
+		* Upload a 2-float vector uniform to this shader
+		* 
+		* @param name: The name of the uniform variable
+		* @param value: The vector to upload
+		* @return Whether the vector could be uploaded
+		*/
+		bool upload2fVector(const std::string& name, const glm::vec2& value);
+		/*
+		* Upload a 3-float vector uniform to this shader
+		* 
+		* @param name: The name of the uniform variable
+		* @param value: The vector to upload
+		* @return Whether the vector could be uploaded
+		*/
+		bool upload3fVector(const std::string& name, const glm::vec3& value);
+		/*
 		* Upload a 4x4 matrix uniform to this shader
 		* 
 		* @param name: The name of the uniform variable

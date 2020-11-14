@@ -13,6 +13,27 @@
 
 namespace MW {
 	/*
+	* A 2D camera used to position sprites on the screen
+	*/
+	class Camera {
+	public:
+		/*
+		* Initialize this camera with the window's dimensions
+		* 
+		* @param windowDimensions: The dimensions of the window in pixels
+		*/
+		void init(const glm::ivec2& windowDimensions);
+		/*
+		* Get the camera's projection matrix to pass to a shader
+		*/
+		glm::mat4 getCameraMatrix() const { return m_orthoMatrix; }
+
+	private:
+		// The camera's blank projection matrix
+		glm::mat4 m_orthoMatrix;
+	};
+
+	/*
 	* The Milkweed engine's utility for drawing graphics
 	*/
 	class Renderer {
@@ -45,5 +66,6 @@ namespace MW {
 		
 		std::vector<float> m_vertices;
 		Shader m_shader;
+		Camera m_camera;
 	};
 }

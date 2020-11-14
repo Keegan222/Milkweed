@@ -115,6 +115,30 @@ namespace MW {
 		return true;
 	}
 
+	bool Shader::upload2fVector(const std::string& name,
+		const glm::vec2& value) {
+		GLint location = glGetUniformLocation(m_programID, name.c_str());
+		if (location == -1) {
+			App::Log("Failed to find uniform variable \"" + name
+				+ "\" in shader");
+			return false;
+		}
+		glUniform2f(location, value.x, value.y);
+		return true;
+	}
+
+	bool Shader::upload3fVector(const std::string& name,
+		const glm::vec3& value) {
+		GLint location = glGetUniformLocation(m_programID, name.c_str());
+		if (location == -1) {
+			App::Log("Failed to find uniform variable \"" + name
+				+ "\" in shader");
+			return false;
+		}
+		glUniform3f(location, value.x, value.y, value.z);
+		return true;
+	}
+
 	bool Shader::upload4x4Matrix(const std::string& name,
 		const glm::mat4& value) {
 		GLint location = glGetUniformLocation(m_programID, name.c_str());

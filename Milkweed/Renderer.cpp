@@ -5,18 +5,11 @@
 */
 
 #include <GL/glew.h>
-#include <glm/gtc/matrix_transform.hpp>
 
 #include "MW.h"
 #include "Renderer.h"
 
 namespace MW {
-	void Camera::init(const glm::ivec2& windowDimensions) {
-		m_orthoMatrix = glm::ortho(
-			0.0f, (float)windowDimensions.x,
-			0.0f, (float)windowDimensions.y);
-	}
-
 	void Renderer::init(const glm::vec3& clearColor) {
 		// Set the clear color
 		glClearColor(clearColor.x, clearColor.y, clearColor.z, 1.0f);
@@ -24,34 +17,34 @@ namespace MW {
 			// Triangle 1
 			// Vertex 1
 			// Position
-			800.0f, 600.0f,
+			100.0f, 100.0f,
 			// Color
-			1.0f, 0.0f, 0.0f,
+			1.0f, 0.0f, 1.0f,
 			// Vertex 2
 			// Position
-			0.0f, 600.0f,
+			0.0f, 100.0f,
 			// Color
 			0.0f, 1.0f, 0.0f,
 			// Vertex 3
 			// Position
 			0.0f, 0.0f,
 			// Color
-			0.0f, 0.0f, 1.0f,
+			1.0f, 0.0f, 1.0f,
 
 			// Triangle 2
 			// Vertex 1
 			// Position
-			800.0f, 600.0f,
+			100.0f, 100.0f,
 			// Color
-			1.0f, 0.0f, 0.0f,
+			1.0f, 0.0f, 1.0f,
 			// Vertex 2
 			// Position
 			0.0f, 0.0f,
 			// Color
-			0.0f, 1.0f, 0.0f,
+			1.0f, 0.0f, 1.0f,
 			// Vertex 3
 			// Position
-			800.0f, 0.0f,
+			100.0f, 0.0f,
 			// Color
 			0.0f, 0.0f, 1.0f,
 		};
@@ -96,6 +89,46 @@ namespace MW {
 		glDrawArrays(GL_TRIANGLES, 0, 6);
 
 		m_shader.end();
+	}
+
+	void Renderer::processInput() {
+		if (App::INPUT.isKeyDown(GLFW_KEY_A)) {
+			m_camera.setVelocityX(-5.0f);
+		}
+		else if (App::INPUT.isKeyDown(GLFW_KEY_D)) {
+			m_camera.setVelocityX(5.0f);
+		}
+		else {
+			m_camera.setVelocityX(0.0f);
+		}
+
+		if (App::INPUT.isKeyDown(GLFW_KEY_S)) {
+			m_camera.setVelocityY(-5.0f);
+		}
+		else if (App::INPUT.isKeyDown(GLFW_KEY_W)) {
+			m_camera.setVelocityY(5.0f);
+		}
+		else {
+			m_camera.setVelocityY(0.0f);
+		}
+
+		if (App::INPUT.isKeyDown(GLFW_KEY_Q)) {
+			m_camera.setScaleVelocity(-0.01f);
+		}
+		else if (App::INPUT.isKeyDown(GLFW_KEY_E)) {
+			m_camera.setScaleVelocity(0.01f);
+		}
+		else {
+			m_camera.setScaleVelocity(0.0f);
+		}
+	}
+
+	void Renderer::update(float deltaTime) {
+		m_camera.update(deltaTime);
+		if (m_camera.getScale() < 0.1f) {
+			m_camera.setScale(0.1f);
+			m_camera.setScaleVelocity(0.0f);
+		}
 	}
 
 	void Renderer::destroy() {

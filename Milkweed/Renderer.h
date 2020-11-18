@@ -7,32 +7,11 @@
 #pragma once
 
 #include <unordered_map>
-#include <glm/glm.hpp>
 
+#include "Camera.h"
 #include "Shader.h"
 
 namespace MW {
-	/*
-	* A 2D camera used to position sprites on the screen
-	*/
-	class Camera {
-	public:
-		/*
-		* Initialize this camera with the window's dimensions
-		* 
-		* @param windowDimensions: The dimensions of the window in pixels
-		*/
-		void init(const glm::ivec2& windowDimensions);
-		/*
-		* Get the camera's projection matrix to pass to a shader
-		*/
-		glm::mat4 getCameraMatrix() const { return m_orthoMatrix; }
-
-	private:
-		// The camera's blank projection matrix
-		glm::mat4 m_orthoMatrix;
-	};
-
 	/*
 	* The Milkweed engine's utility for drawing graphics
 	*/
@@ -53,6 +32,16 @@ namespace MW {
 		* End a frame and draw it
 		*/
 		void end();
+		/*
+		* Process input to the renderer
+		* TODO: Remove this later
+		*/
+		void processInput();
+		/*
+		* Update the renderer's camera
+		* TODO: Remove this later
+		*/
+		void update(float deltaTime);
 		/*
 		* Free this renderer's memory and stop using it
 		*/

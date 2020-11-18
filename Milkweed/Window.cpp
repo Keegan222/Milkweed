@@ -14,6 +14,8 @@ namespace MW {
 		const GLFWvidmode* videoMode
 			= glfwGetVideoMode(glfwGetPrimaryMonitor());
 
+		glfwWindowHint(GLFW_RESIZABLE, GLFW_FALSE);
+
 		if (!attrib.fullScreen) {
 			// Create the window in windowed mode
 			m_window = glfwCreateWindow(attrib.dimensions.x,

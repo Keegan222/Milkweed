@@ -17,7 +17,7 @@ void TestScene1::draw() {
 }
 
 void TestScene1::processInput() {
-
+	MW::App::RENDERER.processInput();
 }
 
 void TestScene1::update(float deltaTime) {
@@ -31,6 +31,8 @@ void TestScene1::update(float deltaTime) {
 		m_timer = 0.0f;
 		m_frames = 0;
 	}
+
+	MW::App::RENDERER.update(deltaTime);
 }
 
 void TestScene1::exit() {

@@ -100,41 +100,41 @@ namespace MW {
 
 	void Renderer::processInput() {
 		if (App::INPUT.isKeyDown(GLFW_KEY_A)) {
-			m_camera.setVelocityX(-5.0f);
+			m_camera.velocity.x = -5.0f;
 		}
 		else if (App::INPUT.isKeyDown(GLFW_KEY_D)) {
-			m_camera.setVelocityX(5.0f);
+			m_camera.velocity.x = 5.0f;
 		}
 		else {
-			m_camera.setVelocityX(0.0f);
+			m_camera.velocity.x = 0.0f;
 		}
 
 		if (App::INPUT.isKeyDown(GLFW_KEY_S)) {
-			m_camera.setVelocityY(-5.0f);
+			m_camera.velocity.y = -5.0f;
 		}
 		else if (App::INPUT.isKeyDown(GLFW_KEY_W)) {
-			m_camera.setVelocityY(5.0f);
+			m_camera.velocity.y = 5.0f;
 		}
 		else {
-			m_camera.setVelocityY(0.0f);
+			m_camera.velocity.y = 0.0f;
 		}
 
 		if (App::INPUT.isKeyDown(GLFW_KEY_Q)) {
-			m_camera.setScaleVelocity(-0.01f);
+			m_camera.scaleVelocity = -0.01f;
 		}
 		else if (App::INPUT.isKeyDown(GLFW_KEY_E)) {
-			m_camera.setScaleVelocity(0.01f);
+			m_camera.scaleVelocity = 0.01f;
 		}
 		else {
-			m_camera.setScaleVelocity(0.0f);
+			m_camera.scaleVelocity = 0.0f;
 		}
 	}
 
 	void Renderer::update(float deltaTime) {
 		m_camera.update(deltaTime);
-		if (m_camera.getScale() < 0.1f) {
-			m_camera.setScale(0.1f);
-			m_camera.setScaleVelocity(0.0f);
+		if (m_camera.scale < 0.1f) {
+			m_camera.scale = 0.1f;
+			m_camera.scaleVelocity = 0.0f;
 		}
 	}
 

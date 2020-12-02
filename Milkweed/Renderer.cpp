@@ -8,6 +8,8 @@
 
 #include "MW.h"
 #include "Renderer.h"
+#include "Sprite.h"
+#include "ResourceManager.h"
 
 namespace MW {
 	void Renderer::init(const glm::vec3& clearColor) {
@@ -18,35 +20,35 @@ namespace MW {
 			// Vertex 1
 			// Position
 			100.0f, 100.0f,
-			// Color
-			1.0f, 0.0f, 1.0f,
+			// Texture coords
+			1.0f, 1.0f,
 			// Vertex 2
 			// Position
 			0.0f, 100.0f,
-			// Color
-			0.0f, 1.0f, 0.0f,
+			// Texture coords
+			0.0f, 1.0f,
 			// Vertex 3
 			// Position
 			0.0f, 0.0f,
-			// Color
-			1.0f, 0.0f, 1.0f,
+			// Texture coords
+			0.0f, 0.0f,
 
 			// Triangle 2
 			// Vertex 1
 			// Position
 			100.0f, 100.0f,
-			// Color
-			1.0f, 0.0f, 1.0f,
+			// Texture coords
+			1.0f, 1.0f,
 			// Vertex 2
 			// Position
 			0.0f, 0.0f,
-			// Color
-			1.0f, 0.0f, 1.0f,
+			// Texture coords
+			0.0f, 0.0f,
 			// Vertex 3
 			// Position
 			100.0f, 0.0f,
-			// Color
-			0.0f, 0.0f, 1.0f,
+			// Texture coords
+			1.0f, 0.0f,
 		};
 
 		// Create and bind the VAO and VBO
@@ -60,17 +62,18 @@ namespace MW {
 		m_shader.init(
 			"Assets/Shaders/vertex_shader.glsl",
 			"Assets/Shaders/fragment_shader.glsl",
-
 			{
 				// Position
 				VertexAttribute("inPosition", 2, GL_FLOAT, GL_FALSE,
-					5 * sizeof(float), 0),
-				// Color
-				VertexAttribute("inColor", 3, GL_FLOAT, GL_FALSE,
-					5 * sizeof(float), 2 * sizeof(float)),
+					4 * sizeof(float), 0),
+				// Texture coordinates
+				VertexAttribute("inTextureCoords", 2, GL_FLOAT, GL_FALSE,
+					4 * sizeof(float), 2 * sizeof(float)),
 			}
 		);
 		m_camera.init(glm::ivec2(800, 600));
+
+		m_texture = App::RESOURCES.getTexture("Assets/Textures/texture.png");
 	}
 
 	void Renderer::begin() {
@@ -82,6 +85,10 @@ namespace MW {
 		m_shader.begin();
 
 		m_shader.upload4x4Matrix("cameraMatrix", m_camera.getCameraMatrix());
+		m_shader.uploadInt("textureSampler", 0);
+		
+		glActiveTexture(GL_TEXTURE0);
+		glBindTexture(GL_TEXTURE_2D, m_texture->textureID);
 
 		glBufferData(GL_ARRAY_BUFFER, sizeof(float) * m_vertices.size(),
 			&(m_vertices[0]), GL_STATIC_DRAW);

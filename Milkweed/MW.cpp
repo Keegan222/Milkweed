@@ -15,6 +15,7 @@ namespace MW {
 	Window App::WINDOW;
 	InputManager App::INPUT;
 	Renderer App::RENDERER;
+	ResourceManager App::RESOURCES;
 
 	// Instantiate the application's private static members
 	std::ofstream App::LOG_STREAM;

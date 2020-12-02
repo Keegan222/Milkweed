@@ -13,6 +13,7 @@
 #include "Window.h"
 #include "InputManager.h"
 #include "Renderer.h"
+#include "ResourceManager.h"
 
 namespace MW {
 	/*
@@ -65,6 +66,8 @@ namespace MW {
 		static InputManager INPUT;
 		// The application's renderer
 		static Renderer RENDERER;
+		// The application's resource manager
+		static ResourceManager RESOURCES;
 
 		/*
 		* Log a message with the Milkweed engine to the current log file and the

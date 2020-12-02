@@ -47,7 +47,7 @@ namespace MW {
 		glGetShaderiv(m_vID, GL_COMPILE_STATUS, &vStatus);
 		if (vStatus != GL_TRUE) {
 			// The vertex shader has failed to compile
-			char buffer[1024];
+			char buffer[1024]; // TODO: Modify hardcoded buffer sizes
 			glGetShaderInfoLog(m_vID, 1024, NULL, buffer);
 			App::Log("Failed to compile vertex shader \"" + vFileName + "\"");
 			App::Log(std::string(buffer));
@@ -101,6 +101,17 @@ namespace MW {
 			return false;
 		}
 		glUniform1i(location, value);
+		return true;
+	}
+
+	bool Shader::uploadUInt(const std::string& name, unsigned int value) {
+		GLint location = glGetUniformLocation(m_programID, name.c_str());
+		if (location == -1) {
+			App::Log("Failed to find uniform variable \"" + name
+				+ "\" in shader");
+			return false;
+		}
+		glUniform1ui(location, value);
 		return true;
 	}
 

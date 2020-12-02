@@ -25,7 +25,11 @@ namespace MW {
 		*
 		* @param deltaTime: The time elapsed since last frame
 		*/
-		void update(float deltaTime);
+		void update(float deltaTime) override;
+		/*
+		* Override for the sprite getVertices() function
+		*/
+		Vertex* getVertices() override { return nullptr; }
 		/*
 		* Get the camera's projection matrix to pass to a shader
 		*/

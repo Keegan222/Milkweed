@@ -19,6 +19,9 @@
     <Filter Include="Assets\Shaders">
       <UniqueIdentifier>{c9f82539-fe29-4a1e-95aa-4f13e350ce1f}</UniqueIdentifier>
     </Filter>
+    <Filter Include="Assets\Textures">
+      <UniqueIdentifier>{f4f45aa2-110b-4d6a-a0df-8f82e53fc83b}</UniqueIdentifier>
+    </Filter>
   </ItemGroup>
   <ItemGroup>
     <ClCompile Include="MWTest.cpp">
@@ -37,5 +40,10 @@
     <None Include="Assets\Shaders\vertex_shader.glsl">
       <Filter>Assets\Shaders</Filter>
     </None>
+  </ItemGroup>
+  <ItemGroup>
+    <Image Include="Assets\Textures\texture.png">
+      <Filter>Assets\Textures</Filter>
+    </Image>
   </ItemGroup>
 </Project>

@@ -85,6 +85,14 @@ namespace MW {
 		*/
 		bool uploadInt(const std::string& name, int value);
 		/*
+		* Upload an unsigned integer uniform to this shader
+		* 
+		* @param name: The name of the uniform variable
+		* @param value: The unsigned integer to upload
+		* @return Whether the unsigned integer could be uploaded
+		*/
+		bool uploadUInt(const std::string& name, unsigned int value);
+		/*
 		* Upload an float uniform to this shader
 		*
 		* @param name: The name of the uniform variable

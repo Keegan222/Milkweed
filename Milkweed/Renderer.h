@@ -10,6 +10,7 @@
 
 #include "Camera.h"
 #include "Shader.h"
+#include "ResourceManager.h"
 
 namespace MW {
 	/*
@@ -56,5 +57,6 @@ namespace MW {
 		std::vector<float> m_vertices;
 		Shader m_shader;
 		Camera m_camera;
+		Texture* m_texture;
 	};
 }

@@ -7,8 +7,17 @@
 #pragma once
 
 #include <glm/glm.hpp>
+#include <vector>
 
 namespace MW {
+	/*
+	* An abstract vertex with only a position
+	*/
+	struct Vertex {
+		// The position of this vertex in screen coordinates
+		glm::vec2 position;
+	};
+
 	/*
 	* An abstract sprite with a position, velocity and dimensions
 	*/
@@ -21,7 +30,13 @@ namespace MW {
 		*/
 		virtual void update(float deltaTime) = 0;
 		/*
-		* Get the current position of this sprite
+		* Get the vertex data of this sprite
+		* 
+		* @return The vertices of this sprite in window-coordinates
+		*/
+		virtual Vertex* getVertices() = 0;
+		/*
+		* @return The current position of this sprite
 		*/
 		glm::vec2 getPosition() const { return m_position; }
 		/*
@@ -52,7 +67,7 @@ namespace MW {
 			m_needsUpdate = true;
 		}
 		/*
-		* Get the current velocity of this sprite
+		* @return The current velocity of this sprite
 		*/
 		glm::vec2 getVelocity() const { return m_velocity; }
 		/*

@@ -156,7 +156,10 @@
     <None Include="Assets\Shaders\vertex_shader.glsl" />
   </ItemGroup>
   <ItemGroup>
-    <Image Include="Assets\Textures\texture.png" />
+    <Image Include="Assets\Textures\texture0.png" />
+    <Image Include="Assets\Textures\texture1.png" />
+    <Image Include="Assets\Textures\texture2.png" />
+    <Image Include="Assets\Textures\texture3.png" />
   </ItemGroup>
   <Import Project="$(VCTargetsPath)\Microsoft.Cpp.targets" />
   <ImportGroup Label="ExtensionTargets">

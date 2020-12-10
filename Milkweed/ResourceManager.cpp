@@ -10,12 +10,14 @@
 #include "ResourceManager.h"
 
 namespace MW {
+	Texture ResourceManager::NO_TEXTURE = Texture();
+
 	Texture* ResourceManager::getTexture(const std::string& fileName) {
 		std::unordered_map<std::string, Texture>::iterator it
 			= m_textures.find(fileName);
 		if (it != m_textures.end()) {
 			// The texture is already present in memory, return it
-			return &(it->second);
+			return &m_textures[fileName];
 		}
 
 		// The texture is not present in memory and must be loaded
@@ -74,6 +76,10 @@ namespace MW {
 	}
 
 	void ResourceManager::destroy() {
-
+		for (std::pair<std::string, Texture> pair : m_textures) {
+			App::Log("Delete texture " + std::to_string(pair.second.textureID));
+			Texture texture = pair.second;
+			glDeleteTextures(1, &texture.textureID);
+		}
 	}
 }

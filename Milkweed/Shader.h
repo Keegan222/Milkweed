@@ -73,6 +73,23 @@ namespace MW {
 		bool init(const std::string& vFileName, const std::string& fFileName,
 			const std::vector<VertexAttribute>& attributes);
 		/*
+		* Locate this shader's GLSL source code, compile it, and create this
+		* shader with OpenGL
+		* 
+		* @param vFileName: The path to the file containing the vertex shader
+		* source
+		* @param fFileName: The path to the file containing the fragment shader
+		* source
+		* @param attributes: The vertex attributes this shader will use when
+		* rendering a VAO from OpenGL
+		* @param cameraUniformName: The uniform name for the projection matrix
+		* of this shader's camera
+		* @return Whether the shader could be created successfully
+		*/
+		bool init(const std::string& vFileName, const std::string& fFileName,
+			const std::vector<VertexAttribute>& attributes,
+			const std::string& cameraUniformName);
+		/*
 		* Tell OpenGL to draw graphics using this shader
 		*/
 		void begin();
@@ -132,6 +149,10 @@ namespace MW {
 		* Delete this shader program from OpenGL's memory and stop using it
 		*/
 		void destroy();
+		/*
+		* Get a pointer to this shader's camera
+		*/
+		Camera* getCamera() { return &m_camera; }
 
 	private:
 		// The OpenGL ID of the vertex shader
@@ -142,5 +163,9 @@ namespace MW {
 		GLuint m_programID = 0;
 		// The number of attributes this shader uses
 		unsigned int m_attributeCount = 0;
+		// The camera this shader gets its projection matrix from
+		Camera m_camera = Camera();
+		// The uniform name of the camera's projection matrix in this shader
+		std::string m_cameraUniformName = "";
 	};
 }

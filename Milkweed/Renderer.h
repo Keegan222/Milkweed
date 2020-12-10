@@ -30,19 +30,17 @@ namespace MW {
 		*/
 		void begin();
 		/*
-		* End a frame and draw it
+		* Submit a group of sprites to be rendered this frame with the shader to
+		* render them with
+		* 
+		* @param sprites: A set of pointers to sprites to be rendered
+		* @param shader: A pointer to the shader to render these sprites with
+		*/
+		void submit(const std::vector<Sprite*>& sprites, Shader* shader);
+		/*
+		* End a frame and draw it on the screen
 		*/
 		void end();
-		/*
-		* Process input to the renderer
-		* TODO: Remove this later
-		*/
-		void processInput();
-		/*
-		* Update the renderer's camera
-		* TODO: Remove this later
-		*/
-		void update(float deltaTime);
 		/*
 		* Free this renderer's memory and stop using it
 		*/
@@ -53,10 +51,15 @@ namespace MW {
 		GLuint m_VAOID = 0;
 		// The vertex data buffer for this renderer
 		GLuint m_VBOID = 0;
-		
-		std::vector<float> m_vertices;
-		Shader m_shader;
-		Camera m_camera;
-		Texture* m_texture;
+		// The index buffer for this renderer
+		GLuint m_IBOID = 0;
+		// The sprites to be rendered this frame
+		std::unordered_map<Shader*, std::vector<Sprite*>> m_sprites;
+
+		/*
+		* Draw a set of sprites with a single texture
+		*/
+		void drawVertices(const std::vector<float>& vertexData,
+			unsigned int spriteCount);
 	};
 }

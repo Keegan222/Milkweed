@@ -182,6 +182,8 @@ namespace MW {
 			s->destroy();
 		}
 
+		// Destroy the resource manager
+		RESOURCES.destroy();
 		// Destroy the renderer
 		RENDERER.destroy();
 

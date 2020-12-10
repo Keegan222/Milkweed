@@ -42,7 +42,16 @@
     </None>
   </ItemGroup>
   <ItemGroup>
-    <Image Include="Assets\Textures\texture.png">
+    <Image Include="Assets\Textures\texture1.png">
+      <Filter>Assets\Textures</Filter>
+    </Image>
+    <Image Include="Assets\Textures\texture2.png">
+      <Filter>Assets\Textures</Filter>
+    </Image>
+    <Image Include="Assets\Textures\texture3.png">
+      <Filter>Assets\Textures</Filter>
+    </Image>
+    <Image Include="Assets\Textures\texture0.png">
       <Filter>Assets\Textures</Filter>
     </Image>
   </ItemGroup>

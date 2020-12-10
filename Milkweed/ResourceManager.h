@@ -44,6 +44,9 @@ namespace MW {
 	*/
 	class ResourceManager {
 	public:
+		// An empty texture to initialize sprites with
+		static Texture NO_TEXTURE;
+
 		/*
 		* Get a texture from memory or the disk
 		* 

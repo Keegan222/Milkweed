@@ -85,11 +85,24 @@ namespace MW {
 		return true;
 	}
 
+	bool Shader::init(const std::string& vFileName,
+		const std::string& fFileName,
+		const std::vector<VertexAttribute>& attributes,
+		const std::string& cameraUniformName) {
+		m_cameraUniformName = cameraUniformName;
+		m_camera.init(App::WINDOW.getDimensions());
+		return init(vFileName, fFileName, attributes);
+	}
+
 	void Shader::begin() {
 		// Tell OpenGL to use this shader and enable vertex attributes
 		glUseProgram(m_programID);
 		for (unsigned int i = 0; i < m_attributeCount; i++) {
 			glEnableVertexAttribArray(i);
+		}
+
+		if (!m_cameraUniformName.empty()) {
+			upload4x4Matrix(m_cameraUniformName, m_camera.getCameraMatrix());
 		}
 	}
 

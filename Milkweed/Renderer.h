@@ -14,6 +14,13 @@
 
 namespace MW {
 	/*
+	* The ways to sort sprites to be rendered
+	*/
+	enum SortType {
+		TEXTURE, DEPTH,
+	};
+
+	/*
 	* The Milkweed engine's utility for drawing graphics
 	*/
 	class Renderer {
@@ -42,6 +49,10 @@ namespace MW {
 		*/
 		void end();
 		/*
+		* Set the type of sorting to perform when rendering sprites
+		*/
+		void setSortType(SortType sortType) { m_sortType = sortType; }
+		/*
 		* Free this renderer's memory and stop using it
 		*/
 		void destroy();
@@ -55,6 +66,8 @@ namespace MW {
 		GLuint m_IBOID = 0;
 		// The sprites to be rendered this frame
 		std::unordered_map<Shader*, std::vector<Sprite*>> m_sprites;
+		// The type of sorting to perform when rendering sprites
+		SortType m_sortType = SortType::DEPTH;
 
 		/*
 		* Draw a set of sprites with a single texture

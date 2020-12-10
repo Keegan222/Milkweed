@@ -22,7 +22,8 @@ namespace MW {
 
 	void Camera::update(float deltaTime) {
 		// Increment the position and scale of the camera by their velocities
-		this->position += this->velocity * deltaTime;
+		this->position.x += this->velocity.x * deltaTime;
+		this->position.y += this->velocity.y * deltaTime;
 		this->scale += this->scaleVelocity * deltaTime;
 
 		// Check if the position or scale has changed since the last frame

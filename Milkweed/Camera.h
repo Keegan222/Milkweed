@@ -42,7 +42,7 @@ namespace MW {
 		// The camera's full projection matrix
 		glm::mat4 m_cameraMatrix = glm::mat4();
 		// The position of this camera in the last frame
-		glm::vec2 m_prevPosition = glm::vec2();
+		glm::vec3 m_prevPosition = glm::vec3();
 		// The scale of this camera in the last frame
 		float m_prevScale = 1.0f;
 

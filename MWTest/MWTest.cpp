@@ -19,13 +19,27 @@ void TestScene1::init() {
 		"Assets/Shaders/vertex_shader.glsl",
 		"Assets/Shaders/fragment_shader.glsl",
 		{
-			MW::VertexAttribute("inPosition", 2, GL_FLOAT, GL_FALSE,
-				4 * sizeof(float), 0),
+			MW::VertexAttribute("inPosition", 3, GL_FLOAT, GL_FALSE,
+				5 * sizeof(float), 0),
 			MW::VertexAttribute("inTextureCoords", 2, GL_FLOAT, GL_FALSE,
-				4 * sizeof(float), 2 * sizeof(float)),
+				5 * sizeof(float), 3 * sizeof(float)),
 		},
 		"cameraMatrix"
 	);
+
+	m_sprites.push_back(MW::Sprite(glm::vec3(0.0f, 0.0f, 1.1f),
+		glm::vec2(100.0f, 100.0f), MW::App::RESOURCES.getTexture(
+			"Assets/Textures/texture0.png")));
+	m_sprites.push_back(MW::Sprite(glm::vec3(200.0f, 0.0f, 1.0f),
+		glm::vec2(100.0f, 100.0f), MW::App::RESOURCES.getTexture(
+			"Assets/Textures/texture0.png")));
+	m_sprites.back().velocity.x = -2.0f;
+	m_sprites.push_back(MW::Sprite(glm::vec3(0.0f, 100.0f, 1.1f),
+		glm::vec2(100.0f, 100.0f), MW::App::RESOURCES.getTexture(
+			"Assets/Textures/texture1.png")));
+	m_sprites.push_back(MW::Sprite(glm::vec3(200.0f, 100.0f, 1.0f),
+		glm::vec2(100.0f, 100.0f), MW::App::RESOURCES.getTexture(
+			"Assets/Textures/texture1.png")));
 }
 
 void TestScene1::enter() {
@@ -43,7 +57,7 @@ void TestScene1::draw() {
 }
 
 void TestScene1::processInput() {
-
+	
 }
 
 void TestScene1::update(float deltaTime) {
@@ -59,11 +73,9 @@ void TestScene1::update(float deltaTime) {
 		m_frames = 0;
 	}
 
-	m_sprites.push_back(MW::Sprite(
-		glm::vec2(randBetween(0, 800), randBetween(0, 600)),
-		glm::vec2(100.0f, 100.0f), MW::App::RESOURCES.getTexture(
-			"Assets/Textures/texture" + std::to_string(randBetween(0, 4))
-			+ ".png")));
+	for (unsigned int i = 0; i < m_sprites.size(); i++) {
+		m_sprites[i].update(deltaTime);
+	}
 
 	m_shader.getCamera()->update(deltaTime);
 }

@@ -21,7 +21,7 @@ namespace MW {
 		static std::vector<unsigned int> VERTEX_INDICES;
 
 		// The position of this sprite
-		glm::vec2 position = glm::vec2();
+		glm::vec3 position = glm::vec3();
 		// The velocity of this sprite
 		glm::vec2 velocity = glm::vec2();
 		// The dimensions of this sprite
@@ -36,7 +36,7 @@ namespace MW {
 		/*
 		* Construct a sprite with position, dimensions, and texture
 		*/
-		Sprite(const glm::vec2& Position, const glm::vec2& Dimensions,
+		Sprite(const glm::vec3& Position, const glm::vec2& Dimensions,
 			Texture* Texture) : position(Position), dimensions(Dimensions),
 			texture(Texture) {}
 		/*

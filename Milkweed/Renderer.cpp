@@ -59,6 +59,10 @@ namespace MW {
 	bool compareSpriteTexture(const Sprite* a, const Sprite* b) {
 		return a->texture->textureID < b->texture->textureID;
 	}
+	
+	bool compareSpriteDepth(const Sprite* a, const Sprite* b) {
+		return a->position.z < b->position.z;
+	}
 
 	void Renderer::end() {
 		for (std::pair<Shader*, std::vector<Sprite*>> shaderBatch : m_sprites) {
@@ -66,8 +70,14 @@ namespace MW {
 			Shader* shader = shaderBatch.first;
 			std::vector<Sprite*> sprites = shaderBatch.second;
 			// Sort the sprites by their texture ID's
-			std::stable_sort(sprites.begin(), sprites.end(),
-				compareSpriteTexture);
+			if (m_sortType == SortType::TEXTURE) {
+				std::stable_sort(sprites.begin(), sprites.end(),
+					compareSpriteTexture);
+			}
+			else if (m_sortType == SortType::DEPTH) {
+				std::stable_sort(sprites.begin(), sprites.end(),
+					compareSpriteDepth);
+			}
 			// Start the shader
 			shader->begin();
 

@@ -15,25 +15,26 @@ namespace MW {
 	};
 
 	void Sprite::update(float deltaTime) {
-		position += velocity * deltaTime;
+		position.x += velocity.x * deltaTime;
+		position.y += velocity.y * deltaTime;
 	}
 
 	std::vector<float> Sprite::getVertexData() {
 		return {
 			// Vertex 1
-			position.x, position.y,
+			position.x, position.y, position.z,
 			0.0f, 1.0f,
 
 			// Vertex 2
-			position.x + dimensions.x, position.y,
+			position.x + dimensions.x, position.y, position.z,
 			1.0f, 1.0f,
 
 			// Vertex 3
-			position.x + dimensions.x, position.y + dimensions.y,
+			position.x + dimensions.x, position.y + dimensions.y, position.z,
 			1.0f, 0.0f,
 
 			// Vertex 4
-			position.x, position.y + dimensions.y,
+			position.x, position.y + dimensions.y, position.z,
 			0.0f, 0.0f,
 		};
 	}

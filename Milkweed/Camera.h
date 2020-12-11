@@ -24,7 +24,7 @@ namespace MW {
 		*
 		* @param windowDimensions: The dimensions of the window in pixels
 		*/
-		void init(const glm::ivec2& windowDimensions);
+		void init();
 		/*
 		* Update the position and scale of the camera
 		*

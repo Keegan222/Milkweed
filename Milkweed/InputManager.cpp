@@ -209,7 +209,13 @@ namespace MW {
 	glm::vec2 InputManager::getCursorPosition(const Camera* camera) const {
 		glm::vec2 cursorPosition = m_cursorPosition;
 		
-		// TODO: Implement this function
+		// Transform the cursor position on the window to its position in the
+		// camera's world-space
+		cursorPosition.x -= (float)App::WINDOW.getDimensions().x / 2;
+		cursorPosition.y -= (float)App::WINDOW.getDimensions().y / 2;
+		cursorPosition /= camera->scale;
+		cursorPosition.x += camera->position.x;
+		cursorPosition.y += camera->position.y;
 
 		return cursorPosition;
 	}

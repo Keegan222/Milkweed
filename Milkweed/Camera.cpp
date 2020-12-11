@@ -10,13 +10,12 @@
 #include "Camera.h"
 
 namespace MW {
-	void Camera::init(const glm::ivec2& windowDimensions) {
+	void Camera::init() {
 		// Set the window dimensions and initialize the orthographic matrix for
 		// those dimensions
-		this->dimensions = windowDimensions;
 		m_orthoMatrix = glm::ortho(
-			0.0f, (float)windowDimensions.x,
-			0.0f, (float)windowDimensions.y);
+			0.0f, (float)App::WINDOW.getDimensions().x,
+			0.0f, (float)App::WINDOW.getDimensions().y);
 		updateMatrix();
 	}
 
@@ -40,14 +39,9 @@ namespace MW {
 	void Camera::updateMatrix() {
 		// Rescale and reposition the camera matrix
 		m_cameraMatrix = glm::translate(m_orthoMatrix,
-			glm::vec3((float)this->dimensions.x / 2.0f,
-				(float)this->dimensions.y / 2.0f, 0.0f));
-		m_cameraMatrix = glm::scale(m_cameraMatrix,
-			glm::vec3(this->scale, this->scale, 0.0f));
-		m_cameraMatrix = glm::translate(m_cameraMatrix,
-			glm::vec3((float)-this->dimensions.x / 2.0f,
-				(float)-this->dimensions.y / 2.0f, 0.0f));
-		m_cameraMatrix = glm::translate(m_cameraMatrix,
-			glm::vec3(-this->position.x, -this->position.y, 0.0f));
+			glm::vec3(-position.x + (float)App::WINDOW.getDimensions().x / 2,
+				-position.y + (float)App::WINDOW.getDimensions().y / 2, 0.0f));
+		m_cameraMatrix = glm::scale(glm::mat4(1.0f),
+			glm::vec3(scale, scale, 0.0f)) * m_cameraMatrix;
 	}
 }

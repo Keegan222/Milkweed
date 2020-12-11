@@ -90,7 +90,7 @@ namespace MW {
 		const std::vector<VertexAttribute>& attributes,
 		const std::string& cameraUniformName) {
 		m_cameraUniformName = cameraUniformName;
-		m_camera.init(App::WINDOW.getDimensions());
+		m_camera.init();
 		return init(vFileName, fFileName, attributes);
 	}
 

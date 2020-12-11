@@ -18,10 +18,7 @@ private:
 	unsigned int m_frames = 0, m_seconds = 0;
 
 	MW::Shader m_shader;
-	std::vector<MW::Sprite> m_sprites;
-	std::vector<MW::Sprite*> m_spritePointers;
-
-	int randBetween(int a, int b);
+	MW::AnimatedSprite m_sprite;
 };
 
 class MWTest {

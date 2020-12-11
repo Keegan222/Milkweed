@@ -6,10 +6,6 @@
 
 TestScene1 MWTest::TEST_SCENE_1;
 
-int TestScene1::randBetween(int a, int b) {
-	return (rand() % (b - a)) + a;
-}
-
 void TestScene1::init() {
 	MW::App::Log("Init scene 1");
 
@@ -27,19 +23,10 @@ void TestScene1::init() {
 		"cameraMatrix"
 	);
 
-	m_sprites.push_back(MW::Sprite(glm::vec3(0.0f, 0.0f, 1.1f),
+	m_sprite = MW::AnimatedSprite(glm::vec3(0.0f, 0.0f, 0.0f),
 		glm::vec2(100.0f, 100.0f), MW::App::RESOURCES.getTexture(
-			"Assets/Textures/texture0.png")));
-	m_sprites.push_back(MW::Sprite(glm::vec3(200.0f, 0.0f, 1.0f),
-		glm::vec2(100.0f, 100.0f), MW::App::RESOURCES.getTexture(
-			"Assets/Textures/texture0.png")));
-	m_sprites.back().velocity.x = -2.0f;
-	m_sprites.push_back(MW::Sprite(glm::vec3(0.0f, 100.0f, 1.1f),
-		glm::vec2(100.0f, 100.0f), MW::App::RESOURCES.getTexture(
-			"Assets/Textures/texture1.png")));
-	m_sprites.push_back(MW::Sprite(glm::vec3(200.0f, 100.0f, 1.0f),
-		glm::vec2(100.0f, 100.0f), MW::App::RESOURCES.getTexture(
-			"Assets/Textures/texture1.png")));
+			"Assets/Textures/sheet.png"));
+	m_sprite.init(glm::ivec2(3, 2), 30.0f);
 }
 
 void TestScene1::enter() {
@@ -49,15 +36,44 @@ void TestScene1::enter() {
 void TestScene1::draw() {
 	m_frames++;
 
-	m_spritePointers.resize(m_sprites.size());
-	for (unsigned int i = 0; i < m_sprites.size(); i++) {
-		m_spritePointers[i] = &m_sprites[i];
-	}
-	MW::App::RENDERER.submit(m_spritePointers, &m_shader);
+	MW::App::RENDERER.submit({ &m_sprite }, &m_shader);
 }
 
 void TestScene1::processInput() {
-	
+	glm::vec2 cursorPosition
+		= MW::App::INPUT.getCursorPosition(m_shader.getCamera());
+	MW::App::Log(std::to_string(cursorPosition.x) + ", "
+		+ std::to_string(cursorPosition.y));
+
+	if (MW::App::INPUT.isKeyDown(GLFW_KEY_A)) {
+		m_shader.getCamera()->velocity.x = -5.0f;
+	}
+	else if (MW::App::INPUT.isKeyDown(GLFW_KEY_D)) {
+		m_shader.getCamera()->velocity.x = 5.0f;
+	}
+	else {
+		m_shader.getCamera()->velocity.x = 0.0f;
+	}
+
+	if (MW::App::INPUT.isKeyDown(GLFW_KEY_S)) {
+		m_shader.getCamera()->velocity.y = -5.0f;
+	}
+	else if (MW::App::INPUT.isKeyDown(GLFW_KEY_W)) {
+		m_shader.getCamera()->velocity.y = 5.0f;
+	}
+	else {
+		m_shader.getCamera()->velocity.y = 0.0f;
+	}
+
+	if (MW::App::INPUT.isKeyDown(GLFW_KEY_Q)) {
+		m_shader.getCamera()->scaleVelocity = -0.01f;
+	}
+	else if (MW::App::INPUT.isKeyDown(GLFW_KEY_E)) {
+		m_shader.getCamera()->scaleVelocity = 0.01f;
+	}
+	else {
+		m_shader.getCamera()->scaleVelocity = 0.0f;
+	}
 }
 
 void TestScene1::update(float deltaTime) {
@@ -67,15 +83,12 @@ void TestScene1::update(float deltaTime) {
 		m_startTime = glfwGetTime();
 		MW::App::Log("Second " + std::to_string(m_seconds)
 			+ ": " + std::to_string(m_timer) + " updates, "
-			+ std::to_string(m_frames) + " frames, "
-			+ std::to_string(m_sprites.size()) + " sprites");
+			+ std::to_string(m_frames) + " frames");
 		m_timer = 0.0f;
 		m_frames = 0;
 	}
 
-	for (unsigned int i = 0; i < m_sprites.size(); i++) {
-		m_sprites[i].update(deltaTime);
-	}
+	m_sprite.update(deltaTime);
 
 	m_shader.getCamera()->update(deltaTime);
 }

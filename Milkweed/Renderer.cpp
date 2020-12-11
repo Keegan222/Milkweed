@@ -29,6 +29,8 @@ namespace MW {
 		glGenBuffers(1, &m_IBOID);
 		glBindBuffer(GL_ELEMENT_ARRAY_BUFFER, m_IBOID);
 
+		// Default to texture slot 0
+		// TODO: This should probably be changed later
 		glActiveTexture(GL_TEXTURE0);
 	}
 

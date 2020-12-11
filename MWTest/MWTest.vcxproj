@@ -156,6 +156,7 @@
     <None Include="Assets\Shaders\vertex_shader.glsl" />
   </ItemGroup>
   <ItemGroup>
+    <Image Include="Assets\Textures\sheet.png" />
     <Image Include="Assets\Textures\texture0.png" />
     <Image Include="Assets\Textures\texture1.png" />
     <Image Include="Assets\Textures\texture2.png" />

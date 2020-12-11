@@ -8,6 +8,8 @@
 
 #include <unordered_map>
 
+#include "Camera.h"
+
 namespace MW {
 	/*
 	* An interface for listening for GLFW user input callbacks in the
@@ -104,6 +106,14 @@ namespace MW {
 		* @param key: The button to test
 		*/
 		bool isButtonReleased(int button);
+		/*
+		* Get the position of the mouse cursor in the window
+		*/
+		glm::vec2 getCursorPosition() const { return m_cursorPosition; }
+		/*
+		* Get the position of the mouse cursor in world-space in a given camera
+		*/
+		glm::vec2 getCursorPosition(const Camera* camera) const;
 
 	private:
 		// The input listeners attached to this input manager

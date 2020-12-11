@@ -71,8 +71,8 @@ namespace MW {
 	}
 
 	void InputManager::cursor_callback(GLFWwindow* window, double x, double y) {
-		// Set the new cursor position and notify input listeners
-		App::INPUT.m_cursorPosition = glm::vec2((float)x, (float)y);
+		// Set the new cursor position and notify input listeners (invert the
+		// y-axis)
 		for (InputListener* l : App::INPUT.m_listeners) {
 			l->cursorMoved();
 		}
@@ -103,6 +103,12 @@ namespace MW {
 
 		// Check GLFW for new events
 		glfwPollEvents();
+
+		// Update the cursor position
+		double x = 0.0, y = 0.0;
+		glfwGetCursorPos(App::WINDOW.getWindowHandle(), &x, &y);
+		m_cursorPosition.x = (float)x;
+		m_cursorPosition.y = App::WINDOW.getDimensions().y - (float)y;
 	}
 
 	bool InputManager::isKeyDown(int key) {
@@ -198,5 +204,13 @@ namespace MW {
 		// Since the button is not down, it has been released if it was down in
 		// the previous frame
 		return it->second;
+	}
+
+	glm::vec2 InputManager::getCursorPosition(const Camera* camera) const {
+		glm::vec2 cursorPosition = m_cursorPosition;
+		
+		// TODO: Implement this function
+
+		return cursorPosition;
 	}
 }

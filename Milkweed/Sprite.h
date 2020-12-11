@@ -52,4 +52,71 @@ namespace MW {
 		*/
 		virtual std::vector<float> getVertexData();
 	};
+
+	/*
+	* A sprite which plays an animation
+	*/
+	class AnimatedSprite : public Sprite {
+	public:
+		/*
+		* Construct a animated sprite
+		*/
+		AnimatedSprite() {}
+		/*
+		* Construct a new animated sprite as a blank sprite
+		*/
+		AnimatedSprite(const glm::vec3& position, const glm::vec2& dimensions,
+			Texture* texture) : Sprite(position, dimensions, texture) {}
+		/*
+		* Initialize the animation data for this sprite
+		* 
+		* @param frameDimensions: The dimensions of the texture for this sprite
+		* in *frames*
+		* @param frameTime: The number of updates each of the animation's frames
+		* should be displayed for
+		*/
+		void init(const glm::ivec2& frameDimensions, float frameTime);
+		/*
+		* Update this sprite's physics and animation
+		* 
+		* @param deltaTime: The time elapsed since the last update
+		*/
+		void update(float deltaTime) override;
+		/*
+		* Let the animation play from the current frame
+		*/
+		void play() { m_playing = true; }
+		/*
+		* Stop playing the animation on the current frame
+		*/
+		void pause() { m_playing = false; }
+		/*
+		* Stop playing the animation and reset it to the first frame
+		*/
+		void stop() {
+			m_playing = false;
+			m_frame = 0;
+			m_timer = 0.0f;
+		}
+		/*
+		* Get the vertex data of this sprite to pass to OpenGL for rendering
+		* 
+		* @return The array of vertices making up this sprite
+		*/
+		std::vector<float> getVertexData() override;
+		
+	private:
+		// The time for which to display each frame of the animation
+		float m_frameTime = 0.0f;
+		// The texture coordinates of the origin of each frame of the animation
+		std::vector<glm::vec2> m_frames;
+		// The size of the frames in texture space
+		glm::vec2 m_frameSize = glm::vec2();
+		// The current frame of the animation being displayed
+		unsigned int m_frame = 0;
+		// Whether the animation is current playing or not
+		bool m_playing = true;
+		// The timer for the animation
+		float m_timer = 0.0f;
+	};
 }

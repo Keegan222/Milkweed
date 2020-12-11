@@ -16,7 +16,7 @@ namespace MW {
 	/*
 	* The ways to sort sprites to be rendered
 	*/
-	enum SortType {
+	enum class SortType {
 		TEXTURE, DEPTH,
 	};
 

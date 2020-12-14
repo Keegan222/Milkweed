@@ -21,7 +21,7 @@ namespace MW {
 	}
 
 	std::vector<float> Sprite::getVertexData() {
-		return {
+		std::vector<float> vertices = {
 			// Vertex 1
 			position.x, position.y, position.z,
 			0.0f, 1.0f,
@@ -38,24 +38,41 @@ namespace MW {
 			position.x, position.y + dimensions.y, position.z,
 			0.0f, 0.0f,
 		};
+
+		if (flipHorizontal) {
+			for (unsigned int i = 3; i < vertices.size(); i += 5) {
+				vertices[i] = 1.0f - vertices[i];
+			}
+		}
+		if (flipVertical) {
+			for (unsigned int i = 4; i < vertices.size(); i += 5) {
+				vertices[i] = 1.0f - vertices[i];
+			}
+		}
+
+		return vertices;
 	}
 
-	void AnimatedSprite::init(const glm::ivec2& frameDimensions,
-		float frameTime) {
-		// Get the dimensions of each frame in texture space
+	AnimatedSprite::AnimatedSprite(const glm::vec3& position,
+		const glm::vec2& dimensions, Texture* texture,
+		const glm::ivec2& frameDimensions, float frameTime)
+		: Sprite(position, dimensions, texture) {
+		// Get the size of each frame in texture space
 		m_frameSize = glm::vec2(
 			1.0f / (float)frameDimensions.x,
 			1.0f / (float)frameDimensions.y);
+
+		// Set the texture coordinates of the origin of each frame in texture
+		// space
 		m_frames.resize(frameDimensions.x * frameDimensions.y);
-		// Populate the texture coordinates
 		for (int y = 0; y < frameDimensions.y; y++) {
 			for (int x = 0; x < frameDimensions.x; x++) {
-				unsigned int index = x + (y * frameDimensions.x);
 				m_frames[x + (y * frameDimensions.x)]
 					= glm::vec2(m_frameSize.x * x, m_frameSize.y * y);
 			}
 		}
 
+		// Set the frame time
 		m_frameTime = frameTime;
 	}
 	
@@ -81,7 +98,7 @@ namespace MW {
 		// The texture coordinates are the current frame of the animation
 		glm::vec2 textureCoords = m_frames[m_frame];
 
-		return {
+		std::vector<float> vertices = {
 			// Vertex 1
 			position.x, position.y, position.z,
 			textureCoords.x, textureCoords.y + m_frameSize.y,
@@ -98,5 +115,23 @@ namespace MW {
 			position.x, position.y + dimensions.y, position.z,
 			textureCoords.x, textureCoords.y,
 		};
+
+		if (flipHorizontal) {
+			swapElements(&vertices, 3, 8);
+			swapElements(&vertices, 13, 18);
+		}
+		if (flipVertical) {
+			swapElements(&vertices, 4, 19);
+			swapElements(&vertices, 9, 14);
+		}
+
+		return vertices;
+	}
+
+	void AnimatedSprite::swapElements(std::vector<float>* v, unsigned int a,
+		unsigned int b) {
+		float s = v->at(a);
+		v->at(a) = v->at(b);
+		v->at(b) = s;
 	}
 }

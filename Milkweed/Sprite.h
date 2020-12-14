@@ -28,6 +28,10 @@ namespace MW {
 		glm::vec2 dimensions = glm::vec2();
 		// The texture for this sprite
 		Texture* texture = &ResourceManager::NO_TEXTURE;
+		// Whether the sprite's texture should be flipped horizontally
+		bool flipHorizontal = false;
+		// Whether the sprite's texture should be flipped vertically
+		bool flipVertical = false;
 
 		/*
 		* Construct a blank sprite
@@ -35,6 +39,10 @@ namespace MW {
 		Sprite() {}
 		/*
 		* Construct a sprite with position, dimensions, and texture
+		* 
+		* @param position: The position of this sprite
+		* @param dimensions: The dimensions of this sprite
+		* @param texture: A pointer to this sprite's texture
 		*/
 		Sprite(const glm::vec3& Position, const glm::vec2& Dimensions,
 			Texture* Texture) : position(Position), dimensions(Dimensions),
@@ -64,18 +72,19 @@ namespace MW {
 		AnimatedSprite() {}
 		/*
 		* Construct a new animated sprite as a blank sprite
-		*/
-		AnimatedSprite(const glm::vec3& position, const glm::vec2& dimensions,
-			Texture* texture) : Sprite(position, dimensions, texture) {}
-		/*
-		* Initialize the animation data for this sprite
 		* 
+		* @param position: The position of this animated sprite
+		* @param dimensions: The dimensions of this animated sprite
+		* @param texture: A pointer to the texture containing the frames of this
+		* sprite's animation
 		* @param frameDimensions: The dimensions of the texture for this sprite
-		* in *frames*
-		* @param frameTime: The number of updates each of the animation's frames
+		* in frames
+		* @param frameTime: The number of updates each frame of the animation
 		* should be displayed for
 		*/
-		void init(const glm::ivec2& frameDimensions, float frameTime);
+		AnimatedSprite(const glm::vec3& position, const glm::vec2& dimensions,
+			Texture* texture, const glm::ivec2& frameDimensions,
+			float frameTime);
 		/*
 		* Update this sprite's physics and animation
 		* 
@@ -99,6 +108,10 @@ namespace MW {
 			m_timer = 0.0f;
 		}
 		/*
+		* Get whether this sprite's animation is currently playing
+		*/
+		bool isPlaying() const { return m_playing; }
+		/*
 		* Get the vertex data of this sprite to pass to OpenGL for rendering
 		* 
 		* @return The array of vertices making up this sprite
@@ -118,5 +131,9 @@ namespace MW {
 		bool m_playing = true;
 		// The timer for the animation
 		float m_timer = 0.0f;
+
+		// Swap two elements of a vector by their indices
+		void swapElements(std::vector<float>* v, unsigned int a,
+			unsigned int b);
 	};
 }

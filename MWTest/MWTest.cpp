@@ -25,8 +25,10 @@ void TestScene1::init() {
 
 	m_sprite = MW::AnimatedSprite(glm::vec3(0.0f, 0.0f, 0.0f),
 		glm::vec2(100.0f, 100.0f), MW::App::RESOURCES.getTexture(
-			"Assets/Textures/sheet.png"));
-	m_sprite.init(glm::ivec2(3, 2), 30.0f);
+			"Assets/Textures/sheet.png"), glm::ivec2(3, 2), 60.0f);
+	m_sprite1 = MW::Sprite(glm::vec3(100.0f, 100.0f, 0.0f),
+		glm::vec2(100.0f, 100.0f), MW::App::RESOURCES.getTexture(
+			"Assets/Textures/texture0.png"));
 }
 
 void TestScene1::enter() {
@@ -36,15 +38,10 @@ void TestScene1::enter() {
 void TestScene1::draw() {
 	m_frames++;
 
-	MW::App::RENDERER.submit({ &m_sprite }, &m_shader);
+	MW::App::RENDERER.submit({ &m_sprite, &m_sprite1 }, &m_shader);
 }
 
 void TestScene1::processInput() {
-	glm::vec2 cursorPosition
-		= MW::App::INPUT.getCursorPosition(m_shader.getCamera());
-	MW::App::Log(std::to_string(cursorPosition.x) + ", "
-		+ std::to_string(cursorPosition.y));
-
 	if (MW::App::INPUT.isKeyDown(GLFW_KEY_A)) {
 		m_shader.getCamera()->velocity.x = -5.0f;
 	}
@@ -73,6 +70,28 @@ void TestScene1::processInput() {
 	}
 	else {
 		m_shader.getCamera()->scaleVelocity = 0.0f;
+	}
+
+	if (MW::App::INPUT.isKeyPressed(GLFW_KEY_SPACE)) {
+		if (m_sprite.isPlaying()) {
+			m_sprite.pause();
+		}
+		else {
+			m_sprite.play();
+		}
+	}
+
+	if (MW::App::INPUT.isKeyPressed(GLFW_KEY_P)) {
+		m_sprite.stop();
+	}
+
+	MW::App::Log(std::to_string(m_sprite.flipVertical));
+
+	if (MW::App::INPUT.isKeyPressed(GLFW_KEY_RIGHT)) {
+		m_sprite.flipHorizontal = !m_sprite.flipHorizontal;
+	}
+	else if (MW::App::INPUT.isKeyPressed(GLFW_KEY_UP)) {
+		m_sprite.flipVertical = !m_sprite.flipVertical;
 	}
 }
 

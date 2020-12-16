@@ -14,6 +14,19 @@
 
 namespace MW {
 	void Renderer::init(const glm::vec3& clearColor) {
+		// Give the window the OpenGL context
+		glfwMakeContextCurrent(App::WINDOW.getWindowHandle());
+
+		// Initialize GLEW and get the running OpenGL version
+		if (glewInit() != GLEW_OK) {
+			// GLEW could not be initialize
+			App::Log("Failed to initialize GLEW");
+			return;
+		}
+
+		const GLubyte* version = glGetString(GL_VERSION);
+		App::Log("OpenGL version: " + std::string((char*)version));
+
 		// Set the clear color
 		glClearColor(clearColor.x, clearColor.y, clearColor.z, 1.0f);
 

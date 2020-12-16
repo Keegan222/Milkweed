@@ -27,7 +27,7 @@ namespace MW {
 		// The dimensions of this sprite
 		glm::vec2 dimensions = glm::vec2();
 		// The texture for this sprite
-		Texture* texture = &ResourceManager::NO_TEXTURE;
+		Texture* texture = ResourceManager::NO_TEXTURE;
 		// Whether the sprite's texture should be flipped horizontally
 		bool flipHorizontal = false;
 		// Whether the sprite's texture should be flipped vertically
@@ -59,6 +59,20 @@ namespace MW {
 		* @return The array of vertices making up this sprite
 		*/
 		virtual std::vector<float> getVertexData();
+
+	protected:
+		/*
+		* Swap the position of texture coordinates in vertex data of animated
+		* and static sprites
+		* 
+		* @param vertices: The vertex data of the animated or static sprite
+		*/
+		void flip(std::vector<float>* vertices);
+
+	private:
+		// Swap the position of two elements of a std::vector
+		void swapElements(std::vector<float>* v, unsigned int a,
+			unsigned int b);
 	};
 
 	/*
@@ -131,9 +145,5 @@ namespace MW {
 		bool m_playing = true;
 		// The timer for the animation
 		float m_timer = 0.0f;
-
-		// Swap two elements of a vector by their indices
-		void swapElements(std::vector<float>* v, unsigned int a,
-			unsigned int b);
 	};
 }

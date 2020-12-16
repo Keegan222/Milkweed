@@ -14,6 +14,7 @@
 #include "InputManager.h"
 #include "Renderer.h"
 #include "ResourceManager.h"
+#include "AudioManager.h"
 
 namespace MW {
 	/*
@@ -68,6 +69,8 @@ namespace MW {
 		static Renderer RENDERER;
 		// The application's resource manager
 		static ResourceManager RESOURCES;
+		// The application's audio manager
+		static AudioManager AUDIO;
 
 		/*
 		* Log a message with the Milkweed engine to the current log file and the

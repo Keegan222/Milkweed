@@ -28,7 +28,7 @@ void TestScene1::init() {
 			"Assets/Textures/sheet.png"), glm::ivec2(3, 2), 60.0f);
 	m_sprite1 = MW::Sprite(glm::vec3(100.0f, 100.0f, 0.0f),
 		glm::vec2(100.0f, 100.0f), MW::App::RESOURCES.getTexture(
-			"Assets/Textures/texture0.png"));
+		"Assets/Textures/texture0.png"));
 }
 
 void TestScene1::enter() {
@@ -85,13 +85,13 @@ void TestScene1::processInput() {
 		m_sprite.stop();
 	}
 
-	MW::App::Log(std::to_string(m_sprite.flipVertical));
-
 	if (MW::App::INPUT.isKeyPressed(GLFW_KEY_RIGHT)) {
 		m_sprite.flipHorizontal = !m_sprite.flipHorizontal;
+		m_sprite1.flipHorizontal = !m_sprite1.flipHorizontal;
 	}
 	else if (MW::App::INPUT.isKeyPressed(GLFW_KEY_UP)) {
 		m_sprite.flipVertical = !m_sprite.flipVertical;
+		m_sprite1.flipVertical = !m_sprite1.flipVertical;
 	}
 }
 

@@ -9,6 +9,13 @@
 
 namespace MW {
 	bool Window::init(const WindowAttributes& attrib) {
+		// Initialize GLFW
+		if (glfwInit() != GLFW_TRUE) {
+			// GLFW could not be initialized
+			App::Log("Failed to initialize GLFW");
+			return false;
+		}
+
 		// Get the video mode (description of the monitor displaying this
 		// application)
 		const GLFWvidmode* videoMode

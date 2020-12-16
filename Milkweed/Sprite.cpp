@@ -39,18 +39,27 @@ namespace MW {
 			0.0f, 0.0f,
 		};
 
-		if (flipHorizontal) {
-			for (unsigned int i = 3; i < vertices.size(); i += 5) {
-				vertices[i] = 1.0f - vertices[i];
-			}
-		}
-		if (flipVertical) {
-			for (unsigned int i = 4; i < vertices.size(); i += 5) {
-				vertices[i] = 1.0f - vertices[i];
-			}
-		}
+		flip(&vertices);
 
 		return vertices;
+	}
+
+	void Sprite::flip(std::vector<float>* vertices) {
+		if (flipHorizontal) {
+			swapElements(vertices, 3, 8);
+			swapElements(vertices, 13, 18);
+		}
+		if (flipVertical) {
+			swapElements(vertices, 4, 19);
+			swapElements(vertices, 9, 14);
+		}
+	}
+
+	void Sprite::swapElements(std::vector<float>* v, unsigned int a,
+		unsigned int b) {
+		float s = v->at(a);
+		v->at(a) = v->at(b);
+		v->at(b) = s;
 	}
 
 	AnimatedSprite::AnimatedSprite(const glm::vec3& position,
@@ -116,22 +125,8 @@ namespace MW {
 			textureCoords.x, textureCoords.y,
 		};
 
-		if (flipHorizontal) {
-			swapElements(&vertices, 3, 8);
-			swapElements(&vertices, 13, 18);
-		}
-		if (flipVertical) {
-			swapElements(&vertices, 4, 19);
-			swapElements(&vertices, 9, 14);
-		}
+		flip(&vertices);
 
 		return vertices;
-	}
-
-	void AnimatedSprite::swapElements(std::vector<float>* v, unsigned int a,
-		unsigned int b) {
-		float s = v->at(a);
-		v->at(a) = v->at(b);
-		v->at(b) = s;
 	}
 }

@@ -16,6 +16,7 @@ namespace MW {
 	InputManager App::INPUT;
 	Renderer App::RENDERER;
 	ResourceManager App::RESOURCES;
+	AudioManager App::AUDIO;
 
 	// Instantiate the application's private static members
 	std::ofstream App::LOG_STREAM;
@@ -53,13 +54,6 @@ namespace MW {
 		LOG_STREAM.open("mwlog/" + GetDate() + ".mwlog");
 		Log("Starting Milkweed engine");
 
-		// Initialize GLFW
-		if (glfwInit() != GLFW_TRUE) {
-			// GLFW could not be initialized
-			Log("Failed to initialize GLFW");
-			return;
-		}
-
 		// Set the physics seconds per update
 		PHYSICS_SPU = 1.0f / physicsUPS;
 
@@ -72,22 +66,16 @@ namespace MW {
 
 		// Initialize the input manager
 		INPUT.init();
-
-		// Give the window the OpenGL context
-		glfwMakeContextCurrent(WINDOW.getWindowHandle());
-
-		// Initialize GLEW and get the running OpenGL version
-		if (glewInit() != GLEW_OK) {
-			// GLEW could not be initialize
-			Log("Failed to initialize GLEW");
-			return;
-		}
-
-		const GLubyte* version = glGetString(GL_VERSION);
-		Log("OpenGL version: " + std::string((char*)version));
 		
 		// Initialize the renderer
+		// TODO: The clear color should not be hardcoded
 		RENDERER.init(glm::vec3(0.0f, 0.0f, 0.0f));
+
+		// Initialize audio system
+		if (!AUDIO.init()) {
+			Log("Failed to initialize the audio system");
+			return;
+		}
 
 		// Initialize the application's scenes and set the initial scene
 		for (Scene* s : scenes) {
@@ -186,6 +174,8 @@ namespace MW {
 		RESOURCES.destroy();
 		// Destroy the renderer
 		RENDERER.destroy();
+		// Destroy the audio system
+		AUDIO.destroy();
 
 		Log("Milkweed engine stopped");
 

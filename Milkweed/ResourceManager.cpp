@@ -10,7 +10,7 @@
 #include "ResourceManager.h"
 
 namespace MW {
-	Texture ResourceManager::NO_TEXTURE = Texture();
+	Texture* ResourceManager::NO_TEXTURE = new Texture();
 
 	Texture* ResourceManager::getTexture(const std::string& fileName) {
 		std::unordered_map<std::string, Texture>::iterator it
@@ -41,7 +41,7 @@ namespace MW {
 		else {
 			// The file could not be read
 			App::Log("Failed to read texture data file");
-			return &ResourceManager::NO_TEXTURE;
+			return NO_TEXTURE;
 		}
 
 		// Decode the texture file's data with picoPNG's decodePNG function
@@ -53,7 +53,7 @@ namespace MW {
 			// The texture could not be decoded in PNG format
 			App::Log("Failed to decode PNG texture with code "
 				+ std::to_string(status));
-			return &ResourceManager::NO_TEXTURE;
+			return NO_TEXTURE;
 		}
 
 		// Create this texture and upload its data to OpenGL

@@ -1,6 +1,8 @@
 #include <iostream>
 #include <cstdlib>
 #include <time.h>
+#include <ft2build.h>
+#include <freetype/freetype.h>
 
 #include "MWTest.h"
 
@@ -10,7 +12,7 @@ void TestScene1::init() {
 	MW::App::Log("Init scene 1");
 
 	srand((unsigned int)time(0));
-
+	
 	m_shader.init(
 		"Assets/Shaders/vertex_shader.glsl",
 		"Assets/Shaders/fragment_shader.glsl",
@@ -29,10 +31,14 @@ void TestScene1::init() {
 	m_sprite1 = MW::Sprite(glm::vec3(100.0f, 100.0f, 0.0f),
 		glm::vec2(100.0f, 100.0f), MW::App::RESOURCES.getTexture(
 		"Assets/Textures/texture0.png"));
+
+	m_music = MW::App::RESOURCES.getSound("Assets/Sounds/music.wav");
 }
 
 void TestScene1::enter() {
 	MW::App::Log("Enter scene 1");
+
+	MW::App::AUDIO.playMusic(m_music);
 }
 
 void TestScene1::draw() {
@@ -42,56 +48,40 @@ void TestScene1::draw() {
 }
 
 void TestScene1::processInput() {
-	if (MW::App::INPUT.isKeyDown(GLFW_KEY_A)) {
-		m_shader.getCamera()->velocity.x = -5.0f;
-	}
-	else if (MW::App::INPUT.isKeyDown(GLFW_KEY_D)) {
-		m_shader.getCamera()->velocity.x = 5.0f;
-	}
-	else {
-		m_shader.getCamera()->velocity.x = 0.0f;
-	}
-
-	if (MW::App::INPUT.isKeyDown(GLFW_KEY_S)) {
-		m_shader.getCamera()->velocity.y = -5.0f;
-	}
-	else if (MW::App::INPUT.isKeyDown(GLFW_KEY_W)) {
-		m_shader.getCamera()->velocity.y = 5.0f;
-	}
-	else {
-		m_shader.getCamera()->velocity.y = 0.0f;
-	}
-
-	if (MW::App::INPUT.isKeyDown(GLFW_KEY_Q)) {
-		m_shader.getCamera()->scaleVelocity = -0.01f;
-	}
-	else if (MW::App::INPUT.isKeyDown(GLFW_KEY_E)) {
-		m_shader.getCamera()->scaleVelocity = 0.01f;
-	}
-	else {
-		m_shader.getCamera()->scaleVelocity = 0.0f;
-	}
-
 	if (MW::App::INPUT.isKeyPressed(GLFW_KEY_SPACE)) {
-		if (m_sprite.isPlaying()) {
-			m_sprite.pause();
+		if (MW::App::AUDIO.isMusicPlaying()) {
+			MW::App::AUDIO.pauseMusic();
 		}
 		else {
-			m_sprite.play();
+			MW::App::AUDIO.playMusic();
 		}
 	}
 
-	if (MW::App::INPUT.isKeyPressed(GLFW_KEY_P)) {
-		m_sprite.stop();
+	if (MW::App::INPUT.isKeyPressed(GLFW_KEY_S)) {
+		if (MW::App::AUDIO.isMusicPlaying()) {
+			MW::App::AUDIO.stopMusic();
+		}
+		else {
+			if (MW::App::AUDIO.isMusicPaused()) {
+				MW::App::AUDIO.stopMusic();
+			}
+			else {
+				MW::App::AUDIO.playMusic(m_music);
+			}
+		}
 	}
 
-	if (MW::App::INPUT.isKeyPressed(GLFW_KEY_RIGHT)) {
-		m_sprite.flipHorizontal = !m_sprite.flipHorizontal;
-		m_sprite1.flipHorizontal = !m_sprite1.flipHorizontal;
+	if (MW::App::INPUT.isButtonPressed(GLFW_MOUSE_BUTTON_1)) {
+		MW::App::Log("Pressed");
+		MW::App::AUDIO.playSound(MW::App::RESOURCES.getSound(
+			"Assets/Sounds/sound.wav"));
 	}
-	else if (MW::App::INPUT.isKeyPressed(GLFW_KEY_UP)) {
-		m_sprite.flipVertical = !m_sprite.flipVertical;
-		m_sprite1.flipVertical = !m_sprite1.flipVertical;
+
+	if (MW::App::INPUT.isKeyPressed(GLFW_KEY_UP)) {
+		MW::App::AUDIO.setGain(MW::App::AUDIO.getGain() + 0.1f);
+	}
+	else if (MW::App::INPUT.isKeyPressed(GLFW_KEY_DOWN)) {
+		MW::App::AUDIO.setGain(MW::App::AUDIO.getGain() - 0.1f);
 	}
 }
 

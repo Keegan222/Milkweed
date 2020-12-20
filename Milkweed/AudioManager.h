@@ -9,6 +9,8 @@
 #include <AL/al.h>
 #include <AL/alc.h>
 
+#include "ResourceManager.h"
+
 namespace MW {
 	/*
 	* The MW engine utility for playing audio files (sound effects and music)
@@ -20,12 +22,87 @@ namespace MW {
 		*/
 		bool init();
 		/*
-		* Free the audio manager's memory
+		* Get the gain of all audio
+		*/
+		float getGain() const { return m_gain; }
+		/*
+		* Set the gain of all audio
+		*/
+		void setGain(float gain);
+		/*
+		* Test whether the music track is currently playing
+		*/
+		bool isMusicPlaying() {
+			return getSourceState(m_musicSourceID) == AL_PLAYING;
+		}
+		/*
+		* Test whether the music track is currently paused
+		*/
+		bool isMusicPaused() {
+			return getSourceState(m_musicSourceID) == AL_PAUSED;
+		}
+		/*
+		* Test whether the music track is currently stopped
+		*/
+		bool isMusicStopped() {
+			return getSourceState(m_musicSourceID) == AL_STOPPED;
+		}
+		/*
+		* Play a music track
+		* 
+		* @param music: A pointer to the music to play
+		*/
+		void playMusic(const Sound* sound);
+		/*
+		* Play the most recently played music track
+		*/
+		void playMusic();
+		/*
+		* Pause the currently playing music
+		*/
+		void pauseMusic();
+		/*
+		* Stop the music track
+		*/
+		void stopMusic();
+		/*
+		* Play a sound effect
+		* 
+		* @param sound: A pointer to the sound effect to play
+		*/
+		void playSound(const Sound* sound);
+		/*
+		* Stop the music track and all sound effects
+		*/
+		void stop();
+		/*
+		* Free this audio manager's memory
 		*/
 		void destroy();
 
 	private:
+		// The OpenAL sound device
 		ALCdevice* m_device = nullptr;
-		ALuint m_sourceID = 0;
+		// The OpenAL context
+		ALCcontext* m_context = nullptr;
+		// The gain of all audio
+		float m_gain = 1.0f;
+		// The audio source for the current music track
+		ALuint m_musicSourceID = 0;
+		// The audio sources for sound effects
+		std::vector<ALuint> m_effectSources;
+
+		/*
+		* Create a new audio source
+		* 
+		* @param looping: Whether the source's audio should loop to the
+		* beginning when finished (false by default)
+		* @return The ID number of the new audio source
+		*/
+		ALuint createSource(bool looping = false);
+		/*
+		* Get the current state of an OpenAL audio source
+		*/
+		ALint getSourceState(ALuint source);
 	};
 }

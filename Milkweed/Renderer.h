@@ -73,6 +73,6 @@ namespace MW {
 		* Draw a set of sprites with a single texture
 		*/
 		void drawVertices(const std::vector<float>& vertexData,
-			unsigned int spriteCount);
+			int spriteCount);
 	};
 }

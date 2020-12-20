@@ -22,6 +22,9 @@
     <Filter Include="Assets\Textures">
       <UniqueIdentifier>{f4f45aa2-110b-4d6a-a0df-8f82e53fc83b}</UniqueIdentifier>
     </Filter>
+    <Filter Include="Assets\Sounds">
+      <UniqueIdentifier>{9a05101b-f64f-43d9-aff0-dfa2bab5afe2}</UniqueIdentifier>
+    </Filter>
   </ItemGroup>
   <ItemGroup>
     <ClCompile Include="MWTest.cpp">
@@ -57,5 +60,13 @@
     <Image Include="Assets\Textures\sheet.png">
       <Filter>Assets\Textures</Filter>
     </Image>
+  </ItemGroup>
+  <ItemGroup>
+    <Media Include="Assets\Sounds\sound.wav">
+      <Filter>Assets\Sounds</Filter>
+    </Media>
+    <Media Include="Assets\Sounds\music.wav">
+      <Filter>Assets\Sounds</Filter>
+    </Media>
   </ItemGroup>
 </Project>

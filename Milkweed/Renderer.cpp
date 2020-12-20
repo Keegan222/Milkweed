@@ -138,7 +138,7 @@ namespace MW {
 	}
 
 	void Renderer::drawVertices(const std::vector<float>& vertexData,
-		unsigned int spriteCount) {
+		int spriteCount) {
 		// Upload the vertex data to OpenGL
 		glBufferData(GL_ARRAY_BUFFER,
 			sizeof(float) * vertexData.size(),

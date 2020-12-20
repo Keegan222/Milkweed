@@ -72,7 +72,7 @@ namespace MW {
 		glLinkProgram(m_programID);
 
 		// Add all the vertex attributes to the program
-		m_attributeCount = attributes.size();
+		m_attributeCount = (unsigned int)attributes.size();
 		glUseProgram(m_programID);
 		for (VertexAttribute attribute : attributes) {
 			GLint position = glGetAttribLocation(m_programID,

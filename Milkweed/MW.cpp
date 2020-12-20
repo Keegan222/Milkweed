@@ -169,7 +169,10 @@ namespace MW {
 		for (Scene* s : SCENES) {
 			s->destroy();
 		}
-
+		
+		// Stop music and sound effects so they can be destroyed in the resource
+		// manager
+		AUDIO.stop();
 		// Destroy the resource manager
 		RESOURCES.destroy();
 		// Destroy the renderer

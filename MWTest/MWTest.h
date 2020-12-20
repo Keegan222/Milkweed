@@ -20,6 +20,7 @@ private:
 	MW::Shader m_shader;
 	MW::AnimatedSprite m_sprite;
 	MW::Sprite m_sprite1;
+	MW::Sound* m_music = nullptr;
 };
 
 class MWTest {

@@ -13,7 +13,7 @@
 #include "ResourceManager.h"
 
 namespace MW {
-	void Renderer::init(const glm::vec3& clearColor) {
+	void Renderer::init() {
 		// Give the window the OpenGL context
 		glfwMakeContextCurrent(App::WINDOW.getWindowHandle());
 
@@ -28,11 +28,14 @@ namespace MW {
 		App::Log("OpenGL version: " + std::string((char*)version));
 
 		// Set the clear color
-		glClearColor(clearColor.x, clearColor.y, clearColor.z, 1.0f);
+		glClearColor(m_clearColor.x, m_clearColor.y, m_clearColor.z, 1.0f);
 
 		// Enable alpha blending
 		glEnable(GL_BLEND);
 		glBlendFunc(GL_SRC_ALPHA, GL_ONE_MINUS_SRC_ALPHA);
+
+		// Disable byte-alignment restriction for text rendering
+		glPixelStorei(GL_UNPACK_ALIGNMENT, GL_TRUE);
 
 		// Create and bind the VAO, VBO, and IBO
 		glGenVertexArrays(1, &m_VAOID);
@@ -52,6 +55,7 @@ namespace MW {
 		// frame
 		glClear(GL_COLOR_BUFFER_BIT);
 		m_sprites.clear();
+		m_text.clear();
 	}
 
 	void Renderer::submit(const std::vector<Sprite*>& sprites, Shader* shader) {
@@ -71,6 +75,37 @@ namespace MW {
 		}
 	}
 
+	void Renderer::submit(const Label& label, Font* font,
+		Shader* shader) {
+		// Get the characters for this string in order
+		std::vector<Character> characters;
+		for (std::string::const_iterator c = label.text.begin();
+			c < label.text.end(); c++) {
+			characters.push_back(font->characters[*c]);
+		}
+
+		float x = label.position.x;
+		for (unsigned int i = 0; i < characters.size(); i++) {
+			// Set the position and dimensions of the character and advance
+			// to the position of the next one
+			characters[i].position.x = x + characters[i].bearing.x * label.scale;
+			characters[i].position.y = label.position.y
+				- (characters[i].dimensions.y - characters[i].bearing.y)
+				* label.scale;
+			characters[i].position.z = label.position.z;
+			characters[i].dimensions *= label.scale;
+			x += (characters[i].offset >> 6) * label.scale;
+			
+			// Attempt to find the shader in the text map
+			std::unordered_map<Shader*, std::vector<Character>>::iterator it
+				= m_text.find(shader);
+			if (it == m_text.end()) {
+				m_text[shader] = std::vector<Character>();
+			}
+			m_text[shader].push_back(characters[i]);
+		}
+	}
+
 	bool compareSpriteTexture(const Sprite* a, const Sprite* b) {
 		return a->texture->textureID < b->texture->textureID;
 	}
@@ -80,38 +115,46 @@ namespace MW {
 	}
 
 	void Renderer::end() {
+		// Submit all the characters to be rendered this frame as sprites
+		for (std::pair<Shader*, std::vector<Character>> text : m_text) {
+			Shader* shader = text.first;
+			std::vector<Sprite*> sprites(text.second.size());
+			for (unsigned int i = 0; i < sprites.size(); i++) {
+				sprites[i] = &(m_text[shader][i]);
+			}
+			submit(sprites, shader);
+		}
+
 		for (std::pair<Shader*, std::vector<Sprite*>> shaderBatch : m_sprites) {
 			// Get the shader to render this batch of sprites with
 			Shader* shader = shaderBatch.first;
-			std::vector<Sprite*> sprites = shaderBatch.second;
 			// Sort the sprites by their texture ID's
 			if (m_sortType == SortType::TEXTURE) {
-				std::stable_sort(sprites.begin(), sprites.end(),
-					compareSpriteTexture);
+				std::stable_sort(m_sprites[shader].begin(),
+					m_sprites[shader].end(), compareSpriteTexture);
 			}
 			else if (m_sortType == SortType::DEPTH) {
-				std::stable_sort(sprites.begin(), sprites.end(),
-					compareSpriteDepth);
+				std::stable_sort(m_sprites[shader].begin(),
+					m_sprites[shader].end(), compareSpriteDepth);
 			}
 			// Start the shader
 			shader->begin();
 
 			// Initialize the data to send to OpenGL
 			std::vector<float> vertexData;
+			std::vector<unsigned int> indices;
 			unsigned int spriteCount = 0;
 
-			// Bind the first texture of the first texture group
-			GLuint currentTextureID = sprites[0]->texture->textureID;
-			glBindTexture(GL_TEXTURE_2D, currentTextureID);
-
-			for (unsigned int i = 0; i < sprites.size(); i++) {
-				Sprite* sprite = sprites[i];
+			// Draw the sprites in this batch
+			GLuint currentTextureID = 0;
+			for (unsigned int i = 0; i < m_sprites[shader].size(); i++) {
+				Sprite* sprite = m_sprites[shader][i];
 				// Test if a new texture group has started
 				if (currentTextureID != sprite->texture->textureID) {
 					if (spriteCount > 0) {
 						// If there were sprites in the last texture batch,
 						// draw them
-						drawVertices(vertexData, spriteCount);
+						drawVertices(vertexData, indices);
 					}
 
 					// Reset the vertex data and bind the new texture
@@ -126,11 +169,14 @@ namespace MW {
 				for (float f : sprite->getVertexData()) {
 					vertexData.push_back(f);
 				}
+				for (unsigned int i : Sprite::SPRITE_INDICES) {
+					indices.push_back(i + 4 * spriteCount);
+				}
 				spriteCount++;
 			}
 
 			// Draw the remaining vertex data from the final texture group
-			drawVertices(vertexData, spriteCount);
+			drawVertices(vertexData, indices);
 
 			// Stop this shader
 			shader->end();
@@ -138,26 +184,18 @@ namespace MW {
 	}
 
 	void Renderer::drawVertices(const std::vector<float>& vertexData,
-		int spriteCount) {
+		const std::vector<unsigned int>& indices) {
 		// Upload the vertex data to OpenGL
 		glBufferData(GL_ARRAY_BUFFER,
 			sizeof(float) * vertexData.size(),
 			&(vertexData[0]), GL_STATIC_DRAW);
-
-		// Generate and upload the indices to render the vertex data with
-		std::vector<unsigned int> indices(6 * spriteCount);
-		for (unsigned int i = 0; i < spriteCount; i++) {
-			for (unsigned int j = 0; j < 6; j++) {
-				unsigned int index = j + (6 * i);
-				indices[index] = Sprite::VERTEX_INDICES[index % 6] + (4 * i);
-			}
-		}
+		// Upload the indices to OpenGL
 		glBufferData(GL_ELEMENT_ARRAY_BUFFER,
 			sizeof(unsigned int) * indices.size(),
 			&(indices[0]), GL_STATIC_DRAW);
 
 		// Draw the indices with OpenGL
-		glDrawElements(GL_TRIANGLES, indices.size(),
+		glDrawElements(GL_TRIANGLES, (GLsizei)indices.size(),
 			GL_UNSIGNED_INT, nullptr);
 	}
 

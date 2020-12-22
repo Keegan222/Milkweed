@@ -159,8 +159,10 @@
     <ClInclude Include="MWTest.h" />
   </ItemGroup>
   <ItemGroup>
-    <None Include="Assets\Shaders\fragment_shader.glsl" />
-    <None Include="Assets\Shaders\vertex_shader.glsl" />
+    <None Include="Assets\Shaders\sprite_fragment_shader.glsl" />
+    <None Include="Assets\Shaders\sprite_vertex_shader.glsl" />
+    <None Include="Assets\Shaders\text_fragment_shader.glsl" />
+    <None Include="Assets\Shaders\text_vertex_shader.glsl" />
   </ItemGroup>
   <ItemGroup>
     <Image Include="Assets\Textures\sheet.png" />
@@ -172,6 +174,9 @@
   <ItemGroup>
     <Media Include="Assets\Sounds\music.wav" />
     <Media Include="Assets\Sounds\sound.wav" />
+  </ItemGroup>
+  <ItemGroup>
+    <Font Include="Assets\Fonts\arial.ttf" />
   </ItemGroup>
   <Import Project="$(VCTargetsPath)\Microsoft.Cpp.targets" />
   <ImportGroup Label="ExtensionTargets">

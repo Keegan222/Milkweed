@@ -9,16 +9,17 @@
 #include <glm/glm.hpp>
 #include <vector>
 
-#include "ResourceManager.h"
-
 namespace MW {
+	// Declare the Texture class from ResourceManager here
+	struct Texture;
+
 	/*
 	* An abstract sprite with a position, velocity and dimensions
 	*/
 	class Sprite {
 	public:
-		// The indices for the vertices of any sprite
-		static std::vector<unsigned int> VERTEX_INDICES;
+		// The indices for a single-quad sprite
+		static std::vector<unsigned int> SPRITE_INDICES;
 
 		// The position of this sprite
 		glm::vec3 position = glm::vec3();
@@ -27,7 +28,7 @@ namespace MW {
 		// The dimensions of this sprite
 		glm::vec2 dimensions = glm::vec2();
 		// The texture for this sprite
-		Texture* texture = ResourceManager::NO_TEXTURE;
+		Texture* texture = nullptr;
 		// Whether the sprite's texture should be flipped horizontally
 		bool flipHorizontal = false;
 		// Whether the sprite's texture should be flipped vertically
@@ -81,7 +82,7 @@ namespace MW {
 	class AnimatedSprite : public Sprite {
 	public:
 		/*
-		* Construct a animated sprite
+		* Construct blank animated sprite
 		*/
 		AnimatedSprite() {}
 		/*

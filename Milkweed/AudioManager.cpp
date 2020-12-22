@@ -55,8 +55,10 @@ namespace MW {
 		// Set the gain for tracking
 		m_gain = gain;
 
-		// TODO: Set the gain of all audio sources
 		alSourcef(m_musicSourceID, AL_GAIN, m_gain);
+		for (ALuint sourceID : m_effectSources) {
+			alSourcef(sourceID, AL_GAIN, m_gain);
+		}
 	}
 
 	void AudioManager::playMusic(const Sound* music) {

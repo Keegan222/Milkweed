@@ -68,13 +68,17 @@ namespace MW {
 		INPUT.init();
 		
 		// Initialize the renderer
-		// TODO: The clear color should not be hardcoded
-		RENDERER.init(glm::vec3(0.0f, 0.0f, 0.0f));
+		RENDERER.init();
 
 		// Initialize audio system
 		if (!AUDIO.init()) {
 			Log("Failed to initialize the audio system");
 			return;
+		}
+
+		// Initialize the resource manager
+		if (!RESOURCES.init()) {
+			Log("Failed to initialize FreeType, font loading will be disabled");
 		}
 
 		// Initialize the application's scenes and set the initial scene

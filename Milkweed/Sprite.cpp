@@ -6,9 +6,10 @@
 
 #include "MW.h"
 #include "Sprite.h"
+#include "ResourceManager.h"
 
 namespace MW {
-	std::vector<unsigned int> Sprite::VERTEX_INDICES = {
+	std::vector<unsigned int> Sprite::SPRITE_INDICES = {
 		// Triangle 1
 		0, 1, 2,
 		// Triangle 2

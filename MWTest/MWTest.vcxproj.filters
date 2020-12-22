@@ -25,6 +25,9 @@
     <Filter Include="Assets\Sounds">
       <UniqueIdentifier>{9a05101b-f64f-43d9-aff0-dfa2bab5afe2}</UniqueIdentifier>
     </Filter>
+    <Filter Include="Assets\Fonts">
+      <UniqueIdentifier>{07899a02-6ee2-447e-b70d-82c6114912ee}</UniqueIdentifier>
+    </Filter>
   </ItemGroup>
   <ItemGroup>
     <ClCompile Include="MWTest.cpp">
@@ -37,10 +40,16 @@
     </ClInclude>
   </ItemGroup>
   <ItemGroup>
-    <None Include="Assets\Shaders\fragment_shader.glsl">
+    <None Include="Assets\Shaders\sprite_vertex_shader.glsl">
       <Filter>Assets\Shaders</Filter>
     </None>
-    <None Include="Assets\Shaders\vertex_shader.glsl">
+    <None Include="Assets\Shaders\sprite_fragment_shader.glsl">
+      <Filter>Assets\Shaders</Filter>
+    </None>
+    <None Include="Assets\Shaders\text_vertex_shader.glsl">
+      <Filter>Assets\Shaders</Filter>
+    </None>
+    <None Include="Assets\Shaders\text_fragment_shader.glsl">
       <Filter>Assets\Shaders</Filter>
     </None>
   </ItemGroup>
@@ -68,5 +77,10 @@
     <Media Include="Assets\Sounds\music.wav">
       <Filter>Assets\Sounds</Filter>
     </Media>
+  </ItemGroup>
+  <ItemGroup>
+    <Font Include="Assets\Fonts\arial.ttf">
+      <Filter>Assets\Fonts</Filter>
+    </Font>
   </ItemGroup>
 </Project>

@@ -1,8 +1,6 @@
 #include <iostream>
 #include <cstdlib>
 #include <time.h>
-#include <ft2build.h>
-#include <freetype/freetype.h>
 
 #include "MWTest.h"
 
@@ -14,8 +12,19 @@ void TestScene1::init() {
 	srand((unsigned int)time(0));
 	
 	m_shader.init(
-		"Assets/Shaders/vertex_shader.glsl",
-		"Assets/Shaders/fragment_shader.glsl",
+		"Assets/Shaders/sprite_vertex_shader.glsl",
+		"Assets/Shaders/sprite_fragment_shader.glsl",
+		{
+			MW::VertexAttribute("inPosition", 3, GL_FLOAT, GL_FALSE,
+				5 * sizeof(float), 0),
+			MW::VertexAttribute("inTextureCoords", 2, GL_FLOAT, GL_FALSE,
+				5 * sizeof(float), 3 * sizeof(float)),
+		},
+		"cameraMatrix"
+	);
+	m_textShader.init(
+		"Assets/Shaders/text_vertex_shader.glsl",
+		"Assets/Shaders/text_fragment_shader.glsl",
 		{
 			MW::VertexAttribute("inPosition", 3, GL_FLOAT, GL_FALSE,
 				5 * sizeof(float), 0),
@@ -33,18 +42,26 @@ void TestScene1::init() {
 		"Assets/Textures/texture0.png"));
 
 	m_music = MW::App::RESOURCES.getSound("Assets/Sounds/music.wav");
+
+	m_font = MW::App::RESOURCES.getFont("Assets/Fonts/arial.ttf");
 }
 
 void TestScene1::enter() {
 	MW::App::Log("Enter scene 1");
 
 	MW::App::AUDIO.playMusic(m_music);
+	MW::App::AUDIO.setGain(0.0f);
 }
 
 void TestScene1::draw() {
 	m_frames++;
 
+	m_textShader.upload3fVector("textColor", glm::vec3(1.0f, 0.0f, 1.0f));
+
 	MW::App::RENDERER.submit({ &m_sprite, &m_sprite1 }, &m_shader);
+
+	MW::App::RENDERER.submit(MW::Label("Hellllllo", glm::vec3(0.0f), 1.0f,
+		glm::vec3(1.0f, 1.0f, 1.0f)), m_font, &m_textShader);
 }
 
 void TestScene1::processInput() {
@@ -75,6 +92,13 @@ void TestScene1::processInput() {
 		MW::App::Log("Pressed");
 		MW::App::AUDIO.playSound(MW::App::RESOURCES.getSound(
 			"Assets/Sounds/sound.wav"));
+
+		if (MW::App::RENDERER.getClearColor() == glm::vec3()) {
+			MW::App::RENDERER.setClearColor(glm::vec3(1.0f, 0.0f, 1.0f));
+		}
+		else {
+			MW::App::RENDERER.setClearColor(glm::vec3(0.0f, 0.0f, 0.0f));
+		}
 	}
 
 	if (MW::App::INPUT.isKeyPressed(GLFW_KEY_UP)) {
@@ -93,6 +117,8 @@ void TestScene1::update(float deltaTime) {
 		MW::App::Log("Second " + std::to_string(m_seconds)
 			+ ": " + std::to_string(m_timer) + " updates, "
 			+ std::to_string(m_frames) + " frames");
+		m_UPSCounts.push_back(m_timer);
+		m_frameCounts.push_back(m_frames);
 		m_timer = 0.0f;
 		m_frames = 0;
 	}
@@ -104,10 +130,26 @@ void TestScene1::update(float deltaTime) {
 
 void TestScene1::exit() {
 	MW::App::Log("Exit scene 1");
+	MW::App::Log("Average UPS: " + std::to_string(average(m_UPSCounts))
+		+ ", Average FPS: " + std::to_string(average(m_frameCounts))
+		+ " over " + std::to_string(m_seconds) + " seconds");
 }
 
 void TestScene1::destroy() {
 	MW::App::Log("Destroy scene 1");
+}
+
+float TestScene1::average(const std::vector<float>& v) {
+	if (v.size() == 0) {
+		return 0.0f;
+	}
+
+	float s = 0.0f;
+	for (float f : v) {
+		s += f;
+	}
+	s /= v.size();
+	return s;
 }
 
 int main(int argc, char** argv) {

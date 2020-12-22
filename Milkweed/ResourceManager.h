@@ -10,7 +10,12 @@
 #include <vector>
 #include <string>
 #include <unordered_map>
+#include <map>
 #include <AL/al.h>
+#include <ft2build.h>
+#include <freetype/freetype.h>
+
+#include "Sprite.h"
 
 extern int decodePNG(std::vector<unsigned char>& out_image,
 	unsigned long& image_width, unsigned long& image_height,
@@ -57,6 +62,39 @@ namespace MW {
 	};
 
 	/*
+	* A single character in a font
+	*/
+	class Character : public Sprite {
+	public:
+		// The offset from the origin to this sprite to the top-left
+		glm::ivec2 bearing = glm::ivec2();
+		// The distance to the next character in a string of text
+		unsigned int offset = 0;
+
+		/*
+		* Construct a blank character
+		*/
+		Character() {}
+		/*
+		* Create a new character with dimensions, bearing, offset, and texture
+		*/
+		Character(const glm::vec2& dimensions, const glm::ivec2& Bearing,
+			unsigned int Offset, Texture* texture) : Sprite(glm::vec3(0.0f),
+				dimensions, texture), bearing(Bearing), offset(Offset) {}
+		/*
+		* Update this character (does nothing)
+		*/
+		void update(float deltaTime) override {};
+	};
+
+	/*
+	* A font, wrapper for a map of char to Characters
+	*/
+	struct Font {
+		std::map<char, Character> characters;
+	};
+
+	/*
 	* The Milkweed engine's utility for loading resources (textures and sound
 	* effects) into the application
 	*/
@@ -66,7 +104,13 @@ namespace MW {
 		static Texture* NO_TEXTURE;
 		// An empty sound to initialize objects with
 		static Sound* NO_SOUND;
+		// An empty font to initialize objects with
+		static Font* NO_FONT;
 
+		/*
+		* Prepare this resource manager to load textures, sounds, and fonts
+		*/
+		bool init();
 		/*
 		* Get a texture from memory or the disk
 		* 
@@ -84,6 +128,18 @@ namespace MW {
 		*/
 		Sound* getSound(const std::string& fileName);
 		/*
+		* Get a font from memory or the disk
+		* 
+		* @param fileName: The file name of this TTF font on disk
+		* @return The font either from memory or the disk if found,
+		* NO_FONT otherwise
+		*/
+		Font* getFont(const std::string& fileName);
+		/*
+		* Test whether this resource manager can load TTF files
+		*/
+		bool isFontLoadingEnabled() const { return m_fontLoadingEnabled; }
+		/*
 		* Delete all resources loaded into memory by this resource manager
 		*/
 		void destroy();
@@ -93,6 +149,12 @@ namespace MW {
 		std::unordered_map<std::string, Texture> m_textures;
 		// The map of sounds in memory with their file names on disk
 		std::unordered_map<std::string, Sound> m_sounds;
+		// The map of fonts in memory with their file names on disk
+		std::unordered_map<std::string, Font> m_fonts;
+		// The instance of the FreeType library to load fonts with
+		FT_Library m_freeTypeLibrary;
+		// Whether this resource manager can load TTF files
+		bool m_fontLoadingEnabled = false;
 
 		/*
 		* Convert a char* buffer to little-endian integer

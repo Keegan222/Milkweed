@@ -21,17 +21,28 @@ namespace MW {
 	};
 
 	/*
+	* A string of text to draw
+	*/
+	struct Label {
+		std::string text = "";
+		glm::vec3 position = glm::vec3();
+		float scale = 1.0f;
+		glm::vec3 color = glm::vec3();
+
+		Label(const std::string& Text, const glm::vec3& Position, float Scale,
+			const glm::vec3& Color) : text(Text), position(Position),
+			scale(Scale), color(Color) {}
+	};
+
+	/*
 	* The Milkweed engine's utility for drawing graphics
 	*/
 	class Renderer {
 	public:
 		/*
 		* Set up this renderer in OpenGL
-		* 
-		* @param clearColor: The background color of the window in normalized
-		* float RGB values (0.0f - 1.0f)
 		*/
-		void init(const glm::vec3& clearColor);
+		void init();
 		/*
 		* Begin a frame
 		*/
@@ -45,6 +56,15 @@ namespace MW {
 		*/
 		void submit(const std::vector<Sprite*>& sprites, Shader* shader);
 		/*
+		* Submit a string of text to be converted to sprites and rendered this
+		* frame in the given color
+		* 
+		* @param text: The text label to draw
+		* @param font: The font the draw the text int
+		* @param shader: The shader to render the text with
+		*/
+		void submit(const Label& text, Font* font, Shader* shader);
+		/*
 		* End a frame and draw it on the screen
 		*/
 		void end();
@@ -56,6 +76,19 @@ namespace MW {
 		* Free this renderer's memory and stop using it
 		*/
 		void destroy();
+		/*
+		* Get the current clear color
+		*/
+		glm::vec3 getClearColor() const { return m_clearColor; }
+		/*
+		* Set the RGB color to clear the screen to each frame
+		* 
+		* @param clearColor: Normalized RGB color
+		*/
+		void setClearColor(const glm::vec3& clearColor) {
+			m_clearColor = clearColor;
+			glClearColor(clearColor.x, clearColor.y, clearColor.z, 1.0f);
+		}
 
 	private:
 		// The vertex array for this renderer
@@ -66,13 +99,17 @@ namespace MW {
 		GLuint m_IBOID = 0;
 		// The sprites to be rendered this frame
 		std::unordered_map<Shader*, std::vector<Sprite*>> m_sprites;
+		// The text characters to render this frame
+		std::unordered_map<Shader*, std::vector<Character>> m_text;
 		// The type of sorting to perform when rendering sprites
 		SortType m_sortType = SortType::DEPTH;
+		// Normalized RGB color to clear the screen to
+		glm::vec3 m_clearColor = glm::vec3();
 
 		/*
 		* Draw a set of sprites with a single texture
 		*/
 		void drawVertices(const std::vector<float>& vertexData,
-			int spriteCount);
+			const std::vector<unsigned int>& indices);
 	};
 }

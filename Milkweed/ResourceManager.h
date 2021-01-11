@@ -136,6 +136,15 @@ namespace MW {
 		*/
 		Font* getFont(const std::string& fileName);
 		/*
+		* Set the point size to load fonts from TTF files at
+		* 
+		* @param fontPointSize: The pixel height to load fonts at from TTF
+		* files, larger sizes take more video memory
+		*/
+		void setFontPointSize(unsigned int fontPointSize) {
+			m_fontPointSize = fontPointSize;
+		}
+		/*
 		* Test whether this resource manager can load TTF files
 		*/
 		bool isFontLoadingEnabled() const { return m_fontLoadingEnabled; }
@@ -155,6 +164,8 @@ namespace MW {
 		FT_Library m_freeTypeLibrary;
 		// Whether this resource manager can load TTF files
 		bool m_fontLoadingEnabled = false;
+		// The default point size of fonts
+		FT_UInt m_fontPointSize = 48;
 
 		/*
 		* Convert a char* buffer to little-endian integer

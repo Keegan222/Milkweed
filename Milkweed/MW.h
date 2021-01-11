@@ -10,11 +10,13 @@
 #include <fstream>
 #include <vector>
 
+#include "NetworkManager.h"
 #include "Window.h"
 #include "InputManager.h"
 #include "Renderer.h"
 #include "ResourceManager.h"
 #include "AudioManager.h"
+#include "LogManager.h"
 
 namespace MW {
 	/*
@@ -71,14 +73,9 @@ namespace MW {
 		static ResourceManager RESOURCES;
 		// The application's audio manager
 		static AudioManager AUDIO;
+		// The application's logging system
+		static LogManager LOG;
 
-		/*
-		* Log a message with the Milkweed engine to the current log file and the
-		* console if debugging
-		*
-		* @param message: The message to log
-		*/
-		static void Log(const std::string& message);
 		/*
 		* Set up and start an application using the Milkweed engine
 		* 
@@ -100,8 +97,6 @@ namespace MW {
 		static bool SetScene(Scene* scene);
 
 	private:
-		// The output stream to the current log file
-		static std::ofstream LOG_STREAM;
 		// The number of physics upates per second
 		static float PHYSICS_SPU;
 		// The set of scenes in this application
@@ -109,10 +104,6 @@ namespace MW {
 		// The active scene in this application
 		static Scene* SCENE;
 
-		/*
-		* Get the date in YYYY.MM.dd.HHmm.SS format
-		*/
-		static std::string GetDate();
 		/*
 		* Run the main loop of this application
 		*/

@@ -4,9 +4,7 @@
 * Date: 2020.10.20.2018
 */
 
-#include <time.h>
 #include <iostream>
-#include <direct.h>
 
 #include "MW.h"
 
@@ -17,42 +15,17 @@ namespace MW {
 	Renderer App::RENDERER;
 	ResourceManager App::RESOURCES;
 	AudioManager App::AUDIO;
+	LogManager App::LOG;
 
 	// Instantiate the application's private static members
-	std::ofstream App::LOG_STREAM;
 	float App::PHYSICS_SPU;
 	std::vector<Scene*> App::SCENES;
 	Scene* App::SCENE = nullptr;
 
-	std::string App::GetDate() {
-		// Get the current time
-		time_t now = time(0);
-		tm tstruct;
-		localtime_s(&tstruct, &now);
-		// Write the time into a buffer in the correct format
-		char buffer[64];
-		strftime(buffer, sizeof(buffer), "%Y.%m.%d.%H%M.%S", &tstruct);
-		return std::string(buffer);
-	}
-
-	void App::Log(const std::string& message) {
-		// If debugging write the message to the console
-#ifdef _DEBUG
-		std::cout << GetDate() << ": " << message << std::endl;
-#endif
-		if (LOG_STREAM.fail()) {
-			return;
-		}
-		// If the log stream hasn't failed write the message to the log file
-		LOG_STREAM << GetDate() << ": " << message << std::endl;
-	}
-
 	void App::Init(const WindowAttributes& windowAttrib, float physicsUPS,
 		const std::vector<Scene*>& scenes, Scene* scene) {
 		// Initialize the logging system
-		_mkdir("mwlog/");
-		LOG_STREAM.open("mwlog/" + GetDate() + ".mwlog");
-		Log("Starting Milkweed engine");
+		LOG.init();
 
 		// Set the physics seconds per update
 		PHYSICS_SPU = 1.0f / physicsUPS;
@@ -60,7 +33,7 @@ namespace MW {
 		// Initialize the window
 		if (!WINDOW.init(windowAttrib)) {
 			// Could not open the window
-			Log("Failed to open the application's window");
+			LOG << "Failed to open the application's window\n";
 			return;
 		}
 
@@ -72,13 +45,14 @@ namespace MW {
 
 		// Initialize audio system
 		if (!AUDIO.init()) {
-			Log("Failed to initialize the audio system");
+			LOG << "Failed to initialize the audio system\n";
 			return;
 		}
 
 		// Initialize the resource manager
 		if (!RESOURCES.init()) {
-			Log("Failed to initialize FreeType, font loading will be disabled");
+			LOG << "Failed to initialize FreeType, "
+				<< "font loading will be disabled\n";
 		}
 
 		// Initialize the application's scenes and set the initial scene
@@ -89,7 +63,7 @@ namespace MW {
 		SetScene(scene);
 
 		// The Milkweed engine has been initialized
-		Log("Milkweed engine initialized");
+		LOG << "Milkweed engine initialized\n";
 		Run();
 	}
 
@@ -166,7 +140,7 @@ namespace MW {
 	}
 
 	void App::Destroy() {
-		Log("Milkweed engine application stopped, cleaning up");
+		LOG << "Milkweed engine application stopped, cleaning up\n";
 		
 		// Exit the active scene and destroy all the scenes
 		SCENE->exit();
@@ -184,9 +158,9 @@ namespace MW {
 		// Destroy the audio system
 		AUDIO.destroy();
 
-		Log("Milkweed engine stopped");
+		LOG << "Milkweed engine stopped\n";
 
-		// Stop the logging system
-		LOG_STREAM.close();
+		// Destroy the logging system
+		LOG.destroy();
 	}
 }

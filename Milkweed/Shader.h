@@ -59,6 +59,24 @@ namespace MW {
 	class Shader {
 	public:
 		/*
+		* Generated default vertex attributes for 2D sprite shader (3D position
+		* and 2D texture coordinates)
+		* 
+		* @param positionName: The name of the position input in this shader
+		* @param textureCoordsName: The name of the texture coordinates input
+		* in this shader
+		*/
+		static std::vector<VertexAttribute> getDefaultVertexAttributes(
+			const std::string& positionName,
+			const std::string& textureCoordsName) {
+			return {
+				VertexAttribute(positionName, 3, GL_FLOAT, GL_FALSE,
+					5 * sizeof(float), 0),
+				VertexAttribute(textureCoordsName, 2, GL_FLOAT, GL_FALSE,
+					5 * sizeof(float), 3 * sizeof(float)),
+			};
+		}
+		/*
 		* Locate this shader's GLSL source code, compile it, and create this
 		* shader with OpenGL
 		* 

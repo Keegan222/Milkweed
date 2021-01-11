@@ -49,8 +49,8 @@ namespace MW {
 			// The vertex shader has failed to compile
 			char buffer[1024]; // TODO: Modify hardcoded buffer sizes
 			glGetShaderInfoLog(m_vID, 1024, NULL, buffer);
-			App::Log("Failed to compile vertex shader \"" + vFileName + "\"");
-			App::Log(std::string(buffer));
+			App::LOG << "Failed to compile vertex shader " << vFileName
+				<< "\n" << buffer;
 			return false;
 		}
 		glCompileShader(m_fID);
@@ -60,8 +60,8 @@ namespace MW {
 			// The fragment shader has failed to compile
 			char buffer[1024];
 			glGetShaderInfoLog(m_fID, 1024, NULL, buffer);
-			App::Log("Failed to compile fragment shader \"" + fFileName + "\"");
-			App::Log(std::string(buffer));
+			App::LOG << "Failed to compile fragment shader "
+				<< fFileName << "\n" << buffer;
 			return false;
 		}
 
@@ -109,8 +109,7 @@ namespace MW {
 	bool Shader::uploadInt(const std::string& name, int value) {
 		GLint location = glGetUniformLocation(m_programID, name.c_str());
 		if (location == -1) {
-			App::Log("Failed to find uniform variable \"" + name
-				+ "\" in shader");
+			App::LOG << "Failed to find uniform variable " << name << "\n";
 			return false;
 		}
 		glUniform1i(location, value);
@@ -120,8 +119,7 @@ namespace MW {
 	bool Shader::uploadUInt(const std::string& name, unsigned int value) {
 		GLint location = glGetUniformLocation(m_programID, name.c_str());
 		if (location == -1) {
-			App::Log("Failed to find uniform variable \"" + name
-				+ "\" in shader");
+			App::LOG << "Failed to find uniform variable " << name << "\n";
 			return false;
 		}
 		glUniform1ui(location, value);
@@ -131,8 +129,7 @@ namespace MW {
 	bool Shader::uploadFloat(const std::string& name, float value) {
 		GLint location = glGetUniformLocation(m_programID, name.c_str());
 		if (location == -1) {
-			App::Log("Failed to find uniform variable \"" + name
-				+ "\" in shader");
+			App::LOG << "Failed to find uniform variable " << name << "\n";
 			return false;
 		}
 		glUniform1f(location, value);
@@ -143,8 +140,7 @@ namespace MW {
 		const glm::vec2& value) {
 		GLint location = glGetUniformLocation(m_programID, name.c_str());
 		if (location == -1) {
-			App::Log("Failed to find uniform variable \"" + name
-				+ "\" in shader");
+			App::LOG << "Failed to find uniform variable " << name << "\n";
 			return false;
 		}
 		glUniform2f(location, value.x, value.y);
@@ -155,8 +151,7 @@ namespace MW {
 		const glm::vec3& value) {
 		GLint location = glGetUniformLocation(m_programID, name.c_str());
 		if (location == -1) {
-			App::Log("Failed to find uniform variable \"" + name
-				+ "\" in shader");
+			App::LOG << "Failed to find uniform variable " << name << "\n";
 			return false;
 		}
 		glUniform3f(location, value.x, value.y, value.z);
@@ -167,8 +162,7 @@ namespace MW {
 		const glm::mat4& value) {
 		GLint location = glGetUniformLocation(m_programID, name.c_str());
 		if (location == -1) {
-			App::Log("Failed to find uniform variable \"" + name
-				+ "\" in shader");
+			App::LOG << "Failed to find uniform variable " << name << "\n";
 			return false;
 		}
 		glUniformMatrix4fv(location, 1, GL_FALSE, &(value[0][0]));

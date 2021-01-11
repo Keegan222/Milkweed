@@ -12,7 +12,7 @@ namespace MW {
 		// Initialize GLFW
 		if (glfwInit() != GLFW_TRUE) {
 			// GLFW could not be initialized
-			App::Log("Failed to initialize GLFW");
+			App::LOG << "Failed to initialize GLFW\n";
 			return false;
 		}
 
@@ -29,7 +29,7 @@ namespace MW {
 				attrib.dimensions.y, attrib.title.c_str(), NULL, NULL);
 			if (m_window == NULL) {
 				// The window could not be created
-				App::Log("GLFW failed to create window");
+				App::LOG << "GLFW failed to create window\n";
 				return false;
 			}
 			// Center the window in the screen
@@ -46,7 +46,7 @@ namespace MW {
 				attrib.title.c_str(), glfwGetPrimaryMonitor(), NULL);
 			if (m_window == NULL) {
 				// The window could not be created
-				App::Log("GLFW failed to create fullscreen window");
+				App::LOG << "GLFW failed to create fullscreen window\n";
 				return false;
 			}
 
@@ -54,9 +54,8 @@ namespace MW {
 			m_dimensions = glm::ivec2(videoMode->width, videoMode->height);
 		}
 
-		App::Log("Opened window with dimensions ("
-			+ std::to_string(m_dimensions.x) + ", "
-			+ std::to_string(m_dimensions.y) + ")");
+		App::LOG << "Opened window with dimensions (" << m_dimensions.x << ", "
+			<< m_dimensions.y << ")\n";
 
 		// The window was successfully created
 		return true;

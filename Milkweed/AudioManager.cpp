@@ -8,24 +8,24 @@
 
 namespace MW {
 	bool AudioManager::init() {
-		App::Log("Initialize audio manager");
+		App::LOG << "Initialize audio manager\n";
 		
 		// Open the default sound device with OpenAL
 		m_device = alcOpenDevice(nullptr);
 		if (m_device == nullptr) {
-			App::Log("Failed to open default sound device");
+			App::LOG << "Failed to open default sound device\n";
 			return false;
 		}
 
 		// Create an OpenAL context and make it current
 		m_context = alcCreateContext(m_device, nullptr);
 		if (m_context == nullptr) {
-			App::Log("Failed to create OpenAL context");
+			App::LOG << "Failed to create OpenAL context\n";
 			return false;
 		}
 		ALCboolean contextCurrent = alcMakeContextCurrent(m_context);
 		if (contextCurrent != ALC_TRUE) {
-			App::Log("Failed to make OpenAL context current");
+			App::LOG << "Failed to make OpenAL context current\n";
 			return false;
 		}
 

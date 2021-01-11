@@ -20,12 +20,12 @@ namespace MW {
 		// Initialize GLEW and get the running OpenGL version
 		if (glewInit() != GLEW_OK) {
 			// GLEW could not be initialize
-			App::Log("Failed to initialize GLEW");
+			App::LOG << "Failed to initialize GLEW\n";
 			return;
 		}
 
 		const GLubyte* version = glGetString(GL_VERSION);
-		App::Log("OpenGL version: " + std::string((char*)version));
+		App::LOG << "OpenGL version: " << version << "\n";
 
 		// Set the clear color
 		glClearColor(m_clearColor.x, m_clearColor.y, m_clearColor.z, 1.0f);

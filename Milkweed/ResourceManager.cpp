@@ -54,7 +54,7 @@ namespace MW {
 		}
 		else {
 			// The file could not be read
-			App::Log("Failed to read texture data file");
+			App::LOG << "Failed to read texture data file\n";
 			return NO_TEXTURE;
 		}
 
@@ -65,8 +65,8 @@ namespace MW {
 			&buffer[0], (size_t)fileSize);
 		if (status != 0) {
 			// The texture could not be decoded in PNG format
-			App::Log("Failed to decode PNG texture with code "
-				+ std::to_string(status));
+			App::LOG << "Failed to decode PNG texture with code " << status
+				<< "\n";
 			return NO_TEXTURE;
 		}
 
@@ -107,7 +107,7 @@ namespace MW {
 		char* soundData = loadWAV(fileName, channels, sampleRate,
 			bitsPerSample, size);
 		if (soundData == nullptr) {
-			App::Log("Failed to load sound " + fileName);
+			App::LOG << "Failed to load sound " << fileName << "\n";
 			return NO_SOUND;
 		}
 
@@ -126,7 +126,8 @@ namespace MW {
 			format = AL_FORMAT_STEREO16;
 		}
 		else {
-			App::Log("Sound " + fileName + " is in invalid format for OpenAL");
+			App::LOG << "Sound " << fileName
+				<< " is in invalid format for OpenAL\n";
 			return NO_SOUND;
 		}
 
@@ -163,7 +164,8 @@ namespace MW {
 			// The font could not be loaded from disk
 			return NO_FONT;
 		}
-		FT_Set_Pixel_Sizes(face, 0, 48);
+		// Set the point size to load the font at
+		FT_Set_Pixel_Sizes(face, 0, m_fontPointSize);
 
 		// Create a new font object
 		Font font;
@@ -172,8 +174,8 @@ namespace MW {
 			// Load the character
 			FT_Error error = FT_Load_Char(face, c, FT_LOAD_RENDER);
 			if (error != FT_Err_Ok) {
-				App::Log("Failed to load character " + std::to_string(c)
-					+ " with code " + std::to_string(error));
+				App::LOG << "Failed to load character " << c << " with code "
+					<< error << "\n";
 				// This character is not in the font
 				continue;
 			}
@@ -208,22 +210,26 @@ namespace MW {
 	void ResourceManager::destroy() {
 		// Delete all of the textures loaded into memory from OpenGL
 		for (std::pair<std::string, Texture> pair : m_textures) {
-			App::Log("Delete texture " + std::to_string(
-				pair.second.textureID));
+			App::LOG << "Delete texture " << pair.second.textureID << "\n";
 			glDeleteTextures(1, &pair.second.textureID);
 		}
 		m_textures.clear();
 
 		// Delete all the sounds loaded into memory from OpenAL
 		for (std::pair<std::string, Sound> pair : m_sounds) {
-			App::Log("Delete sound " + std::to_string(
-				pair.second.soundID));
+			App::LOG << "Delete sound " << pair.second.soundID << "\n";
 			alDeleteBuffers(1, &pair.second.soundID);
 		}
 		m_sounds.clear();
 
 		// Delete all fonts loaded into memory and dispose of the FreeType lib
-		// TODO: Delete fonts
+		for (std::pair<std::string, Font> pair : m_fonts) {
+			App::LOG << "Delete font " << pair.first << "\n";
+			for (std::pair<char, Character> c : pair.second.characters) {
+				glDeleteTextures(1, &c.second.texture->textureID);
+				delete c.second.texture;
+			}
+		}
 		FT_Done_FreeType(m_freeTypeLibrary);
 	}
 
@@ -238,114 +244,114 @@ namespace MW {
 		std::uint8_t& bitsPerSample, ALsizei& size) {
 		char buffer[4];
 		if (!file.is_open()) {
-			App::Log("Failed to open WAV file header");
+			App::LOG << "Failed to open WAV file header\n";
 			return false;
 		}
 
 		// Check the "RIFF" header (chunkID)
 		if (!file.read(buffer, 4)) {
-			App::Log("Failed to read RIFF");
+			App::LOG << "Failed to read RIFF\n";
 			return false;
 		}
 		if (std::strncmp(buffer, "RIFF", 4) != 0) {
-			App::Log("File is not in valid WAVE format");
+			App::LOG << "File is not in valid WAVE format\n";
 			return false;
 		}
 
 		// Discard the size of the file (chunkSize)
 		if (!file.read(buffer, 4)) {
-			App::Log("Failed to read file size");
+			App::LOG << "Failed to read file size\n";
 			return false;
 		}
 
 		// Check the "WAVE" header (format)
 		if (!file.read(buffer, 4)) {
-			App::Log("Failed to read WAVE");
+			App::LOG << "Failed to read WAVE\n";
 			return false;
 		}
 		if (std::strncmp(buffer, "WAVE", 4) != 0) {
-			App::Log("File is not in valid WAVE format");
+			App::LOG << "File is not in valid WAVE format\n";
 			return false;
 		}
 
 		// Check the "fmt" header (subchunk1ID)
 		if (!file.read(buffer, 4)) {
-			App::Log("Failed to read fmt");
+			App::LOG << "Failed to read fmt\n";
 			return false;
 		}
 		if (std::strncmp(buffer, "fmt", 3) != 0) {
-			App::Log("File is not in valid WAVE format");
+			App::LOG << "File is not in valid WAVE format\n";
 			return false;
 		}
 
 		// Discard the size of the format chunk (subchunk1Size)
 		if (!file.read(buffer, 4)) {
-			App::Log("Failed to read format chunk size");
+			App::LOG << "Failed to read format chunk size\n";
 			return false;
 		}
 
 		// Discard the audio format which should be 1 for PCM (audioFormat)
 		if (!file.read(buffer, 2)) {
-			App::Log("Failed to read audio format");
+			App::LOG << "Failed to read audio format\n";
 			return false;
 		}
 
 		// Get the number of channels (numChannels)
 		if (!file.read(buffer, 2)) {
-			App::Log("Failed to read channel count");
+			App::LOG << "Failed to read channel count\n";
 			return false;
 		}
 		channels = toInt(buffer, 2);
 		
 		// Get the sample rate (sampleRate)
 		if (!file.read(buffer, 4)) {
-			App::Log("Failed to read the sample rate");
+			App::LOG << "Failed to read the sample rate\n";
 			return false;
 		}
 		sampleRate = toInt(buffer, 4);
 
 		// Discard the byte rate (byteRate)
 		if (!file.read(buffer, 4)) {
-			App::Log("Failed to read the byte rate");
+			App::LOG << "Failed to read the byte rate\n";
 			return false;
 		}
 
 		// Discard the block alignment (blockAlign)
 		if (!file.read(buffer, 2)) {
-			App::Log("Failed to read the block alignment");
+			App::LOG << "Failed to read the block alignment\n";
 			return false;
 		}
 
 		// Get the bits in each sample (bitsPerSample)
 		if (!file.read(buffer, 2)) {
-			App::Log("Failed to read the bits in each sample");
+			App::LOG << "Failed to read the bits in each sample\n";
 			return false;
 		}
 		bitsPerSample = toInt(buffer, 2);
 
 		// Check the "data" header (subchunk2ID)
 		if (!file.read(buffer, 4)) {
-			App::Log("Failed to read the data header");
+			App::LOG << "Failed to read the data header\n";
 			return false;
 		}
 		if (std::strncmp(buffer, "data", 4) != 0) {
-			App::Log("File is in invalid WAVE format");
+			App::LOG << "File is in invalid WAVE format\n";
 			return false;
 		}
 
 		// Get the size of the audio data (subchunk2Size)
 		if (!file.read(buffer, 4)) {
-			App::Log("Failed to read the size of the audio data");
+			App::LOG << "Failed to read the size of the audio data\n";
 			return false;
 		}
 		size = toInt(buffer, 4);
 
 		if (file.eof()) {
-			App::Log("File contains no audio data");
+			App::LOG << "File contains no audio data\n";
 			return false;
 		}
 		if (file.fail()) {
-			App::Log("File could not be read further");
+			App::LOG << "File could not be read further\n";
 			return false;
 		}
 
@@ -357,11 +363,11 @@ namespace MW {
 		std::uint8_t& bitsPerSample, ALsizei& size) {
 		std::ifstream in(fileName, std::ios::binary);
 		if (!in.is_open()) {
-			App::Log("Failed to open file " + fileName);
+			App::LOG << "Failed to open file " << fileName << "\n";
 			return nullptr;
 		}
 		if (!loadWAVHeader(in, channels, sampleRate, bitsPerSample, size)) {
-			App::Log("Failed to read file header for " + fileName);
+			App::LOG << "Failed to read file header for " << fileName << "\n";
 			return nullptr;
 		}
 

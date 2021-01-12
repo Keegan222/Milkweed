@@ -75,6 +75,8 @@ namespace MW {
 		static AudioManager AUDIO;
 		// The application's logging system
 		static LogManager LOG;
+		// The application's network client
+		static NetClient NETWORK;
 
 		/*
 		* Set up and start an application using the Milkweed engine

@@ -12,17 +12,14 @@
 namespace MW {
 	class LogManager {
 	public:
-		void init();
+		void init(bool printToConsole = true);
 		template <typename T>
-		friend LogManager& operator << (LogManager& ls, T& t) {
+		friend LogManager& operator << (LogManager& ls, const T& t) {
 			// TODO: Print timestamps at the beginning of each message
-			if (!std::is_standard_layout<T>::value) {
-				// The type T can't be written to the console
-				return ls;
+			if (ls.m_printToConsole) {
+				std::cout << t;
 			}
-#ifdef _DEBUG
-			std::cout << t;
-#endif
+
 			if (ls.m_logFile.fail()) {
 				// The logging file is closed
 				return ls;
@@ -35,6 +32,7 @@ namespace MW {
 		void destroy();
 
 	private:
+		bool m_printToConsole = true;
 		std::ofstream m_logFile;
 
 		std::string getDate();

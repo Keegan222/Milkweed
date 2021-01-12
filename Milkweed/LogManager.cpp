@@ -10,7 +10,8 @@
 #include "LogManager.h"
 
 namespace MW {
-	void LogManager::init() {
+	void LogManager::init(bool printToConsole) {
+		m_printToConsole = printToConsole;
 		_mkdir("mwlog/");
 		m_logFile.open("mwlog/" + getDate() + ".mwlog");
 	}

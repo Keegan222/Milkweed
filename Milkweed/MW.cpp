@@ -16,6 +16,7 @@ namespace MW {
 	ResourceManager App::RESOURCES;
 	AudioManager App::AUDIO;
 	LogManager App::LOG;
+	NetClient App::NETWORK;
 
 	// Instantiate the application's private static members
 	float App::PHYSICS_SPU;
@@ -25,7 +26,11 @@ namespace MW {
 	void App::Init(const WindowAttributes& windowAttrib, float physicsUPS,
 		const std::vector<Scene*>& scenes, Scene* scene) {
 		// Initialize the logging system
-		LOG.init();
+#ifdef _DEBUG
+		LOG.init(true);
+#else
+		LOG.init(false);
+#endif
 
 		// Set the physics seconds per update
 		PHYSICS_SPU = 1.0f / physicsUPS;
@@ -54,6 +59,10 @@ namespace MW {
 			LOG << "Failed to initialize FreeType, "
 				<< "font loading will be disabled\n";
 		}
+
+		// Initialize the networking system
+		// TODO: Remove hardcoded message size
+		NETWORK.init(1024);
 
 		// Initialize the application's scenes and set the initial scene
 		for (Scene* s : scenes) {
@@ -148,6 +157,8 @@ namespace MW {
 			s->destroy();
 		}
 		
+		// Stop the network client
+		NETWORK.destroy();
 		// Stop music and sound effects so they can be destroyed in the resource
 		// manager
 		AUDIO.stop();

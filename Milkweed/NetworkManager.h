@@ -23,6 +23,8 @@
 #include <asio/ts/internet.hpp>
 #include <asio/ts/buffer.hpp>
 
+#include "LogManager.h"
+
 namespace MW {
 	/*
 	* The header information of NetMessage
@@ -170,23 +172,12 @@ namespace MW {
 			std::scoped_lock(m_mtx);
 			m_DEQueue.emplace_back(std::move(t));
 		}
-		// Block the calling-thread until an element is present in this TSQueue
-		void wait() {
-			while (empty()) {
-				std::unique_lock<std::mutex> l(m_blockingMtx);
-				m_cBlock.wait(l);
-			}
-		}
 
 	private:
 		// The double-ended queue wrapped by this TSQueue
 		std::deque<T> m_DEQueue;
 		// The mutex used to lock this queue for thread-safety
 		std::mutex m_mtx;
-		// The condition variable for the wait() function
-		std::condition_variable m_cBlock;
-		// The mutex used to block in the wait() function
-		std::mutex m_blockingMtx;
 	};
 
 	/*
@@ -205,7 +196,7 @@ namespace MW {
 		* @param messagesIn: A pointer to the TSQueue to push incoming messages
 		* to
 		*/
-		void init(TSQueue<NetMessage>* messagesIn,
+		void init(LogManager* log, TSQueue<NetMessage>* messagesIn,
 			unsigned int maxMessageSize = 0);
 		/*
 		* Attach this connection to a remote server (for NetClient's only)
@@ -214,7 +205,7 @@ namespace MW {
 		* the IP of the remote server
 		* @return Whether the connection was successfully established
 		*/
-		bool connectToServer(
+		void connectToServer(
 			const asio::ip::tcp::resolver::results_type& endpoints);
 		/*
 		* Attach this connection to a remote client (for NetServer's only)
@@ -225,7 +216,7 @@ namespace MW {
 		/*
 		* Test whether this connection is currently open
 		*/
-		bool isConnected() const { return m_socket.is_open(); }
+		bool isConnected();
 		/*
 		* Get the ID number of this connection (for NetServer's only)
 		*/
@@ -246,6 +237,10 @@ namespace MW {
 		void destroy();
 
 	private:
+		// Whether this connection is connected to a remote machine
+		bool m_connected = false;
+		// The logging system for this connection
+		LogManager* m_log = nullptr;
 		// The ASIO context to perform networking within
 		asio::io_context& m_context;
 		// The ASIO socket to read and write data with
@@ -280,7 +275,7 @@ namespace MW {
 	*/
 	class NetClient {
 	public:
-		NetClient() : m_socket(m_context), m_connection(m_context, m_socket) {}
+		NetClient() : m_socket(m_context) {}
 		/*
 		* Initialize this client's network connection
 		* 
@@ -291,15 +286,15 @@ namespace MW {
 		/*
 		* Connect this NetClient to a remote NetServer
 		*/
-		bool connect(const std::string& address, unsigned int port);
+		void connect(const std::string& address, unsigned int port);
 		/*
 		* Test whether this client is connected to a server
 		*/
-		bool isConnected() const { return m_connection.isConnected(); }
+		bool isConnected() const { return m_connection->isConnected(); }
 		/*
 		* Send a message to the NetServer this NetClient is connected to
 		*/
-		bool send(const NetMessage& message);
+		void send(const NetMessage& message);
 		/*
 		* Get a reference to the queue of messages coming into this client from
 		* the server
@@ -322,7 +317,7 @@ namespace MW {
 		// The socket to pass to the connection
 		asio::ip::tcp::socket m_socket;
 		// The connection used to access the internet
-		NetConnection m_connection;
+		std::shared_ptr<NetConnection> m_connection;
 		// The queue for the connection to push messages from the server into
 		// the back of
 		TSQueue<NetMessage> m_messagesIn;
@@ -335,13 +330,23 @@ namespace MW {
 	class NetServer {
 	public:
 		/*
+		* Initialize this server with a port to listen for connections on
+		*/
+		NetServer(unsigned short port) : m_acceptor(m_context,
+			asio::ip::tcp::endpoint(asio::ip::tcp::v4(), port)) {}
+		/*
 		* Start this server and set it to listen for connections on the given
 		* port
 		* 
-		* @param port: The port number to listen for new connections on
+		* @param maxMessageSize: The maximum message size to take from a client
 		* @return Whether the server could be started
 		*/
-		bool init(unsigned short port, unsigned int maxMessageSize);
+		bool init(unsigned int maxMessageSize);
+		/*
+		* Test whether this server is still listening for new connections
+		* (Wrapper for acceptor is_open() function)
+		*/
+		bool isActive() const { return m_acceptor.is_open(); }
 		/*
 		* Send a message to the given client over its connection
 		* 
@@ -366,10 +371,8 @@ namespace MW {
 		* 
 		* @param maxMessages: The maximum number of messages which can be passed
 		* to the onMessage function this update (-1 for +inf)
-		* @param wait: Whether to wait until a message is present in the queue
-		* to leave the update function (false by default)
 		*/
-		void update(int maxMessages, bool wait = false);
+		void update(int maxMessages);
 		/*
 		* Stop listening for new connections, close all existing connections and
 		* free this NetServer's memory
@@ -379,6 +382,8 @@ namespace MW {
 	protected:
 		// The queue of messages in from the clients connected to this server
 		TSQueue<NetMessage> m_messagesIn;
+		// The logging system for this server
+		LogManager m_log;
 
 		/*
 		* A client has made a connection to this server

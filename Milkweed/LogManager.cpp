@@ -10,14 +10,13 @@
 #include "LogManager.h"
 
 namespace MW {
-	void LogManager::init(bool printToConsole) {
+	void LogManager::init(const std::string& dirName, bool printToConsole) {
+		// Set whether to print messages to the console
 		m_printToConsole = printToConsole;
-		_mkdir("mwlog/");
-		m_logFile.open("mwlog/" + getDate() + ".mwlog");
-	}
-
-	void LogManager::destroy() {
-		m_logFile.close();
+		
+		// Create the logs directory if not present and generate the log file
+		int result = _mkdir(dirName.c_str());
+		m_logFile.open(dirName + "/" + getDate() + ".mwlog");
 	}
 
 	std::string LogManager::getDate() {
@@ -25,9 +24,14 @@ namespace MW {
 		time_t now = time(0);
 		tm tstruct;
 		localtime_s(&tstruct, &now);
-		// Write the time into a buffer in the correct format
+		// Write the time into a buffer in the appropriate format
 		char buffer[32];
-		strftime(buffer, sizeof(buffer), "%Y.%m.%d.%H%M.%S", &tstruct);
+		strftime(buffer, sizeof(buffer), m_dateFormat.c_str(), &tstruct);
 		return std::string(buffer);
+	}
+
+	void LogManager::destroy() {
+		// Close the log file
+		m_logFile.close();
 	}
 }

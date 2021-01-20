@@ -55,6 +55,15 @@ namespace MW {
 		*/
 		NetMessage() {}
 		/*
+		* Construct this message with an ID number and a connection owner
+		* (owner optional, nullptr by default)
+		*/
+		NetMessage(unsigned int ID,
+			std::shared_ptr<NetConnection> Owner = nullptr) {
+			header.ID = ID;
+			owner = Owner;
+		}
+		/*
 		* Override for the bitshift left operator to print header information
 		* to an output stream
 		*/
@@ -76,7 +85,7 @@ namespace MW {
 				// Copy the variable's data into the message body and recalculate
 				// the size in the header
 				std::memcpy(message.body.data() + s, &var, sizeof(T));
-				message.header.size = message.body.size();
+				message.header.size = (unsigned int)message.body.size();
 			}
 
 			// Return the message so that this operator can be chained
@@ -97,7 +106,7 @@ namespace MW {
 				std::memcpy(&var, message.body.data() + s, sizeof(T));
 				message.body.resize(s);
 				// Recalculate the message size in the header
-				message.header.size = message.body.size();
+				message.header.size = (unsigned int)message.body.size();
 			}
 
 			// Return the message so that this operator can be chained
@@ -186,31 +195,41 @@ namespace MW {
 	*/
 	class NetConnection : public std::enable_shared_from_this<NetConnection> {
 	public:
+		/*
+		* Construct a new NetConnection with an ASIO context and a socket
+		* 
+		* @param context: The ASIO context for this connection to use
+		* @param socket: The socket for this connection to use to connect to
+		* the internet
+		*/
 		NetConnection(asio::io_context& context, asio::ip::tcp::socket& socket)
 			: m_context(context), m_socket(std::move(socket)) {}
 		/*
 		* Initialize this connection with a context and a place to send incoming
 		* messages (for NetClient's)
 		* 
-		* @param context: The ASIO context to use when reading and writing data
-		* @param messagesIn: A pointer to the TSQueue to push incoming messages
-		* to
+		* @param log: A pointer to a LogManager for this connection to print
+		* messages to
+		* @param messagesIn: A pointer to a TSQueue of NetMessage's for this
+		* connection to push back incoming messages to
+		* @param maxMessageSize: The maximum message body size which can be
+		* received by this connection in bytes (1024 by default)
 		*/
 		void init(LogManager* log, TSQueue<NetMessage>* messagesIn,
-			unsigned int maxMessageSize = 0);
+			unsigned int maxMessageSize = 1024);
 		/*
 		* Attach this connection to a remote server (for NetClient's only)
 		* 
 		* @param endpoints: The results of an ASIO resolver used to generate
 		* the IP of the remote server
-		* @return Whether the connection was successfully established
 		*/
 		void connectToServer(
 			const asio::ip::tcp::resolver::results_type& endpoints);
 		/*
 		* Attach this connection to a remote client (for NetServer's only)
 		* 
-		* @param ID: The unique ID number for this connection
+		* @param ID: The unique ID number for this connection for identification
+		* by the server
 		*/
 		void connectToClient(unsigned int ID);
 		/*
@@ -221,6 +240,13 @@ namespace MW {
 		* Get the ID number of this connection (for NetServer's only)
 		*/
 		unsigned int getID() const { return m_ID; }
+		/*
+		* Set the maximum message body size which can be received by this
+		* connection in bytes
+		*/
+		void setMaxMessageSize(unsigned int maxMessageSize) {
+			m_maxMessageSize = maxMessageSize;
+		}
 		/*
 		* Send a message over this connection to the remote machine
 		* 
@@ -255,7 +281,7 @@ namespace MW {
 		// readBody()
 		NetMessage m_tempMessage;
 		// The maximum message body size in bytes this connection will accept
-		unsigned int m_maxMessageSize = 0;
+		unsigned int m_maxMessageSize = 1024;
 
 		// Read in a message header from the network asynchronously
 		void readHeader();
@@ -275,16 +301,23 @@ namespace MW {
 	*/
 	class NetClient {
 	public:
+		/*
+		* Construct a new network client
+		*/
 		NetClient() : m_socket(m_context) {}
 		/*
 		* Initialize this client's network connection
 		* 
 		* @param maxMessageSize: The maximum size in bytes of any message to be
-		* received by a server to this client
+		* received by a server to this client (1024 by default)
 		*/
-		void init(unsigned int maxMessageSize);
+		void init(unsigned int maxMessageSize = 1024);
 		/*
-		* Connect this NetClient to a remote NetServer
+		* Connect this network client to a remote server at the given address
+		* and port
+		* 
+		* @param address: The IP address of the server to connect to
+		* @param port: The port number to attempt to connect to the server on
 		*/
 		void connect(const std::string& address, unsigned int port);
 		/*
@@ -292,7 +325,13 @@ namespace MW {
 		*/
 		bool isConnected() const { return m_connection->isConnected(); }
 		/*
-		* Send a message to the NetServer this NetClient is connected to
+		* Set the max message size for this client's connection in bytes
+		*/
+		void setMaxMessageSize(unsigned int maxMessageSize) {
+			m_connection->setMaxMessageSize(maxMessageSize);
+		}
+		/*
+		* Send a message to the server this network client is connected to
 		*/
 		void send(const NetMessage& message);
 		/*
@@ -330,21 +369,23 @@ namespace MW {
 	class NetServer {
 	public:
 		/*
-		* Initialize this server with a port to listen for connections on
+		* Construct a new network server to manage many connections
+		* 
+		* @param port: The port number to listen for new network connections on
 		*/
 		NetServer(unsigned short port) : m_acceptor(m_context,
 			asio::ip::tcp::endpoint(asio::ip::tcp::v4(), port)) {}
 		/*
-		* Start this server and set it to listen for connections on the given
-		* port
+		* Start listening for new clients connecting to this server
 		* 
-		* @param maxMessageSize: The maximum message size to take from a client
+		* @param maxMessageSize: The maximum message body size which can be
+		* received by a client in bytes (1024 by default)
 		* @return Whether the server could be started
 		*/
-		bool init(unsigned int maxMessageSize);
+		bool init(unsigned int maxMessageSize = 1024);
 		/*
 		* Test whether this server is still listening for new connections
-		* (Wrapper for acceptor is_open() function)
+		* (Wrapper for ASIO acceptor is_open() function)
 		*/
 		bool isActive() const { return m_acceptor.is_open(); }
 		/*
@@ -357,7 +398,7 @@ namespace MW {
 		bool messageClient(std::shared_ptr<NetConnection> client,
 			const NetMessage& message);
 		/*
-		* Send a message to all clients except for one (optional)
+		* Send a message to all clients except, optionally, for one client
 		* 
 		* @param message: The message to broadcast
 		* @param ignoredClient: A pointer to a client to ignore when sending
@@ -374,6 +415,10 @@ namespace MW {
 		*/
 		void update(int maxMessages);
 		/*
+		* Set the maxmimum message size for the clients' connections
+		*/
+		void setMaxMessageSize(unsigned int maxMessageSize);
+		/*
 		* Stop listening for new connections, close all existing connections and
 		* free this NetServer's memory
 		*/
@@ -389,7 +434,7 @@ namespace MW {
 		* A client has made a connection to this server
 		* 
 		* @param client: A pointer to the new connection made by this client
-		* @return Whether to reject the connection
+		* @return Whether to accept the connection to the server
 		*/
 		virtual bool onConnect(std::shared_ptr<NetConnection> client) {
 			return true;
@@ -420,7 +465,7 @@ namespace MW {
 		// The current working ID of a new connection
 		unsigned int m_currentID = 100;
 		// The maximum size of any messages to receive from clients
-		unsigned int m_maxMessageSize = 0;
+		unsigned int m_maxMessageSize = 1024;
 
 		// Wait for a new client to connect to this server and generate a new
 		// NetConnection when one is found

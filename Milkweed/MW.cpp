@@ -27,9 +27,9 @@ namespace MW {
 		const std::vector<Scene*>& scenes, Scene* scene) {
 		// Initialize the logging system
 #ifdef _DEBUG
-		LOG.init(true);
+		LOG.init("mwlog/", true);
 #else
-		LOG.init(false);
+		LOG.init("mwlog/", false);
 #endif
 
 		// Set the physics seconds per update
@@ -62,7 +62,7 @@ namespace MW {
 
 		// Initialize the networking system
 		// TODO: Remove hardcoded message size
-		NETWORK.init(1024);
+		NETWORK.init();
 
 		// Initialize the application's scenes and set the initial scene
 		for (Scene* s : scenes) {

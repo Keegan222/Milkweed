@@ -304,7 +304,7 @@ namespace MW {
 	}
 
 	bool NetServer::init(unsigned int maxMessageSize) {
-		m_log.init();
+		m_log.init("mwlog/");
 
 		m_log << "Initialize network server\n";
 		m_maxMessageSize = maxMessageSize;
@@ -398,6 +398,15 @@ namespace MW {
 			m_log << "Processing message " << message.header.ID << "\n";
 			onMessage(message);
 			i++;
+		}
+	}
+
+	void NetServer::setMaxMessageSize(unsigned int maxMessageSize) {
+		// Set the message size for all new connections
+		m_maxMessageSize = maxMessageSize;
+		// Set the message size for all existing connections
+		for (std::shared_ptr<NetConnection> client : m_clients) {
+			client->setMaxMessageSize(maxMessageSize);
 		}
 	}
 

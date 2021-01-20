@@ -104,8 +104,8 @@ void TestScene1::update(float deltaTime) {
 		m_startTime = glfwGetTime();
 		MW::App::LOG << "Second " << m_seconds << ": " << m_timer
 			<< " updates, " << m_frames << " frames\n";
-		m_UPSCounts.push_back(m_timer);
-		m_frameCounts.push_back(m_frames);
+		m_UPSCounts.push_back((float)m_timer);
+		m_frameCounts.push_back((float)m_frames);
 		m_timer = 0.0f;
 		m_frames = 0;
 	}

@@ -13,26 +13,6 @@
       <UniqueIdentifier>{67DA6AB6-F800-4c08-8B7A-83BB121AAD01}</UniqueIdentifier>
       <Extensions>rc;ico;cur;bmp;dlg;rc2;rct;bin;rgs;gif;jpg;jpeg;jpe;resx;tiff;tif;png;wav;mfcribbon-ms</Extensions>
     </Filter>
-    <Filter Include="Assets">
-      <UniqueIdentifier>{cdfc7f1e-3e78-43f7-a93f-4e3e37d32a78}</UniqueIdentifier>
-    </Filter>
-    <Filter Include="Assets\Shaders">
-      <UniqueIdentifier>{c9f82539-fe29-4a1e-95aa-4f13e350ce1f}</UniqueIdentifier>
-    </Filter>
-    <Filter Include="Assets\Textures">
-      <UniqueIdentifier>{f4f45aa2-110b-4d6a-a0df-8f82e53fc83b}</UniqueIdentifier>
-    </Filter>
-    <Filter Include="Assets\Sounds">
-      <UniqueIdentifier>{9a05101b-f64f-43d9-aff0-dfa2bab5afe2}</UniqueIdentifier>
-    </Filter>
-    <Filter Include="Assets\Fonts">
-      <UniqueIdentifier>{07899a02-6ee2-447e-b70d-82c6114912ee}</UniqueIdentifier>
-    </Filter>
-  </ItemGroup>
-  <ItemGroup>
-    <ClCompile Include="MWTest.cpp">
-      <Filter>Source Files</Filter>
-    </ClCompile>
   </ItemGroup>
   <ItemGroup>
     <ClInclude Include="MWTest.h">
@@ -40,47 +20,8 @@
     </ClInclude>
   </ItemGroup>
   <ItemGroup>
-    <None Include="Assets\Shaders\sprite_vertex_shader.glsl">
-      <Filter>Assets\Shaders</Filter>
-    </None>
-    <None Include="Assets\Shaders\sprite_fragment_shader.glsl">
-      <Filter>Assets\Shaders</Filter>
-    </None>
-    <None Include="Assets\Shaders\text_vertex_shader.glsl">
-      <Filter>Assets\Shaders</Filter>
-    </None>
-    <None Include="Assets\Shaders\text_fragment_shader.glsl">
-      <Filter>Assets\Shaders</Filter>
-    </None>
-  </ItemGroup>
-  <ItemGroup>
-    <Image Include="Assets\Textures\texture1.png">
-      <Filter>Assets\Textures</Filter>
-    </Image>
-    <Image Include="Assets\Textures\texture2.png">
-      <Filter>Assets\Textures</Filter>
-    </Image>
-    <Image Include="Assets\Textures\texture3.png">
-      <Filter>Assets\Textures</Filter>
-    </Image>
-    <Image Include="Assets\Textures\texture0.png">
-      <Filter>Assets\Textures</Filter>
-    </Image>
-    <Image Include="Assets\Textures\sheet.png">
-      <Filter>Assets\Textures</Filter>
-    </Image>
-  </ItemGroup>
-  <ItemGroup>
-    <Media Include="Assets\Sounds\sound.wav">
-      <Filter>Assets\Sounds</Filter>
-    </Media>
-    <Media Include="Assets\Sounds\music.wav">
-      <Filter>Assets\Sounds</Filter>
-    </Media>
-  </ItemGroup>
-  <ItemGroup>
-    <Font Include="Assets\Fonts\arial.ttf">
-      <Filter>Assets\Fonts</Filter>
-    </Font>
+    <ClCompile Include="MWTest.cpp">
+      <Filter>Source Files</Filter>
+    </ClCompile>
   </ItemGroup>
 </Project>

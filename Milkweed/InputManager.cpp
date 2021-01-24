@@ -8,6 +8,8 @@
 #include "InputManager.h"
 
 namespace MW {
+	InputManager InputManager::m_instance;
+
 	void InputManager::init() {
 		// Add the GLFW callback functions
 		glfwSetKeyCallback(App::WINDOW.getWindowHandle(), key_callback);

@@ -13,6 +13,8 @@
 #include "ResourceManager.h"
 
 namespace MW {
+	Renderer Renderer::m_instance;
+
 	void Renderer::init() {
 		// Give the window the OpenGL context
 		glfwMakeContextCurrent(App::WINDOW.getWindowHandle());

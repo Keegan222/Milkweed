@@ -10,13 +10,12 @@
 
 namespace MW {
 	// Instantiate the application's public static members
-	Window App::WINDOW;
-	InputManager App::INPUT;
-	Renderer App::RENDERER;
-	ResourceManager App::RESOURCES;
-	AudioManager App::AUDIO;
-	LogManager App::LOG;
-	NetClient App::NETWORK;
+	Window& App::WINDOW = Window::getInstance();
+	InputManager& App::INPUT = InputManager::getInstance();
+	Renderer& App::RENDERER = Renderer::getInstance();
+	ResourceManager& App::RESOURCES = ResourceManager::getInstance();
+	LogManager& App::LOG = LogManager::getInstance();
+	NetClient& App::NETWORK = NetClient::getInstance();
 
 	// Instantiate the application's private static members
 	float App::PHYSICS_SPU;
@@ -47,12 +46,6 @@ namespace MW {
 		
 		// Initialize the renderer
 		RENDERER.init();
-
-		// Initialize audio system
-		if (!AUDIO.init()) {
-			LOG << "Failed to initialize the audio system\n";
-			return;
-		}
 
 		// Initialize the resource manager
 		if (!RESOURCES.init()) {
@@ -159,15 +152,10 @@ namespace MW {
 		
 		// Stop the network client
 		NETWORK.destroy();
-		// Stop music and sound effects so they can be destroyed in the resource
-		// manager
-		AUDIO.stop();
 		// Destroy the resource manager
 		RESOURCES.destroy();
 		// Destroy the renderer
 		RENDERER.destroy();
-		// Destroy the audio system
-		AUDIO.destroy();
 
 		LOG << "Milkweed engine stopped\n";
 

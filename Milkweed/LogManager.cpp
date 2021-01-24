@@ -10,6 +10,8 @@
 #include "LogManager.h"
 
 namespace MW {
+	LogManager LogManager::m_instance;
+
 	void LogManager::init(const std::string& dirName, bool printToConsole) {
 		// Set whether to print messages to the console
 		m_printToConsole = printToConsole;

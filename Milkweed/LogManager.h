@@ -17,6 +17,10 @@ namespace MW {
 	class LogManager {
 	public:
 		/*
+		* Disable copy constructor
+		*/
+		LogManager(LogManager& lm) = delete;
+		/*
 		* Set up the file for this log manager to write messages into
 		* 
 		* @param printToConsole: Whether to print log messages to the console
@@ -68,6 +72,12 @@ namespace MW {
 		* Close this log manager's log file and free its memory
 		*/
 		void destroy();
+		/*
+		* Get the singleton instance of this class
+		*/
+		static LogManager& getInstance() {
+			return m_instance;
+		}
 
 	private:
 		// Whether to print new messages to the console with std::cout
@@ -76,5 +86,10 @@ namespace MW {
 		std::ofstream m_logFile;
 		// The format to print the date in
 		std::string m_dateFormat = "%Y.%m.%d.%H%M.%S";
+		// The singleton instance of this class
+		static LogManager m_instance;
+
+		// Disable constructor
+		LogManager() {}
 	};
 }

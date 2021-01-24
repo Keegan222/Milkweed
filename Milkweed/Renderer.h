@@ -26,6 +26,7 @@ namespace MW {
 	struct Label {
 		std::string text = "";
 		glm::vec3 position = glm::vec3();
+		glm::vec2 dimensions = glm::vec2();
 		float scale = 1.0f;
 		glm::vec3 color = glm::vec3();
 
@@ -39,6 +40,10 @@ namespace MW {
 	*/
 	class Renderer {
 	public:
+		/*
+		* Disable copy constructor
+		*/
+		Renderer(Renderer& r) = delete;
 		/*
 		* Set up this renderer in OpenGL
 		*/
@@ -89,6 +94,12 @@ namespace MW {
 			m_clearColor = clearColor;
 			glClearColor(clearColor.x, clearColor.y, clearColor.z, 1.0f);
 		}
+		/*
+		* Get the singleton instance of this class
+		*/
+		static Renderer& getInstance() {
+			return m_instance;
+		}
 
 	private:
 		// The vertex array for this renderer
@@ -105,7 +116,11 @@ namespace MW {
 		SortType m_sortType = SortType::DEPTH;
 		// Normalized RGB color to clear the screen to
 		glm::vec3 m_clearColor = glm::vec3();
+		// Singleton instance of this class
+		static Renderer m_instance;
 
+		// Disable constructor
+		Renderer() {}
 		/*
 		* Draw a set of sprites with a single texture
 		*/

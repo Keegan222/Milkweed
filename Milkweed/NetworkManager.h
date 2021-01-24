@@ -302,9 +302,9 @@ namespace MW {
 	class NetClient {
 	public:
 		/*
-		* Construct a new network client
+		* Disable copy constructor
 		*/
-		NetClient() : m_socket(m_context) {}
+		NetClient(NetClient& nc) = delete;
 		/*
 		* Initialize this client's network connection
 		* 
@@ -347,6 +347,12 @@ namespace MW {
 		* Disconnect this client and free it's memory
 		*/
 		void destroy();
+		/*
+		* Get the singleton instance of this class
+		*/
+		static NetClient& getInstance() {
+			return m_instance;
+		}
 
 	private:
 		// The ASIO context to do networking with
@@ -360,6 +366,11 @@ namespace MW {
 		// The queue for the connection to push messages from the server into
 		// the back of
 		TSQueue<NetMessage> m_messagesIn;
+		// The singleton instance of this class
+		static NetClient m_instance;
+
+		// Disable the constructor
+		NetClient() : m_socket(m_context) {}
 	};
 
 	/*
@@ -428,7 +439,7 @@ namespace MW {
 		// The queue of messages in from the clients connected to this server
 		TSQueue<NetMessage> m_messagesIn;
 		// The logging system for this server
-		LogManager m_log;
+		LogManager& m_log = LogManager::getInstance();
 
 		/*
 		* A client has made a connection to this server

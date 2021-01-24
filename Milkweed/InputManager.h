@@ -50,6 +50,10 @@ namespace MW {
 	class InputManager {
 	public:
 		/*
+		* Disable copy constructor
+		*/
+		InputManager(InputManager& im) = delete;
+		/*
 		* Register this input manager's callback functions with GLFW
 		*/
 		void init();
@@ -114,6 +118,12 @@ namespace MW {
 		* Get the position of the mouse cursor in world-space in a given camera
 		*/
 		glm::vec2 getCursorPosition(const Camera* camera) const;
+		/*
+		* Get the singleton instance of this class
+		*/
+		static InputManager& getInstance() {
+			return m_instance;
+		}
 
 	private:
 		// The input listeners attached to this input manager
@@ -128,7 +138,11 @@ namespace MW {
 		std::unordered_map<int, bool> m_prevButtons;
 		// The position of the mouse cursor on the window
 		glm::vec2 m_cursorPosition = glm::vec2();
+		// The singleton instance of this class
+		static InputManager m_instance;
 
+		// Disable constructor
+		InputManager() {}
 		/*
 		* GLFW callback function for keyboard input events
 		*/

@@ -15,7 +15,6 @@
 #include "InputManager.h"
 #include "Renderer.h"
 #include "ResourceManager.h"
-#include "AudioManager.h"
 #include "LogManager.h"
 
 namespace MW {
@@ -64,20 +63,20 @@ namespace MW {
 	class App {
 	public:
 		// The application's window
-		static Window WINDOW;
+		static Window& WINDOW;
 		// The application's input manager
-		static InputManager INPUT;
+		static InputManager& INPUT;
 		// The application's renderer
-		static Renderer RENDERER;
+		static Renderer& RENDERER;
 		// The application's resource manager
-		static ResourceManager RESOURCES;
-		// The application's audio manager
-		static AudioManager AUDIO;
+		static ResourceManager& RESOURCES;
 		// The application's logging system
-		static LogManager LOG;
+		static LogManager& LOG;
 		// The application's network client
-		static NetClient NETWORK;
+		static NetClient& NETWORK;
 
+		// Disable the copy constructor
+		App(App& a) = delete;
 		/*
 		* Set up and start an application using the Milkweed engine
 		* 
@@ -106,6 +105,10 @@ namespace MW {
 		// The active scene in this application
 		static Scene* SCENE;
 
+		/*
+		* Disable the constructor
+		*/
+		App() {}
 		/*
 		* Run the main loop of this application
 		*/

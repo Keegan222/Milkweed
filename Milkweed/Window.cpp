@@ -8,6 +8,8 @@
 #include "Window.h"
 
 namespace MW {
+	Window Window::m_instance;
+
 	bool Window::init(const WindowAttributes& attrib) {
 		// Initialize GLFW
 		if (glfwInit() != GLFW_TRUE) {

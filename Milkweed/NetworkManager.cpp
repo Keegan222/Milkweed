@@ -16,7 +16,7 @@ namespace MW {
 		m_messagesIn = messagesIn;
 		m_maxMessageSize = maxMessageSize;
 		m_tempMessage.owner = this->shared_from_this();
-		*m_log << "Initialized connection\n";
+		*m_log << "Initialized network connection\n";
 	}
 
 	void NetConnection::connectToServer(
@@ -234,13 +234,14 @@ namespace MW {
 		);
 	}
 
+	NetClient NetClient::m_instance;
+
 	void NetClient::init(unsigned int maxMessageSize) {
 		App::LOG << "Initializing network client with message size "
 			<< maxMessageSize << "\n";
 		m_connection = std::make_shared<NetConnection>(m_context, m_socket);
 		App::LOG << "Created connection\n";
 		m_connection->init(&App::LOG, &m_messagesIn, maxMessageSize);
-		App::LOG << "Initialized connection\n";
 	}
 
 	void NetClient::connect(const std::string& address, unsigned int port) {

@@ -41,6 +41,10 @@ namespace MW {
 	class Window {
 	public:
 		/*
+		* Disable copy constructor
+		*/
+		Window(Window& w) = delete;
+		/*
 		* Create and open a window using GLFW
 		* 
 		* @param attrib: The set of window attributes to create the window by
@@ -55,11 +59,22 @@ namespace MW {
 		* Get the dimensions of this window in pixels
 		*/
 		glm::ivec2 getDimensions() const { return m_dimensions; }
+		/*
+		* Get the singleton instance of this class
+		*/
+		static Window& getInstance() {
+			return m_instance;
+		}
 
 	private:
 		// The GLFW handle for this window
 		GLFWwindow* m_window = NULL;
 		// The dimensions of this window in pixels
 		glm::ivec2 m_dimensions = glm::ivec2();
+		// The singleton instance of this class
+		static Window m_instance;
+
+		// Disable the constructor
+		Window() {}
 	};
 }

@@ -11,6 +11,13 @@ public:
 	void update(float deltaTime) override;
 	void exit() override;
 	void destroy() override;
+
+private:
+	MW::Sound* m_music = nullptr;
+	MW::Sound* m_sound = nullptr;
+	MW::Shader m_shader;
+	MW::Font* m_font = nullptr;
+	MW::Label m_text;
 };
 
 class MWTest {

@@ -26,13 +26,15 @@ namespace MW {
 	struct Label {
 		std::string text = "";
 		glm::vec3 position = glm::vec3();
-		glm::vec2 dimensions = glm::vec2();
+		glm::vec4 bounds = glm::vec4();
 		float scale = 1.0f;
 		glm::vec3 color = glm::vec3();
 
-		Label(const std::string& Text, const glm::vec3& Position, float Scale,
+		Label() {}
+		Label(const std::string& Text, const glm::vec3& Position,
+			const glm::vec4& Bounds, float Scale,
 			const glm::vec3& Color) : text(Text), position(Position),
-			scale(Scale), color(Color) {}
+			bounds(Bounds), scale(Scale), color(Color) {}
 	};
 
 	/*

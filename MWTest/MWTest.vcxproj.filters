@@ -13,6 +13,18 @@
       <UniqueIdentifier>{67DA6AB6-F800-4c08-8B7A-83BB121AAD01}</UniqueIdentifier>
       <Extensions>rc;ico;cur;bmp;dlg;rc2;rct;bin;rgs;gif;jpg;jpeg;jpe;resx;tiff;tif;png;wav;mfcribbon-ms</Extensions>
     </Filter>
+    <Filter Include="Assets">
+      <UniqueIdentifier>{699a4b7a-1ac9-4628-b8fa-fd808201a3c9}</UniqueIdentifier>
+    </Filter>
+    <Filter Include="Assets\audio">
+      <UniqueIdentifier>{10be3440-9535-4419-9f01-c70c7de33bfe}</UniqueIdentifier>
+    </Filter>
+    <Filter Include="Assets\shader">
+      <UniqueIdentifier>{0ca10aeb-6538-4801-9da1-18ba1918404b}</UniqueIdentifier>
+    </Filter>
+    <Filter Include="Assets\font">
+      <UniqueIdentifier>{0e32820a-342a-4510-a745-6657d3cdfb62}</UniqueIdentifier>
+    </Filter>
   </ItemGroup>
   <ItemGroup>
     <ClInclude Include="MWTest.h">
@@ -23,5 +35,26 @@
     <ClCompile Include="MWTest.cpp">
       <Filter>Source Files</Filter>
     </ClCompile>
+  </ItemGroup>
+  <ItemGroup>
+    <Media Include="Assets\audio\music.wav">
+      <Filter>Assets\audio</Filter>
+    </Media>
+    <Media Include="Assets\audio\sound.wav">
+      <Filter>Assets\audio</Filter>
+    </Media>
+  </ItemGroup>
+  <ItemGroup>
+    <None Include="Assets\shader\text_fragment_shader.glsl">
+      <Filter>Assets\shader</Filter>
+    </None>
+    <None Include="Assets\shader\text_vertex_shader.glsl">
+      <Filter>Assets\shader</Filter>
+    </None>
+  </ItemGroup>
+  <ItemGroup>
+    <Font Include="Assets\font\arial.ttf">
+      <Filter>Assets\font</Filter>
+    </Font>
   </ItemGroup>
 </Project>

@@ -16,6 +16,7 @@ namespace MW {
 	ResourceManager& App::RESOURCES = ResourceManager::getInstance();
 	LogManager& App::LOG = LogManager::getInstance();
 	NetClient& App::NETWORK = NetClient::getInstance();
+	AudioManager& App::AUDIO = AudioManager::getInstance();
 
 	// Instantiate the application's private static members
 	float App::PHYSICS_SPU;
@@ -51,6 +52,11 @@ namespace MW {
 		if (!RESOURCES.init()) {
 			LOG << "Failed to initialize FreeType, "
 				<< "font loading will be disabled\n";
+		}
+
+		// Initialize the audio manager
+		if (!AUDIO.init()) {
+			LOG << "Failed to initialize audio system\n";
 		}
 
 		// Initialize the networking system
@@ -150,6 +156,8 @@ namespace MW {
 			s->destroy();
 		}
 		
+		// Stop the audio system
+		AUDIO.destroy();
 		// Stop the network client
 		NETWORK.destroy();
 		// Destroy the resource manager

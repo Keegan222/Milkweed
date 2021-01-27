@@ -12,6 +12,7 @@
 
 namespace MW {
 	Texture* ResourceManager::NO_TEXTURE = new Texture();
+	Sound* ResourceManager::NO_SOUND = new Sound();
 	Font* ResourceManager::NO_FONT = new Font();
 	ResourceManager ResourceManager::m_instance;
 
@@ -89,6 +90,60 @@ namespace MW {
 		return &m_textures[fileName];
 	}
 
+	Sound* ResourceManager::getSound(const std::string& fileName) {
+		// Attempt to find the sound in memory
+		std::unordered_map<std::string, Sound>::iterator it
+			= m_sounds.find(fileName);
+		if (it != m_sounds.end()) {
+			// The sound was found in memory, return it
+			return &m_sounds[fileName];
+		}
+
+		// The sound was not found in memory and must be loaded from the disk
+		// Get the header information and the sound data
+		std::uint8_t channels;
+		std::int32_t sampleRate;
+		std::uint8_t bitsPerSample;
+		ALsizei size;
+		char* soundData = loadWAV(fileName, channels, sampleRate,
+			bitsPerSample, size);
+		if (soundData == nullptr) {
+			App::LOG << "Failed to load sound " << fileName << "\n";
+			return NO_SOUND;
+		}
+
+		// Derive the sound's OpenAL format from the header info
+		ALenum format;
+		if (channels == 1 && bitsPerSample == 8) {
+			format = AL_FORMAT_MONO8;
+		}
+		else if (channels == 1 && bitsPerSample == 16) {
+			format = AL_FORMAT_MONO16;
+		}
+		else if (channels == 2 && bitsPerSample == 8) {
+			format = AL_FORMAT_STEREO8;
+		}
+		else if (channels == 2 && bitsPerSample == 16) {
+			format = AL_FORMAT_STEREO16;
+		}
+		else {
+			App::LOG << "Sound " << fileName
+				<< " is in invalid format for OpenAL\n";
+			return NO_SOUND;
+		}
+
+		// Create the sound buffer and upload the sound data to it, then remove
+		// the sound data from RAM
+		Sound sound;
+		alGenBuffers(1, &sound.soundID);
+		alBufferData(sound.soundID, format, soundData, size, sampleRate);
+		delete soundData;
+
+		// Place the new sound into the map and return it
+		m_sounds[fileName] = sound;
+		return &m_sounds[fileName];
+	}
+
 	Font* ResourceManager::getFont(const std::string& fileName) {
 		if (!m_fontLoadingEnabled) {
 			// If font loading is disabled because FT could not be initialized,
@@ -161,6 +216,13 @@ namespace MW {
 		}
 		m_textures.clear();
 
+		// Delete all the sounds loaded into memory from OpenAL
+		for (std::pair<std::string, Sound> pair : m_sounds) {
+			App::LOG << "Delete sound " << pair.second.soundID << "\n";
+			alDeleteBuffers(1, &pair.second.soundID);
+		}
+		m_sounds.clear();
+
 		// Delete all fonts loaded into memory and dispose of the FreeType lib
 		for (std::pair<std::string, Font> pair : m_fonts) {
 			App::LOG << "Delete font " << pair.first << "\n";
@@ -170,5 +232,149 @@ namespace MW {
 			}
 		}
 		FT_Done_FreeType(m_freeTypeLibrary);
+	}
+
+	std::int32_t ResourceManager::toInt(char* buffer, std::size_t len) {
+		std::int32_t a = 0;
+		std::memcpy(&a, buffer, len);
+		return a;
+	}
+
+	bool ResourceManager::loadWAVHeader(std::ifstream& file,
+		std::uint8_t& channels, std::int32_t& sampleRate,
+		std::uint8_t& bitsPerSample, ALsizei& size) {
+		char buffer[4];
+		if (!file.is_open()) {
+			App::LOG << "Failed to open WAV file header\n";
+			return false;
+		}
+
+		// Check the "RIFF" header (chunkID)
+		if (!file.read(buffer, 4)) {
+			App::LOG << "Failed to read RIFF\n";
+			return false;
+		}
+		if (std::strncmp(buffer, "RIFF", 4) != 0) {
+			App::LOG << "File is not in valid WAVE format\n";
+			return false;
+		}
+
+		// Discard the size of the file (chunkSize)
+		if (!file.read(buffer, 4)) {
+			App::LOG << "Failed to read file size\n";
+			return false;
+		}
+
+		// Check the "WAVE" header (format)
+		if (!file.read(buffer, 4)) {
+			App::LOG << "Failed to read WAVE\n";
+			return false;
+		}
+		if (std::strncmp(buffer, "WAVE", 4) != 0) {
+			App::LOG << "File is not in valid WAVE format\n";
+			return false;
+		}
+
+		// Check the "fmt" header (subchunk1ID)
+		if (!file.read(buffer, 4)) {
+			App::LOG << "Failed to read fmt\n";
+			return false;
+		}
+		if (std::strncmp(buffer, "fmt", 3) != 0) {
+			App::LOG << "File is not in valid WAVE format\n";
+			return false;
+		}
+
+		// Discard the size of the format chunk (subchunk1Size)
+		if (!file.read(buffer, 4)) {
+			App::LOG << "Failed to read format chunk size\n";
+			return false;
+		}
+
+		// Discard the audio format which should be 1 for PCM (audioFormat)
+		if (!file.read(buffer, 2)) {
+			App::LOG << "Failed to read audio format\n";
+			return false;
+		}
+
+		// Get the number of channels (numChannels)
+		if (!file.read(buffer, 2)) {
+			App::LOG << "Failed to read channel count\n";
+			return false;
+		}
+		channels = toInt(buffer, 2);
+
+		// Get the sample rate (sampleRate)
+		if (!file.read(buffer, 4)) {
+			App::LOG << "Failed to read the sample rate\n";
+			return false;
+		}
+		sampleRate = toInt(buffer, 4);
+
+		// Discard the byte rate (byteRate)
+		if (!file.read(buffer, 4)) {
+			App::LOG << "Failed to read the byte rate\n";
+			return false;
+		}
+
+		// Discard the block alignment (blockAlign)
+		if (!file.read(buffer, 2)) {
+			App::LOG << "Failed to read the block alignment\n";
+			return false;
+		}
+
+		// Get the bits in each sample (bitsPerSample)
+		if (!file.read(buffer, 2)) {
+			App::LOG << "Failed to read the bits in each sample\n";
+			return false;
+		}
+		bitsPerSample = toInt(buffer, 2);
+
+		// Check the "data" header (subchunk2ID)
+		if (!file.read(buffer, 4)) {
+			App::LOG << "Failed to read the data header\n";
+			return false;
+		}
+		if (std::strncmp(buffer, "data", 4) != 0) {
+			App::LOG << "File is in invalid WAVE format\n";
+			return false;
+		}
+
+		// Get the size of the audio data (subchunk2Size)
+		if (!file.read(buffer, 4)) {
+			App::LOG << "Failed to read the size of the audio data\n";
+			return false;
+		}
+		size = toInt(buffer, 4);
+
+		if (file.eof()) {
+			App::LOG << "File contains no audio data\n";
+			return false;
+		}
+		if (file.fail()) {
+			App::LOG << "File could not be read further\n";
+			return false;
+		}
+
+		return true;
+	}
+
+	char* ResourceManager::loadWAV(const std::string& fileName,
+		std::uint8_t& channels, std::int32_t& sampleRate,
+		std::uint8_t& bitsPerSample, ALsizei& size) {
+		std::ifstream in(fileName, std::ios::binary);
+		if (!in.is_open()) {
+			App::LOG << "Failed to open file " << fileName << "\n";
+			return nullptr;
+		}
+		if (!loadWAVHeader(in, channels, sampleRate, bitsPerSample, size)) {
+			App::LOG << "Failed to read file header for " << fileName << "\n";
+			return nullptr;
+		}
+
+		char* data = new char[size];
+		in.read(data, size);
+		in.close();
+		return data;
 	}
 }

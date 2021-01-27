@@ -12,6 +12,117 @@
 
 namespace MW {
 	/*
+	* Wrapper for GLFW key bindings
+	*/
+	enum class Key : int {
+		// Key not recognized
+		UNKNOWN = GLFW_KEY_UNKNOWN,
+
+		// Function keys
+		F_ESCAPE = GLFW_KEY_ESCAPE,
+		F_1 = GLFW_KEY_F1,
+		F_2 = GLFW_KEY_F2,
+		F_3 = GLFW_KEY_F3,
+		F_4 = GLFW_KEY_F4,
+		F_5 = GLFW_KEY_F5,
+		F_6 = GLFW_KEY_F6,
+		F_7 = GLFW_KEY_F7,
+		F_8 = GLFW_KEY_F8,
+		F_9 = GLFW_KEY_F9,
+		F_10 = GLFW_KEY_F10,
+		F_11 = GLFW_KEY_F11,
+		F_12 = GLFW_KEY_F12,
+		F_PRINT_SCREEN = GLFW_KEY_PRINT_SCREEN,
+		F_INSERT = GLFW_KEY_INSERT,
+		F_DELETE = GLFW_KEY_DELETE,
+		F_BACKSPACE = GLFW_KEY_BACKSPACE,
+		F_TAB = GLFW_KEY_TAB,
+		F_CAPS_LOCK = GLFW_KEY_CAPS_LOCK,
+		F_ENTER = GLFW_KEY_ENTER,
+		F_LEFT_SHIFT = GLFW_KEY_LEFT_SHIFT,
+		F_RIGHT_SHIFT = GLFW_KEY_RIGHT_SHIFT,
+		F_LEFT_CONTROL = GLFW_KEY_LEFT_CONTROL,
+		F_LEFT_ALT = GLFW_KEY_LEFT_ALT,
+		F_RIGHT_ALT = GLFW_KEY_RIGHT_ALT,
+		F_RIGHT_CONTROL = GLFW_KEY_RIGHT_CONTROL,
+		F_UP = GLFW_KEY_UP,
+		F_DOWN = GLFW_KEY_DOWN,
+		F_LEFT = GLFW_KEY_LEFT,
+		F_RIGHT = GLFW_KEY_RIGHT,
+
+		// Symbols
+		S_SPACE = GLFW_KEY_SPACE, /*   */
+		S_GRAVE_SYMBOL = GLFW_KEY_GRAVE_ACCENT, /* ` */
+		S_MINUS = GLFW_KEY_MINUS, /* - */
+		S_EQUALS = GLFW_KEY_EQUAL, /* = */
+		S_LEFT_BRACKET = GLFW_KEY_LEFT_BRACKET, /* [ */
+		S_RIGHT_BRACKET = GLFW_KEY_RIGHT_BRACKET, /* ] */
+		S_BACKSLASH = GLFW_KEY_BACKSLASH, /* \ */
+		S_SEMICOLON = GLFW_KEY_SEMICOLON, /* ; */
+		S_APOSTROPHE = GLFW_KEY_APOSTROPHE, /* ' */
+		S_COMMA = GLFW_KEY_COMMA, /* , */
+		S_PERIOD = GLFW_KEY_PERIOD, /* . */
+		S_SLASH = GLFW_KEY_SLASH, /* / */
+
+		// Number keys
+		K_0 = GLFW_KEY_0, /* 0 */
+		K_1 = GLFW_KEY_1, /* 1 */
+		K_2 = GLFW_KEY_2, /* 2 */
+		K_3 = GLFW_KEY_3, /* 3 */
+		K_4 = GLFW_KEY_4, /* 4 */
+		K_5 = GLFW_KEY_5, /* 5 */
+		K_6 = GLFW_KEY_6, /* 6 */
+		K_7 = GLFW_KEY_7, /* 7 */
+		K_8 = GLFW_KEY_8, /* 8 */
+		K_9 = GLFW_KEY_9, /* 9 */
+
+		// Letter keys
+		K_A = GLFW_KEY_A, /* A */
+		K_B = GLFW_KEY_B, /* B */
+		K_C = GLFW_KEY_C, /* C */
+		K_D = GLFW_KEY_D, /* D */
+		K_E = GLFW_KEY_E, /* E */
+		K_F = GLFW_KEY_F, /* F */
+		K_G = GLFW_KEY_G, /* G */
+		K_H = GLFW_KEY_H, /* H */
+		K_I = GLFW_KEY_I, /* I */
+		K_J = GLFW_KEY_J, /* J */
+		K_K = GLFW_KEY_K, /* K */
+		K_L = GLFW_KEY_L, /* L */
+		K_M = GLFW_KEY_M, /* M */
+		K_N = GLFW_KEY_N, /* N */
+		K_O = GLFW_KEY_O, /* O */
+		K_P = GLFW_KEY_P, /* P */
+		K_Q = GLFW_KEY_Q, /* Q */
+		K_R = GLFW_KEY_R, /* R */
+		K_S = GLFW_KEY_S, /* S */
+		K_T = GLFW_KEY_T, /* T */
+		K_U = GLFW_KEY_U, /* U */
+		K_V = GLFW_KEY_V, /* V */
+		K_W = GLFW_KEY_W, /* W */
+		K_X = GLFW_KEY_X, /* X */
+		K_Y = GLFW_KEY_Y, /* Y */
+		K_Z = GLFW_KEY_Z, /* Z */
+	};
+
+	/*
+	* Wrapper for GLFW mouse button bindings
+	*/
+	enum class Button : int {
+		B_1 = GLFW_MOUSE_BUTTON_1,
+		B_2 = GLFW_MOUSE_BUTTON_2,
+		B_3 = GLFW_MOUSE_BUTTON_3,
+		B_4 = GLFW_MOUSE_BUTTON_4,
+		B_5 = GLFW_MOUSE_BUTTON_5,
+		B_6 = GLFW_MOUSE_BUTTON_6,
+		B_7 = GLFW_MOUSE_BUTTON_7,
+		B_8 = GLFW_MOUSE_BUTTON_8,
+		B_LEFT = GLFW_MOUSE_BUTTON_LEFT,
+		B_RIGHT = GLFW_MOUSE_BUTTON_RIGHT,
+		B_MIDDLE = GLFW_MOUSE_BUTTON_MIDDLE,
+	};
+
+	/*
 	* An interface for listening for GLFW user input callbacks in the
 	* application's input manager
 	*/

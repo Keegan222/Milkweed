@@ -104,7 +104,16 @@ namespace MW {
 			if (it == m_text.end()) {
 				m_text[shader] = std::vector<Character>();
 			}
-			m_text[shader].push_back(characters[i]);
+			if (characters[i].position.x >= label.bounds.x
+				&& characters[i].position.y >= label.bounds.y
+				&& characters[i].position.x + characters[i].dimensions.x
+					<= label.bounds.x + label.bounds.z
+				&& characters[i].position.y + characters[i].dimensions.y
+					<= label.bounds.y + label.bounds.w) {
+				// Submit this character for rendering if it is in the bounds
+				// of the label
+				m_text[shader].push_back(characters[i]);
+			}
 		}
 	}
 

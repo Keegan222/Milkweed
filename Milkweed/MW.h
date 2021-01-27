@@ -16,6 +16,7 @@
 #include "Renderer.h"
 #include "ResourceManager.h"
 #include "LogManager.h"
+#include "AudioManager.h"
 
 namespace MW {
 	/*
@@ -74,6 +75,8 @@ namespace MW {
 		static LogManager& LOG;
 		// The application's network client
 		static NetClient& NETWORK;
+		// The application audio player
+		static AudioManager& AUDIO;
 
 		// Disable the copy constructor
 		App(App& a) = delete;

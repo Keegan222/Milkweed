@@ -156,6 +156,17 @@
   <ItemGroup>
     <ClCompile Include="MWTest.cpp" />
   </ItemGroup>
+  <ItemGroup>
+    <Media Include="Assets\audio\music.wav" />
+    <Media Include="Assets\audio\sound.wav" />
+  </ItemGroup>
+  <ItemGroup>
+    <None Include="Assets\shader\text_fragment_shader.glsl" />
+    <None Include="Assets\shader\text_vertex_shader.glsl" />
+  </ItemGroup>
+  <ItemGroup>
+    <Font Include="Assets\font\arial.ttf" />
+  </ItemGroup>
   <Import Project="$(VCTargetsPath)\Microsoft.Cpp.targets" />
   <ImportGroup Label="ExtensionTargets">
   </ImportGroup>

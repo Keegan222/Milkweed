@@ -1,5 +1,5 @@
 /*
-* File: NetworkManager.h
+* File: Network.h
 * Author: Keegan MacDonald (keeganm742@gmail.com)
 * Date: 2020.12.26.1852
 */
@@ -23,7 +23,7 @@
 #include <asio/ts/internet.hpp>
 #include <asio/ts/buffer.hpp>
 
-#include "LogManager.h"
+#include "Log.h"
 
 namespace MW {
 	/*
@@ -208,14 +208,14 @@ namespace MW {
 		* Initialize this connection with a context and a place to send incoming
 		* messages (for NetClient's)
 		* 
-		* @param log: A pointer to a LogManager for this connection to print
+		* @param log: A pointer to a Log for this connection to print
 		* messages to
 		* @param messagesIn: A pointer to a TSQueue of NetMessage's for this
 		* connection to push back incoming messages to
 		* @param maxMessageSize: The maximum message body size which can be
 		* received by this connection in bytes (1024 by default)
 		*/
-		void init(LogManager* log, TSQueue<NetMessage>* messagesIn,
+		void init(Log* log, TSQueue<NetMessage>* messagesIn,
 			unsigned int maxMessageSize = 1024);
 		/*
 		* Attach this connection to a remote server (for NetClient's only)
@@ -266,7 +266,7 @@ namespace MW {
 		// Whether this connection is connected to a remote machine
 		bool m_connected = false;
 		// The logging system for this connection
-		LogManager* m_log = nullptr;
+		Log* m_log = nullptr;
 		// The ASIO context to perform networking within
 		asio::io_context& m_context;
 		// The ASIO socket to read and write data with
@@ -439,7 +439,7 @@ namespace MW {
 		// The queue of messages in from the clients connected to this server
 		TSQueue<NetMessage> m_messagesIn;
 		// The logging system for this server
-		LogManager& m_log = LogManager::getInstance();
+		Log& m_log = Log::getInstance();
 
 		/*
 		* A client has made a connection to this server

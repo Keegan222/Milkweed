@@ -14,7 +14,7 @@ namespace MW {
 	InputManager& App::INPUT = InputManager::getInstance();
 	Renderer& App::RENDERER = Renderer::getInstance();
 	ResourceManager& App::RESOURCES = ResourceManager::getInstance();
-	LogManager& App::LOG = LogManager::getInstance();
+	Log& App::LOG = Log::getInstance();
 	NetClient& App::NETWORK = NetClient::getInstance();
 	AudioManager& App::AUDIO = AudioManager::getInstance();
 
@@ -23,8 +23,9 @@ namespace MW {
 	std::vector<Scene*> App::SCENES;
 	Scene* App::SCENE = nullptr;
 
-	void App::Init(const WindowAttributes& windowAttrib, float physicsUPS,
-		const std::vector<Scene*>& scenes, Scene* scene) {
+	void App::Init(const std::string& windowTitle,
+		const glm::ivec2& windowDimensions, bool windowFullScreen,
+		float physicsUPS, const std::vector<Scene*>& scenes, Scene* scene) {
 		// Initialize the logging system
 #ifdef _DEBUG
 		LOG.init("mwlog/", true);
@@ -36,7 +37,7 @@ namespace MW {
 		PHYSICS_SPU = 1.0f / physicsUPS;
 
 		// Initialize the window
-		if (!WINDOW.init(windowAttrib)) {
+		if (!WINDOW.init(windowTitle, windowDimensions, windowFullScreen)) {
 			// Could not open the window
 			LOG << "Failed to open the application's window\n";
 			return;
@@ -156,12 +157,12 @@ namespace MW {
 			s->destroy();
 		}
 		
+		// Destroy the resource manager
+		RESOURCES.destroy();
 		// Stop the audio system
 		AUDIO.destroy();
 		// Stop the network client
 		NETWORK.destroy();
-		// Destroy the resource manager
-		RESOURCES.destroy();
 		// Destroy the renderer
 		RENDERER.destroy();
 

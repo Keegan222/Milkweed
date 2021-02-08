@@ -1,5 +1,5 @@
 /*
-* File: LogManager.cpp
+* File: Log.cpp
 * Author: Keegan MacDonald
 * Date: 2021.01.08.2115
 */
@@ -7,12 +7,12 @@
 #include <time.h>
 #include <direct.h>
 
-#include "LogManager.h"
+#include "Log.h"
 
 namespace MW {
-	LogManager LogManager::m_instance;
+	Log Log::m_instance;
 
-	void LogManager::init(const std::string& dirName, bool printToConsole) {
+	void Log::init(const std::string& dirName, bool printToConsole) {
 		// Set whether to print messages to the console
 		m_printToConsole = printToConsole;
 		
@@ -21,7 +21,7 @@ namespace MW {
 		m_logFile.open(dirName + "/" + getDate() + ".mwlog");
 	}
 
-	std::string LogManager::getDate() {
+	std::string Log::getDate() {
 		// Get the current time
 		time_t now = time(0);
 		tm tstruct;
@@ -32,7 +32,7 @@ namespace MW {
 		return std::string(buffer);
 	}
 
-	void LogManager::destroy() {
+	void Log::destroy() {
 		// Close the log file
 		m_logFile.close();
 	}

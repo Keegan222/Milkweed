@@ -10,15 +10,12 @@
 #include "MW.h"
 #include "Renderer.h"
 #include "Sprite.h"
-#include "ResourceManager.h"
+#include "Resources.h"
 
 namespace MW {
 	Renderer Renderer::m_instance;
 
 	void Renderer::init() {
-		// Give the window the OpenGL context
-		glfwMakeContextCurrent(App::WINDOW.getWindowHandle());
-
 		// Initialize GLEW and get the running OpenGL version
 		if (glewInit() != GLEW_OK) {
 			// GLEW could not be initialize
@@ -57,7 +54,6 @@ namespace MW {
 		// frame
 		glClear(GL_COLOR_BUFFER_BIT);
 		m_sprites.clear();
-		m_text.clear();
 	}
 
 	void Renderer::submit(const std::vector<Sprite*>& sprites, Shader* shader) {
@@ -77,48 +73,8 @@ namespace MW {
 		}
 	}
 
-	void Renderer::submit(const Label& label, Font* font,
-		Shader* shader) {
-		// Get the characters for this string in order
-		std::vector<Character> characters;
-		for (std::string::const_iterator c = label.text.begin();
-			c < label.text.end(); c++) {
-			characters.push_back(font->characters[*c]);
-		}
-
-		float x = label.position.x;
-		for (unsigned int i = 0; i < characters.size(); i++) {
-			// Set the position and dimensions of the character and advance
-			// to the position of the next one
-			characters[i].position.x = x + characters[i].bearing.x * label.scale;
-			characters[i].position.y = label.position.y
-				- (characters[i].dimensions.y - characters[i].bearing.y)
-				* label.scale;
-			characters[i].position.z = label.position.z;
-			characters[i].dimensions *= label.scale;
-			x += (characters[i].offset >> 6) * label.scale;
-			
-			// Attempt to find the shader in the text map
-			std::unordered_map<Shader*, std::vector<Character>>::iterator it
-				= m_text.find(shader);
-			if (it == m_text.end()) {
-				m_text[shader] = std::vector<Character>();
-			}
-			if (characters[i].position.x >= label.bounds.x
-				&& characters[i].position.y >= label.bounds.y
-				&& characters[i].position.x + characters[i].dimensions.x
-					<= label.bounds.x + label.bounds.z
-				&& characters[i].position.y + characters[i].dimensions.y
-					<= label.bounds.y + label.bounds.w) {
-				// Submit this character for rendering if it is in the bounds
-				// of the label
-				m_text[shader].push_back(characters[i]);
-			}
-		}
-	}
-
 	bool compareSpriteTexture(const Sprite* a, const Sprite* b) {
-		return a->texture->textureID < b->texture->textureID;
+		return a->texture.textureID < b->texture.textureID;
 	}
 	
 	bool compareSpriteDepth(const Sprite* a, const Sprite* b) {
@@ -126,16 +82,6 @@ namespace MW {
 	}
 
 	void Renderer::end() {
-		// Submit all the characters to be rendered this frame as sprites
-		for (std::pair<Shader*, std::vector<Character>> text : m_text) {
-			Shader* shader = text.first;
-			std::vector<Sprite*> sprites(text.second.size());
-			for (unsigned int i = 0; i < sprites.size(); i++) {
-				sprites[i] = &(m_text[shader][i]);
-			}
-			submit(sprites, shader);
-		}
-
 		for (std::pair<Shader*, std::vector<Sprite*>> shaderBatch : m_sprites) {
 			// Get the shader to render this batch of sprites with
 			Shader* shader = shaderBatch.first;
@@ -161,7 +107,7 @@ namespace MW {
 			for (unsigned int i = 0; i < m_sprites[shader].size(); i++) {
 				Sprite* sprite = m_sprites[shader][i];
 				// Test if a new texture group has started
-				if (currentTextureID != sprite->texture->textureID) {
+				if (currentTextureID != sprite->texture.textureID) {
 					if (spriteCount > 0) {
 						// If there were sprites in the last texture batch,
 						// draw them
@@ -169,7 +115,7 @@ namespace MW {
 					}
 
 					// Reset the vertex data and bind the new texture
-					currentTextureID = sprite->texture->textureID;
+					currentTextureID = sprite->texture.textureID;
 					glBindTexture(GL_TEXTURE_2D, currentTextureID);
 					vertexData.clear();
 					spriteCount = 0;

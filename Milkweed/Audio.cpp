@@ -65,12 +65,11 @@ namespace MW {
 		}
 	}
 
-	void AudioManager::playMusic(const Sound* music) {
+	void AudioManager::playMusic(const Sound& music) {
 		stopMusic();
-		if (music == nullptr) {
-			return;
-		}
-		alSourcei(m_musicSourceID, AL_BUFFER, music->soundID);
+
+		// Play the new music
+		alSourcei(m_musicSourceID, AL_BUFFER, music.soundID);
 		playMusic();
 	}
 
@@ -87,7 +86,7 @@ namespace MW {
 		alSourcei(m_musicSourceID, AL_BUFFER, 0);
 	}
 
-	void AudioManager::playSound(const Sound* sound) {
+	void AudioManager::playSound(const Sound& sound) {
 		// Find a sound effect source which is not currently playing or paused
 		ALuint source = 0;
 		for (unsigned int i = 0; i < m_effectSources.size(); i++) {
@@ -105,11 +104,12 @@ namespace MW {
 		}
 
 		// Bind the buffer to the source and play it
-		alSourcei(source, AL_BUFFER, sound->soundID);
+		alSourcei(source, AL_BUFFER, sound.soundID);
 		alSourcePlay(source);
 	}
 
 	void AudioManager::stop() {
+		App::LOG << "Stopping audio manager!!!\n";
 		// Stop the music track
 		stopMusic();
 

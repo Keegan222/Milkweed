@@ -5,7 +5,7 @@
 */
 
 #include "MW.h"
-#include "InputManager.h"
+#include "Input.h"
 
 namespace MW {
 	InputManager InputManager::m_instance;

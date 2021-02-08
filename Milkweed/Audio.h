@@ -9,7 +9,7 @@
 #include <AL/al.h>
 #include <AL/alc.h>
 
-#include "ResourceManager.h"
+#include "Resources.h"
 
 namespace MW {
 	/*
@@ -56,7 +56,7 @@ namespace MW {
 		*
 		* @param music: A pointer to the music to play
 		*/
-		void playMusic(const Sound* sound);
+		void playMusic(const Sound& sound);
 		/*
 		* Play the most recently played music track
 		*/
@@ -74,7 +74,7 @@ namespace MW {
 		*
 		* @param sound: A pointer to the sound effect to play
 		*/
-		void playSound(const Sound* sound);
+		void playSound(const Sound& sound);
 		/*
 		* Stop the music track and all sound effects
 		*/

@@ -1,5 +1,5 @@
 /*
-* File: LogManager.h
+* File: Log.h
 * Author: Keegan MacDonald
 * Date: 2021.01.08.2110
 */
@@ -14,12 +14,12 @@ namespace MW {
 	* A system for managing log files and writing messages to a file and the
 	* console, wrapper for an std::ofstream
 	*/
-	class LogManager {
+	class Log {
 	public:
 		/*
 		* Disable copy constructor
 		*/
-		LogManager(LogManager& lm) = delete;
+		Log(Log& lm) = delete;
 		/*
 		* Set up the file for this log manager to write messages into
 		* 
@@ -36,7 +36,7 @@ namespace MW {
 		* @return The log manager with new data pushed into its log file
 		*/
 		template <typename T>
-		friend LogManager& operator << (LogManager& ls, const T& t) {
+		friend Log& operator << (Log& ls, const T& t) {
 			// TODO: Print timestamps at the beginning of each message
 			if (ls.m_printToConsole) {
 				std::cout << t;
@@ -75,7 +75,7 @@ namespace MW {
 		/*
 		* Get the singleton instance of this class
 		*/
-		static LogManager& getInstance() {
+		static Log& getInstance() {
 			return m_instance;
 		}
 
@@ -87,9 +87,9 @@ namespace MW {
 		// The format to print the date in
 		std::string m_dateFormat = "%Y.%m.%d.%H%M.%S";
 		// The singleton instance of this class
-		static LogManager m_instance;
+		static Log m_instance;
 
 		// Disable constructor
-		LogManager() {}
+		Log() {}
 	};
 }

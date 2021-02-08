@@ -8,31 +8,23 @@
 #include <iostream>
 
 #include "MW.h"
-#include "ResourceManager.h"
+#include "Resources.h"
 
 namespace MW {
-	Texture* ResourceManager::NO_TEXTURE = new Texture();
-	Sound* ResourceManager::NO_SOUND = new Sound();
-	Font* ResourceManager::NO_FONT = new Font();
+	Texture ResourceManager::NO_TEXTURE;
+	Sound ResourceManager::NO_SOUND;
 	ResourceManager ResourceManager::m_instance;
 
 	bool ResourceManager::init() {
-		// Initialize freetype
-		if (FT_Init_FreeType(&m_freeTypeLibrary) != FT_Err_Ok) {
-			m_fontLoadingEnabled = false;
-			return false;
-		}
-
-		m_fontLoadingEnabled = true;
 		return true;
 	}
 
-	Texture* ResourceManager::getTexture(const std::string& fileName) {
+	Texture& ResourceManager::getTexture(const std::string& fileName) {
 		std::unordered_map<std::string, Texture>::iterator it
 			= m_textures.find(fileName);
 		if (it != m_textures.end()) {
 			// The texture is already present in memory, return it
-			return &m_textures[fileName];
+			return m_textures[fileName];
 		}
 
 		// The texture is not present in memory and must be loaded
@@ -56,6 +48,7 @@ namespace MW {
 		else {
 			// The file could not be read
 			App::LOG << "Failed to read texture data file\n";
+			throw ResourceException("Failed to read texture data file");
 			return NO_TEXTURE;
 		}
 
@@ -68,6 +61,7 @@ namespace MW {
 			// The texture could not be decoded in PNG format
 			App::LOG << "Failed to decode PNG texture with code " << status
 				<< "\n";
+			throw ResourceException("Failed to decode PNG texture");
 			return NO_TEXTURE;
 		}
 
@@ -85,18 +79,21 @@ namespace MW {
 		glBindTexture(GL_TEXTURE_2D, 0);
 
 		// Add this texture to the map of textures in memory
-		m_textures[fileName] = Texture(textureID, (unsigned int)textureWidth,
-			(unsigned int)textureHeight);
-		return &m_textures[fileName];
+		Texture texture;
+		texture.textureID = textureID;
+		texture.width = textureWidth;
+		texture.height = textureHeight;
+		m_textures[fileName] = texture;
+		return m_textures[fileName];
 	}
 
-	Sound* ResourceManager::getSound(const std::string& fileName) {
+	Sound& ResourceManager::getSound(const std::string& fileName) {
 		// Attempt to find the sound in memory
 		std::unordered_map<std::string, Sound>::iterator it
 			= m_sounds.find(fileName);
 		if (it != m_sounds.end()) {
 			// The sound was found in memory, return it
-			return &m_sounds[fileName];
+			return m_sounds[fileName];
 		}
 
 		// The sound was not found in memory and must be loaded from the disk
@@ -109,6 +106,7 @@ namespace MW {
 			bitsPerSample, size);
 		if (soundData == nullptr) {
 			App::LOG << "Failed to load sound " << fileName << "\n";
+			throw ResourceException("Failed to read sound file");
 			return NO_SOUND;
 		}
 
@@ -129,6 +127,7 @@ namespace MW {
 		else {
 			App::LOG << "Sound " << fileName
 				<< " is in invalid format for OpenAL\n";
+			throw ResourceException("Sound in invalid WAV format");
 			return NO_SOUND;
 		}
 
@@ -141,71 +140,7 @@ namespace MW {
 
 		// Place the new sound into the map and return it
 		m_sounds[fileName] = sound;
-		return &m_sounds[fileName];
-	}
-
-	Font* ResourceManager::getFont(const std::string& fileName) {
-		if (!m_fontLoadingEnabled) {
-			// If font loading is disabled because FT could not be initialized,
-			// do not attempt to load this font
-			return NO_FONT;
-		}
-
-		std::unordered_map<std::string, Font>::iterator it
-			= m_fonts.find(fileName);
-		if (it != m_fonts.end()) {
-			// The font was found in memory, return it
-			return &m_fonts[fileName];
-		}
-
-		// The font was not found in memory and must be loaded from the disk
-		FT_Face face;
-		if (FT_New_Face(m_freeTypeLibrary, fileName.c_str(), 0, &face)
-			!= FT_Err_Ok) {
-			// The font could not be loaded from disk
-			return NO_FONT;
-		}
-		// Set the point size to load the font at
-		FT_Set_Pixel_Sizes(face, 0, m_fontPointSize);
-
-		// Create a new font object
-		Font font;
-		// Iterate over the first 128 characters
-		for (unsigned char c = 0; c < 128; c++) {
-			// Load the character
-			FT_Error error = FT_Load_Char(face, c, FT_LOAD_RENDER);
-			if (error != FT_Err_Ok) {
-				App::LOG << "Failed to load character " << c << " with code "
-					<< error << "\n";
-				// This character is not in the font
-				continue;
-			}
-			// Allocate a new texture for this character and upload FreeType
-			// data to it in OpenGL
-			Texture* texture = new Texture();
-			glGenTextures(1, &texture->textureID);
-			glBindTexture(GL_TEXTURE_2D, texture->textureID);
-			glTexParameteri(GL_TEXTURE_2D, GL_TEXTURE_WRAP_S, GL_CLAMP_TO_EDGE);
-			glTexParameteri(GL_TEXTURE_2D, GL_TEXTURE_WRAP_T, GL_CLAMP_TO_EDGE);
-			glTexParameteri(GL_TEXTURE_2D, GL_TEXTURE_MIN_FILTER, GL_LINEAR);
-			glTexParameteri(GL_TEXTURE_2D, GL_TEXTURE_MAG_FILTER, GL_LINEAR);
-			glTexImage2D(GL_TEXTURE_2D, 0, GL_RED, face->glyph->bitmap.width,
-				face->glyph->bitmap.rows, 0, GL_RED, GL_UNSIGNED_BYTE,
-				face->glyph->bitmap.buffer);
-			texture->width = face->glyph->bitmap.width;
-			texture->height = face->glyph->bitmap.rows;
-			// Add the texture to a new character
-			Character character = Character(
-				glm::vec2(texture->width, texture->height),
-				glm::ivec2(face->glyph->bitmap_left, face->glyph->bitmap_top),
-				face->glyph->advance.x, texture);
-			// Add the character to the font's character map
-			font.characters.insert(std::pair<char, Character>(c, character));
-		}
-
-		FT_Done_Face(face);
-		m_fonts[fileName] = font;
-		return &m_fonts[fileName];
+		return m_sounds[fileName];
 	}
 
 	void ResourceManager::destroy() {
@@ -216,22 +151,15 @@ namespace MW {
 		}
 		m_textures.clear();
 
+		// Make sure that the audio system has stopped before deleting its data
+		App::AUDIO.stop();
+
 		// Delete all the sounds loaded into memory from OpenAL
 		for (std::pair<std::string, Sound> pair : m_sounds) {
 			App::LOG << "Delete sound " << pair.second.soundID << "\n";
 			alDeleteBuffers(1, &pair.second.soundID);
 		}
 		m_sounds.clear();
-
-		// Delete all fonts loaded into memory and dispose of the FreeType lib
-		for (std::pair<std::string, Font> pair : m_fonts) {
-			App::LOG << "Delete font " << pair.first << "\n";
-			for (std::pair<char, Character> c : pair.second.characters) {
-				glDeleteTextures(1, &c.second.texture->textureID);
-				delete c.second.texture;
-			}
-		}
-		FT_Done_FreeType(m_freeTypeLibrary);
 	}
 
 	std::int32_t ResourceManager::toInt(char* buffer, std::size_t len) {

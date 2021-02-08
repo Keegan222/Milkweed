@@ -45,6 +45,8 @@ namespace MW {
 		glm::vec3 m_prevPosition = glm::vec3();
 		// The scale of this camera in the last frame
 		float m_prevScale = 1.0f;
+		// The dimensions of the window in the last frame
+		glm::ivec2 m_prevWindowDimensions = glm::ivec2();
 
 		/*
 		* Calculate this camera's projection matrix from the orthographic matrix

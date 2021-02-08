@@ -6,7 +6,7 @@
 
 #include "MW.h"
 #include "Sprite.h"
-#include "ResourceManager.h"
+#include "Resources.h"
 
 namespace MW {
 	std::vector<unsigned int> Sprite::SPRITE_INDICES = {
@@ -15,6 +15,13 @@ namespace MW {
 		// Triangle 2
 		2, 3, 0,
 	};
+
+	void Sprite::init(const glm::vec3& Position, const glm::vec2& Dimensions,
+		Texture& tex) {
+		position = Position;
+		dimensions = Dimensions;
+		texture = tex;
+	}
 
 	void Sprite::update(float deltaTime) {
 		position.x += velocity.x * deltaTime;
@@ -63,10 +70,12 @@ namespace MW {
 		v->at(b) = s;
 	}
 
-	AnimatedSprite::AnimatedSprite(const glm::vec3& position,
-		const glm::vec2& dimensions, Texture* texture,
-		const glm::ivec2& frameDimensions, float frameTime)
-		: Sprite(position, dimensions, texture) {
+	void AnimatedSprite::init(const glm::vec3& position,
+		const glm::vec2& dimensions, Texture& texture,
+		const glm::ivec2& frameDimensions, float frameTime) {
+		// Initialize as a normal sprite
+		((Sprite*)this)->init(position, dimensions, texture);
+
 		// Get the size of each frame in texture space
 		m_frameSize = glm::vec2(
 			1.0f / (float)frameDimensions.x,

@@ -14,7 +14,7 @@ namespace MW {
 	/*
 	* Wrapper for GLFW key bindings
 	*/
-	enum class Key : int {
+	enum Key : int {
 		// Key not recognized
 		UNKNOWN = GLFW_KEY_UNKNOWN,
 
@@ -108,7 +108,7 @@ namespace MW {
 	/*
 	* Wrapper for GLFW mouse button bindings
 	*/
-	enum class Button : int {
+	enum Button : int {
 		B_1 = GLFW_MOUSE_BUTTON_1,
 		B_2 = GLFW_MOUSE_BUTTON_2,
 		B_3 = GLFW_MOUSE_BUTTON_3,

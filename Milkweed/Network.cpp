@@ -1,14 +1,14 @@
  /*
-* File: NetworkManager.cpp
+* File: Network.cpp
 * Author: Keegan MacDonald (keeganm742@gmail.com)
 * Date: 2020.12.26.1854
 */
 
-#include "NetworkManager.h"
+#include "Network.h"
 #include "MW.h"
 
 namespace MW {
-	void NetConnection::init(LogManager* log, TSQueue<NetMessage>* messagesIn,
+	void NetConnection::init(Log* log, TSQueue<NetMessage>* messagesIn,
 		unsigned int maxMessageSize) {
 		// Set the context, message in TSQ, and let the owner of the temporary
 		// message be this connection

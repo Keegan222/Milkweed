@@ -57,6 +57,27 @@ namespace MW {
 	};
 
 	/*
+	* A single character in a font
+	*/
+	struct Character {
+		// The size of the character
+		glm::vec2 dimensions = glm::vec2();
+		// The offset from the origin of this character to the top-left
+		glm::ivec2 bearing = glm::ivec2();
+		// The distance to the next character in a string of text
+		unsigned int offset = 0;
+		// The texture of this character
+		Texture texture;
+	};
+
+	/*
+	* A wrapper for a map of char to Characters
+	*/
+	struct Font {
+		std::map<char, Character> characters;
+	};
+
+	/*
 	* The Milkweed engine's utility for loading resources (textures and sound
 	* effects) into the application
 	*/
@@ -66,6 +87,8 @@ namespace MW {
 		static Texture NO_TEXTURE;
 		// An empty sound to return when sound loading fails
 		static Sound NO_SOUND;
+		// An empty font to return when font loading fails
+		static Font NO_FONT;
 
 		// Disable the copy constructor
 		ResourceManager(ResourceManager& rm) = delete;
@@ -90,6 +113,14 @@ namespace MW {
 		*/
 		Sound& getSound(const std::string& fileName);
 		/*
+		* Get a font from memory or the disk
+		* 
+		* @param fileName: The file name of this font on disk
+		* @return The font either from memory or the disk if found,
+		* NO_FONT otherwise
+		*/
+		Font& getFont(const std::string& fileName);
+		/*
 		* Delete all resources loaded into memory by this resource manager
 		*/
 		void destroy();
@@ -105,6 +136,10 @@ namespace MW {
 		std::unordered_map<std::string, Texture> m_textures;
 		// The map of sounds in memory with their file names on disk
 		std::unordered_map<std::string, Sound> m_sounds;
+		// The instance of the freetype library to load fonts with
+		FT_Library m_FTLib;
+		// The map of fonts in memory with their file names on disk
+		std::unordered_map<std::string, Font> m_fonts;
 		// The singleton instance of this class
 		static ResourceManager m_instance;
 

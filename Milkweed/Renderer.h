@@ -46,6 +46,12 @@ namespace MW {
 		*/
 		void submit(const std::vector<Sprite*>& sprites, Shader* shader);
 		/*
+		* Submit a string of text to draw with its font
+		*/
+		void submit(const std::string& text, const glm::vec3& position,
+			const glm::vec4& bounds, float scale, const glm::vec3& color,
+			const Font& font, Shader* shader);
+		/*
 		* End a frame and draw it on the screen
 		*/
 		void end();

@@ -1,0 +1,18 @@
+[submodule "Deps/sources/asio"]
+	path = Deps/sources/asio
+	url = https://github.com/chriskohlhoff/asio.git
+[submodule "Deps/sources/freetype2"]
+	path = Deps/sources/freetype2
+	url = https://github.com/freetype/freetype2.git
+[submodule "Deps/sources/glew"]
+	path = Deps/sources/glew
+	url = https://github.com/nigels-com/glew.git
+[submodule "Deps/sources/glfw"]
+	path = Deps/sources/glfw
+	url = https://github.com/glfw/glfw.git
+[submodule "Deps/sources/glm"]
+	path = Deps/sources/glm
+	url = https://github.com/g-truc/glm.git
+[submodule "Deps/sources/openal-soft"]
+	path = Deps/sources/openal-soft
+	url = https://github.com/kcat/openal-soft.git

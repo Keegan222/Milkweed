@@ -16,6 +16,11 @@ namespace MW {
 	ResourceManager ResourceManager::m_instance;
 
 	bool ResourceManager::init() {
+		// Initialize the freetype library
+		if (FT_Init_FreeType(&m_FTLib) != FT_Err_Ok) {
+			App::LOG << "Failed to initialize FreeType2 for font loading\n";
+			return false;
+		}
 		return true;
 	}
 
@@ -143,6 +148,63 @@ namespace MW {
 		return m_sounds[fileName];
 	}
 
+	Font& ResourceManager::getFont(const std::string& fileName) {
+		// Attempt to find the font in memory
+		std::unordered_map<std::string, Font>::iterator it
+			= m_fonts.find(fileName);
+		if (it != m_fonts.end()) {
+			// The font was found in memory, return it
+			return m_fonts[fileName];
+		}
+
+		// The font was not found in memory and must be loaded from the disk
+		FT_Face face;
+		if (FT_New_Face(m_FTLib, fileName.c_str(), 0, &face)
+			!= FT_Err_Ok) {
+			throw ResourceException("Failed to load font " + fileName);
+			return NO_FONT;
+		}
+		// Set the size of the font
+		// TODO: Do not hardcode this to 48
+		FT_Set_Pixel_Sizes(face, 0, 48);
+
+		// Load the characters from the font
+		Font font;
+		for (unsigned char c = 0; c < 128; c++) {
+			if (FT_Load_Char(face, c, FT_LOAD_RENDER) != FT_Err_Ok) {
+				throw ResourceException("Failed to load character "
+					+ std::to_string(c) + " in font " + fileName);
+				continue;
+			}
+
+			Character ch;
+			// Create the texture for the character
+			glGenTextures(1, &ch.texture.textureID);
+			glBindTexture(GL_TEXTURE_2D, ch.texture.textureID);
+			glTexParameteri(GL_TEXTURE_2D, GL_TEXTURE_WRAP_S, GL_CLAMP_TO_EDGE);
+			glTexParameteri(GL_TEXTURE_2D, GL_TEXTURE_WRAP_T, GL_CLAMP_TO_EDGE);
+			glTexParameteri(GL_TEXTURE_2D, GL_TEXTURE_MIN_FILTER, GL_LINEAR);
+			glTexParameteri(GL_TEXTURE_2D, GL_TEXTURE_MAG_FILTER, GL_LINEAR);
+			glTexImage2D(GL_TEXTURE_2D, 0, GL_RED, face->glyph->bitmap.width,
+				face->glyph->bitmap.rows, 0, GL_RED, GL_UNSIGNED_BYTE,
+				face->glyph->bitmap.buffer);
+			ch.texture.width = face->glyph->bitmap.width;
+			ch.texture.height = face->glyph->bitmap.rows;
+			// Set the dimensions, bearing, and offset of the character
+			ch.dimensions = glm::vec2(ch.texture.width, ch.texture.height);
+			ch.bearing = glm::ivec2(face->glyph->bitmap_left,
+				face->glyph->bitmap_top);
+			ch.offset = face->glyph->advance.x;
+			// Add the character to the font
+			font.characters.insert(std::pair<char, Character>(c, ch));
+		}
+
+		// Dispose of the face in freetype and place the font in memory
+		FT_Done_Face(face);
+		m_fonts[fileName] = font;
+		return m_fonts[fileName];
+	}
+
 	void ResourceManager::destroy() {
 		// Delete all of the textures loaded into memory from OpenGL
 		for (std::pair<std::string, Texture> pair : m_textures) {
@@ -160,6 +222,11 @@ namespace MW {
 			alDeleteBuffers(1, &pair.second.soundID);
 		}
 		m_sounds.clear();
+
+		// Delete all the fonts loaded into memory and dispose of the freetype
+		// library
+		m_fonts.clear();
+		FT_Done_FreeType(m_FTLib);
 	}
 
 	std::int32_t ResourceManager::toInt(char* buffer, std::size_t len) {

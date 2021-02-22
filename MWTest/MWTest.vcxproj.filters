@@ -25,9 +25,6 @@
     <Filter Include="Assets\font">
       <UniqueIdentifier>{0e32820a-342a-4510-a745-6657d3cdfb62}</UniqueIdentifier>
     </Filter>
-    <Filter Include="Assets\texture">
-      <UniqueIdentifier>{5560612e-4276-4377-a918-d0b9c1754ac8}</UniqueIdentifier>
-    </Filter>
   </ItemGroup>
   <ItemGroup>
     <ClInclude Include="MWTest.h">
@@ -54,21 +51,10 @@
     <None Include="Assets\shader\text_vertex_shader.glsl">
       <Filter>Assets\shader</Filter>
     </None>
-    <None Include="Assets\shader\sprite_fragment_shader.glsl">
-      <Filter>Assets\shader</Filter>
-    </None>
-    <None Include="Assets\shader\sprite_vertex_shader.glsl">
-      <Filter>Assets\shader</Filter>
-    </None>
   </ItemGroup>
   <ItemGroup>
     <Font Include="Assets\font\arial.ttf">
       <Filter>Assets\font</Filter>
     </Font>
-  </ItemGroup>
-  <ItemGroup>
-    <Image Include="Assets\texture\image.png">
-      <Filter>Assets\texture</Filter>
-    </Image>
   </ItemGroup>
 </Project>

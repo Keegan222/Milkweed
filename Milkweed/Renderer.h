@@ -10,7 +10,7 @@
 
 #include "Camera.h"
 #include "Shader.h"
-#include "Resources.h"
+#include "ResourceManager.h"
 
 namespace MW {
 	/*
@@ -18,6 +18,23 @@ namespace MW {
 	*/
 	enum class SortType {
 		TEXTURE, DEPTH,
+	};
+
+	/*
+	* A string of text to draw
+	*/
+	struct Label {
+		std::string text = "";
+		glm::vec3 position = glm::vec3();
+		glm::vec4 bounds = glm::vec4();
+		float scale = 1.0f;
+		glm::vec3 color = glm::vec3();
+
+		Label() {}
+		Label(const std::string& Text, const glm::vec3& Position,
+			const glm::vec4& Bounds, float Scale,
+			const glm::vec3& Color) : text(Text), position(Position),
+			bounds(Bounds), scale(Scale), color(Color) {}
 	};
 
 	/*
@@ -46,11 +63,14 @@ namespace MW {
 		*/
 		void submit(const std::vector<Sprite*>& sprites, Shader* shader);
 		/*
-		* Submit a string of text to draw with its font
+		* Submit a string of text to be converted to sprites and rendered this
+		* frame in the given color
+		* 
+		* @param text: The text label to draw
+		* @param font: The font the draw the text int
+		* @param shader: The shader to render the text with
 		*/
-		void submit(const std::string& text, const glm::vec3& position,
-			const glm::vec4& bounds, float scale, const glm::vec3& color,
-			const Font& font, Shader* shader);
+		void submit(const Label& text, Font* font, Shader* shader);
 		/*
 		* End a frame and draw it on the screen
 		*/
@@ -92,6 +112,8 @@ namespace MW {
 		GLuint m_IBOID = 0;
 		// The sprites to be rendered this frame
 		std::unordered_map<Shader*, std::vector<Sprite*>> m_sprites;
+		// The text characters to render this frame
+		std::unordered_map<Shader*, std::vector<Character>> m_text;
 		// The type of sorting to perform when rendering sprites
 		SortType m_sortType = SortType::DEPTH;
 		// Normalized RGB color to clear the screen to

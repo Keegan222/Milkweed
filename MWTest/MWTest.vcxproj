@@ -161,16 +161,11 @@
     <Media Include="Assets\audio\sound.wav" />
   </ItemGroup>
   <ItemGroup>
-    <None Include="Assets\shader\sprite_fragment_shader.glsl" />
-    <None Include="Assets\shader\sprite_vertex_shader.glsl" />
     <None Include="Assets\shader\text_fragment_shader.glsl" />
     <None Include="Assets\shader\text_vertex_shader.glsl" />
   </ItemGroup>
   <ItemGroup>
     <Font Include="Assets\font\arial.ttf" />
-  </ItemGroup>
-  <ItemGroup>
-    <Image Include="Assets\texture\image.png" />
   </ItemGroup>
   <Import Project="$(VCTargetsPath)\Microsoft.Cpp.targets" />
   <ImportGroup Label="ExtensionTargets">

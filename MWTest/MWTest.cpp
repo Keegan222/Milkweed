@@ -1,21 +1,21 @@
-#include <Milkweed/Audio.h>
+#include <Milkweed/AudioManager.h>
 
 #include "MWTest.h"
 
 void TestScene::init() {
-	MW::App::AUDIO.playMusic(
-		MW::App::RESOURCES.getSound("Assets/audio/music.wav"));
+	m_music = MW::App::RESOURCES.getSound("Assets/audio/music.wav");
+	// MW::App::AUDIO.playMusic(m_music);
 
-	m_shader.init("Assets/shader/sprite_vertex_shader.glsl",
-		"Assets/shader/sprite_fragment_shader.glsl",
+	m_sound = MW::App::RESOURCES.getSound("Assets/audio/sound.wav");
+	
+	m_text = MW::Label("Hello World!", glm::vec3(0.0f, 0.0f, 0.0f),
+		glm::vec4(0.0f, 0.0f, 100.0f, 100.0f), 1.0f,
+		glm::vec3(1.0f, 0.0f, 0.0f));
+	m_shader.init("Assets/shader/text_vertex_shader.glsl",
+		"Assets/shader/text_fragment_shader.glsl",
 		MW::Shader::getDefaultVertexAttributes("inPosition", "inTextureCoords"),
 		"cameraMatrix");
-
-	m_sprite.init(glm::vec3(0.0f, 0.0f, 0.0f),
-		glm::ivec2(128.0f, 128.0f),
-		MW::App::RESOURCES.getTexture("Assets/texture/image.png"),
-		glm::ivec2(4, 2), 30.0f);
-
+	m_font = MW::App::RESOURCES.getFont("Assets/font/arial.ttf");
 }
 
 void TestScene::enter() {
@@ -23,36 +23,24 @@ void TestScene::enter() {
 }
 
 void TestScene::draw() {
-	MW::App::RENDERER.submit({ &m_sprite }, &m_shader);
+	m_shader.upload3fVector("textColor", m_text.color);
+	MW::App::RENDERER.submit(m_text, m_font, &m_shader);
 }
 
 void TestScene::processInput() {
-	if (MW::App::INPUT.isButtonPressed(MW::Button::B_LEFT)) {
-		MW::App::AUDIO.playSound(
-			MW::App::RESOURCES.getSound("Assets/audio/sound.wav"));
-	}
-
 	if (MW::App::INPUT.isKeyPressed(MW::Key::K_R)) {
-		MW::App::WINDOW.setFullScreen(true);
-	}
-	
-	if (MW::App::INPUT.isKeyPressed(MW::Key::K_W)) {
-		MW::App::WINDOW.setFullScreen(false);
-	}
-
-	if (MW::App::INPUT.isKeyPressed(MW::Key::K_X)) {
-		MW::App::WINDOW.setDimensions(glm::ivec2(800, 600));
-	}
-
-	if (MW::App::INPUT.isKeyPressed(MW::Key::K_C)) {
-		MW::App::WINDOW.setDimensions(glm::ivec2(400, 300));
+		if (MW::App::WINDOW.isFullScreen()) {
+			MW::App::WINDOW.setFullScreen(false);
+		}
+		else {
+			MW::App::WINDOW.setFullScreen(true);
+		}
 	}
 }
 
 void TestScene::update(float deltaTime) {
 	m_shader.getCamera()->update(deltaTime);
-
-	m_sprite.update(deltaTime);
+	m_text.bounds.z += 0.5f * deltaTime;
 }
 
 void TestScene::exit() {
@@ -66,7 +54,7 @@ void TestScene::destroy() {
 TestScene MWTest::TEST_SCENE;
 
 int main(int argc, char** argv) {
-	MW::App::Init("MWTest", glm::ivec2(800, 600), false,
-		60.0f, { &MWTest::TEST_SCENE }, &MWTest::TEST_SCENE);
+	MW::App::Init("MWTest", glm::ivec2(800, 600), false, 60.0f,
+		{ &MWTest::TEST_SCENE }, &MWTest::TEST_SCENE);
 	return 0;
 }

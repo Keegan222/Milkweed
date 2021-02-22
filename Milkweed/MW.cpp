@@ -14,7 +14,7 @@ namespace MW {
 	InputManager& App::INPUT = InputManager::getInstance();
 	Renderer& App::RENDERER = Renderer::getInstance();
 	ResourceManager& App::RESOURCES = ResourceManager::getInstance();
-	Log& App::LOG = Log::getInstance();
+	LogManager& App::LOG = LogManager::getInstance();
 	NetClient& App::NETWORK = NetClient::getInstance();
 	AudioManager& App::AUDIO = AudioManager::getInstance();
 
@@ -157,12 +157,12 @@ namespace MW {
 			s->destroy();
 		}
 		
-		// Destroy the resource manager
-		RESOURCES.destroy();
 		// Stop the audio system
 		AUDIO.destroy();
 		// Stop the network client
 		NETWORK.destroy();
+		// Destroy the resource manager
+		RESOURCES.destroy();
 		// Destroy the renderer
 		RENDERER.destroy();
 

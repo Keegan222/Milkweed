@@ -23,7 +23,7 @@ namespace MW {
 		Window(Window& w) = delete;
 		/*
 		* Create and open a window using GLFW
-		* 
+		*
 		* @param attrib: The set of window attributes to create the window by
 		* @return Whether the window could be successfully opened
 		*/

@@ -9,9 +9,10 @@
 #include <glm/glm.hpp>
 #include <vector>
 
-#include "Resources.h"
-
 namespace MW {
+	// Declare the Texture class from ResourceManager here
+	struct Texture;
+
 	/*
 	* An abstract sprite with a position, velocity and dimensions
 	*/
@@ -27,12 +28,16 @@ namespace MW {
 		// The dimensions of this sprite
 		glm::vec2 dimensions = glm::vec2();
 		// The texture for this sprite
-		Texture& texture = ResourceManager::NO_TEXTURE;
+		Texture* texture = nullptr;
 		// Whether the sprite's texture should be flipped horizontally
 		bool flipHorizontal = false;
 		// Whether the sprite's texture should be flipped vertically
 		bool flipVertical = false;
 
+		/*
+		* Construct a blank sprite
+		*/
+		Sprite() {}
 		/*
 		* Construct a sprite with position, dimensions, and texture
 		* 
@@ -40,8 +45,9 @@ namespace MW {
 		* @param dimensions: The dimensions of this sprite
 		* @param texture: A pointer to this sprite's texture
 		*/
-		void init(const glm::vec3& Position, const glm::vec2& Dimensions,
-			Texture& Texture);
+		Sprite(const glm::vec3& Position, const glm::vec2& Dimensions,
+			Texture* Texture) : position(Position), dimensions(Dimensions),
+			texture(Texture) {}
 		/*
 		* Update this sprite's physics
 		* 
@@ -76,6 +82,10 @@ namespace MW {
 	class AnimatedSprite : public Sprite {
 	public:
 		/*
+		* Construct blank animated sprite
+		*/
+		AnimatedSprite() {}
+		/*
 		* Construct a new animated sprite as a blank sprite
 		* 
 		* @param position: The position of this animated sprite
@@ -87,8 +97,8 @@ namespace MW {
 		* @param frameTime: The number of updates each frame of the animation
 		* should be displayed for
 		*/
-		void init(const glm::vec3& position, const glm::vec2& dimensions,
-			Texture& texture, const glm::ivec2& frameDimensions,
+		AnimatedSprite(const glm::vec3& position, const glm::vec2& dimensions,
+			Texture* texture, const glm::ivec2& frameDimensions,
 			float frameTime);
 		/*
 		* Update this sprite's physics and animation

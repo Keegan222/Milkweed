@@ -10,13 +10,13 @@
 #include <fstream>
 #include <vector>
 
-#include "Network.h"
+#include "NetworkManager.h"
 #include "Window.h"
-#include "Input.h"
+#include "InputManager.h"
 #include "Renderer.h"
-#include "Resources.h"
-#include "Log.h"
-#include "Audio.h"
+#include "ResourceManager.h"
+#include "LogManager.h"
+#include "AudioManager.h"
 
 namespace MW {
 	/*
@@ -72,7 +72,7 @@ namespace MW {
 		// The application's resource manager
 		static ResourceManager& RESOURCES;
 		// The application's logging system
-		static Log& LOG;
+		static LogManager& LOG;
 		// The application's network client
 		static NetClient& NETWORK;
 		// The application audio player
@@ -89,9 +89,9 @@ namespace MW {
 		* @param scenes: The set of scenes the application will/may use
 		* @param scene: The initial scene to be active in the application
 		*/
-		static void Init(const std::string& title, const glm::ivec2& dimensions,
-			bool fullScreen, float physicsUPS,
-			const std::vector<Scene*>& scenes, Scene* scene);
+		static void Init(const std::string& windowTitle,
+			const glm::ivec2& windowDimensions, bool windowFullScreen,
+			float physicsUPS, const std::vector<Scene*>& scenes, Scene* scene);
 		/*
 		* Change the active scene of this application
 		* 

@@ -8,7 +8,6 @@ Deps/
 mwlog/
 Assets/
 Notes.cdoc
-picoPNG.cpp
 
 # User-specific files
 *.rsuser

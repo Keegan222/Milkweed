@@ -15,6 +15,7 @@
 #include <ft2build.h>
 #include <freetype/freetype.h>
 #include <exception>
+#include <glm/glm.hpp>
 
 extern int decodePNG(std::vector<unsigned char>& out_image,
 	unsigned long& image_width, unsigned long& image_height,

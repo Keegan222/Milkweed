@@ -4,7 +4,8 @@
 ## Get latest from https://github.com/github/gitignore/blob/master/VisualStudio.gitignore
 
 # Milkweed project files
-Deps/
+Deps/include/
+Deps/lib/
 mwlog/
 Assets/
 Notes.cdoc

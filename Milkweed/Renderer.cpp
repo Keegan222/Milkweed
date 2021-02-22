@@ -73,6 +73,12 @@ namespace MW {
 		}
 	}
 
+	void Renderer::submit(const std::string& text, const glm::vec3& position,
+		const glm::vec4& bounds, float scale, const glm::vec3& color,
+		const Font& font, Shader* shader) {
+
+	}
+
 	bool compareSpriteTexture(const Sprite* a, const Sprite* b) {
 		return a->texture.textureID < b->texture.textureID;
 	}

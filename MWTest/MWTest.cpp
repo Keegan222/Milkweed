@@ -7,10 +7,7 @@ void TestScene::init() {
 	// MW::App::AUDIO.playMusic(m_music);
 
 	m_sound = MW::App::RESOURCES.getSound("Assets/audio/sound.wav");
-	
-	m_text = MW::Label("Hello World!", glm::vec3(0.0f, 0.0f, 0.0f),
-		glm::vec4(0.0f, 0.0f, 100.0f, 100.0f), 1.0f,
-		glm::vec3(1.0f, 0.0f, 0.0f));
+
 	m_shader.init("Assets/shader/text_vertex_shader.glsl",
 		"Assets/shader/text_fragment_shader.glsl",
 		MW::Shader::getDefaultVertexAttributes("inPosition", "inTextureCoords"),
@@ -23,8 +20,10 @@ void TestScene::enter() {
 }
 
 void TestScene::draw() {
-	m_shader.upload3fVector("textColor", m_text.color);
-	MW::App::RENDERER.submit(m_text, m_font, &m_shader);
+	m_shader.upload3fVector("textColor", glm::vec3(1.0f, 0.0f, 1.0f));
+	MW::App::RENDERER.submit("Hello World", glm::vec3(0.0f),
+		glm::vec4(0.0f, 0.0f, m_width, 100.0f), 1.0f,
+		glm::vec3(1.0f, 0.0f, 1.0f), m_font, &m_shader);
 }
 
 void TestScene::processInput() {
@@ -36,11 +35,15 @@ void TestScene::processInput() {
 			MW::App::WINDOW.setFullScreen(true);
 		}
 	}
+
+	if (MW::App::INPUT.isKeyPressed(MW::Key::K_W)) {
+		MW::App::RENDERER.dumpNextFrame();
+	}
 }
 
 void TestScene::update(float deltaTime) {
 	m_shader.getCamera()->update(deltaTime);
-	m_text.bounds.z += 0.5f * deltaTime;
+	m_width += 0.4f * deltaTime;
 }
 
 void TestScene::exit() {

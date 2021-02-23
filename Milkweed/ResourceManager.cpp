@@ -182,9 +182,9 @@ namespace MW {
 			}
 			// Allocate a new texture for this character and upload FreeType
 			// data to it in OpenGL
-			Texture* texture = new Texture();
-			glGenTextures(1, &texture->textureID);
-			glBindTexture(GL_TEXTURE_2D, texture->textureID);
+			Texture texture;
+			glGenTextures(1, &texture.textureID);
+			glBindTexture(GL_TEXTURE_2D, texture.textureID);
 			glTexParameteri(GL_TEXTURE_2D, GL_TEXTURE_WRAP_S, GL_CLAMP_TO_EDGE);
 			glTexParameteri(GL_TEXTURE_2D, GL_TEXTURE_WRAP_T, GL_CLAMP_TO_EDGE);
 			glTexParameteri(GL_TEXTURE_2D, GL_TEXTURE_MIN_FILTER, GL_LINEAR);
@@ -192,15 +192,17 @@ namespace MW {
 			glTexImage2D(GL_TEXTURE_2D, 0, GL_RED, face->glyph->bitmap.width,
 				face->glyph->bitmap.rows, 0, GL_RED, GL_UNSIGNED_BYTE,
 				face->glyph->bitmap.buffer);
-			texture->width = face->glyph->bitmap.width;
-			texture->height = face->glyph->bitmap.rows;
+			texture.width = face->glyph->bitmap.width;
+			texture.height = face->glyph->bitmap.rows;
 			// Add the texture to a new character
-			Character character = Character(
-				glm::vec2(texture->width, texture->height),
-				glm::ivec2(face->glyph->bitmap_left, face->glyph->bitmap_top),
-				face->glyph->advance.x, texture);
+			Character character;
+			character.dimensions = glm::vec2(texture.width, texture.height);
+			character.bearing = glm::ivec2(face->glyph->bitmap_left,
+				face->glyph->bitmap_top);
+			character.offset = face->glyph->advance.x;
+			character.texture = texture;
 			// Add the character to the font's character map
-			font.characters.insert(std::pair<char, Character>(c, character));
+			font.characters[c] = character;
 		}
 
 		FT_Done_Face(face);
@@ -227,10 +229,10 @@ namespace MW {
 		for (std::pair<std::string, Font> pair : m_fonts) {
 			App::LOG << "Delete font " << pair.first << "\n";
 			for (std::pair<char, Character> c : pair.second.characters) {
-				glDeleteTextures(1, &c.second.texture->textureID);
-				delete c.second.texture;
+				glDeleteTextures(1, &c.second.texture.textureID);
 			}
 		}
+		m_fonts.clear();
 		FT_Done_FreeType(m_freeTypeLibrary);
 	}
 

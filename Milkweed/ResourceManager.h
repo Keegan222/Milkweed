@@ -64,27 +64,15 @@ namespace MW {
 	/*
 	* A single character in a font
 	*/
-	class Character : public Sprite {
-	public:
+	struct Character {
+		// The dimensions of this character
+		glm::vec2 dimensions = glm::vec2();
 		// The offset from the origin to this sprite to the top-left
 		glm::ivec2 bearing = glm::ivec2();
 		// The distance to the next character in a string of text
 		unsigned int offset = 0;
-
-		/*
-		* Construct a blank character
-		*/
-		Character() {}
-		/*
-		* Create a new character with dimensions, bearing, offset, and texture
-		*/
-		Character(const glm::vec2& dimensions, const glm::ivec2& Bearing,
-			unsigned int Offset, Texture* texture) : Sprite(glm::vec3(0.0f),
-				dimensions, texture), bearing(Bearing), offset(Offset) {}
-		/*
-		* Update this character (does nothing)
-		*/
-		void update(float deltaTime) override {};
+		// The texture of this character
+		Texture texture;
 	};
 
 	/*

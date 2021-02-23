@@ -77,42 +77,39 @@ namespace MW {
 		}
 	}
 
-	void Renderer::submit(const Label& label, Font* font,
-		Shader* shader) {
-		// Get the characters for this string in order
-		std::vector<Character> characters;
-		for (std::string::const_iterator c = label.text.begin();
-			c < label.text.end(); c++) {
-			characters.push_back(font->characters[*c]);
+	void Renderer::submit(const std::string& text, const glm::vec3& position,
+		const glm::vec4& bounds, float scale, const glm::vec3& color,
+		Font* font, Shader* shader) {
+		// Attempt to find the shader in the text map
+		std::unordered_map<Shader*, std::vector<Sprite>>::iterator it
+			= m_text.find(shader);
+		if (it == m_text.end()) {
+			// Not found, add one
+			m_text[shader] = std::vector<Sprite>(0);
 		}
 
-		float x = label.position.x;
-		for (unsigned int i = 0; i < characters.size(); i++) {
-			// Set the position and dimensions of the character and advance
-			// to the position of the next one
-			characters[i].position.x = x + characters[i].bearing.x * label.scale;
-			characters[i].position.y = label.position.y
-				- (characters[i].dimensions.y - characters[i].bearing.y)
-				* label.scale;
-			characters[i].position.z = label.position.z;
-			characters[i].dimensions *= label.scale;
-			x += (characters[i].offset >> 6) * label.scale;
+		float x = position.x;
+		for (char c : text) {
+			const Character& fc = font->characters[c];
+			Sprite ch;
+
+			ch.position.x = x + fc.bearing.x * scale;
+			ch.position.y = position.y - (fc.dimensions.y - fc.bearing.y)
+				* scale;
+			ch.position.z = position.z;
+			ch.dimensions = fc.dimensions * scale;
+			x += (fc.offset >> 6) * scale;
+			ch.texture = &(font->characters[c].texture);
 			
-			// Attempt to find the shader in the text map
-			std::unordered_map<Shader*, std::vector<Character>>::iterator it
-				= m_text.find(shader);
-			if (it == m_text.end()) {
-				m_text[shader] = std::vector<Character>();
-			}
-			if (characters[i].position.x >= label.bounds.x
-				&& characters[i].position.y >= label.bounds.y
-				&& characters[i].position.x + characters[i].dimensions.x
-					<= label.bounds.x + label.bounds.z
-				&& characters[i].position.y + characters[i].dimensions.y
-					<= label.bounds.y + label.bounds.w) {
+			if (ch.position.x >= bounds.x
+				&& ch.position.y >= bounds.y
+				&& ch.position.x + ch.dimensions.x
+					<= bounds.x + bounds.z
+				&& ch.position.y + ch.dimensions.y
+					<= bounds.y + bounds.w) {
 				// Submit this character for rendering if it is in the bounds
 				// of the label
-				m_text[shader].push_back(characters[i]);
+				m_text[shader].push_back(ch);
 			}
 		}
 	}
@@ -126,17 +123,34 @@ namespace MW {
 	}
 
 	void Renderer::end() {
+		if (m_dumpFrame) {
+			App::LOG << "NEW FRAME DUMP BEGIN\n";
+		}
+
 		// Submit all the characters to be rendered this frame as sprites
-		for (std::pair<Shader*, std::vector<Character>> text : m_text) {
+		for (std::pair<Shader*, std::vector<Sprite>> text : m_text) {
+			if (m_dumpFrame) {
+				App::LOG << "New text shader found\n";
+			}
 			Shader* shader = text.first;
 			std::vector<Sprite*> sprites(text.second.size());
 			for (unsigned int i = 0; i < sprites.size(); i++) {
+				if (m_dumpFrame) {
+					App::LOG << "Adding pointer to character sprite " << i << "\n";
+				}
 				sprites[i] = &(m_text[shader][i]);
+			}
+			if (m_dumpFrame) {
+				App::LOG << "Submitting shader batch of " << sprites.size()
+					<< " character sprites\n";
 			}
 			submit(sprites, shader);
 		}
 
 		for (std::pair<Shader*, std::vector<Sprite*>> shaderBatch : m_sprites) {
+			if (m_dumpFrame) {
+				App::LOG << "New sprite shader batch found\n";
+			}
 			// Get the shader to render this batch of sprites with
 			Shader* shader = shaderBatch.first;
 			// Sort the sprites by their texture ID's
@@ -150,31 +164,64 @@ namespace MW {
 			}
 			// Start the shader
 			shader->begin();
+			if (m_dumpFrame) {
+				App::LOG << "Started shader\n";
+			}
 
 			// Initialize the data to send to OpenGL
 			std::vector<float> vertexData;
 			std::vector<unsigned int> indices;
 			unsigned int spriteCount = 0;
 
+			if (m_dumpFrame) {
+				App::LOG << "Sprites sorted by ";
+				if (m_sortType == SortType::TEXTURE) {
+					App::LOG << "texture\n";
+				}
+				else if (m_sortType == SortType::DEPTH) {
+					App::LOG << "depth\n";
+				}
+			}
+
 			// Draw the sprites in this batch
 			GLuint currentTextureID = 0;
 			for (unsigned int i = 0; i < m_sprites[shader].size(); i++) {
+				if (m_dumpFrame) {
+					App::LOG << "Testing sprite " << i << "'s texture ID\n";
+				}
 				Sprite* sprite = m_sprites[shader][i];
 				// Test if a new texture group has started
 				if (currentTextureID != sprite->texture->textureID) {
+					if (m_dumpFrame) {
+						App::LOG << "Sprite " << i << " has a new texture ID\n";
+					}
 					if (spriteCount > 0) {
+						if (m_dumpFrame) {
+							App::LOG << "There were sprites drawn with the "
+								<< "last texture ID, render their vertices\n";
+						}
 						// If there were sprites in the last texture batch,
 						// draw them
 						drawVertices(vertexData, indices);
 					}
 
+					if (m_dumpFrame) {
+						App::LOG << "Binding the new texture ID "
+							<< sprite->texture->textureID << " and clearing "
+							<< "old vertex and index data\n";
+					}
 					// Reset the vertex data and bind the new texture
 					currentTextureID = sprite->texture->textureID;
 					glBindTexture(GL_TEXTURE_2D, currentTextureID);
 					vertexData.clear();
+					indices.clear();
 					spriteCount = 0;
 				}
 
+				if (m_dumpFrame) {
+					App::LOG << "Adding sprite " << i << "'s vertex and index"
+						<< " data to the new texture frame\n";
+				}
 				// Add this sprite's data to the current texture group's vertex
 				// data to be uploaded to OpenGL
 				for (float f : sprite->getVertexData()) {
@@ -186,16 +233,34 @@ namespace MW {
 				spriteCount++;
 			}
 
+			if (m_dumpFrame) {
+				App::LOG << "Drawing remaning vertices and indices and clearing"
+					<< " vertex and index buffers\n";
+			}
 			// Draw the remaining vertex data from the final texture group
 			drawVertices(vertexData, indices);
+			vertexData.clear();
+			indices.clear();
 
+			if (m_dumpFrame) {
+				App::LOG << "Stopping shader\n";
+			}
 			// Stop this shader
 			shader->end();
+		}
+
+		if (m_dumpFrame) {
+			m_dumpFrame = false;
 		}
 	}
 
 	void Renderer::drawVertices(const std::vector<float>& vertexData,
 		const std::vector<unsigned int>& indices) {
+		if (m_dumpFrame) {
+			App::LOG << "Drawing " << vertexData.size() << " float vertex data"
+				<< " points with " << indices.size() << " indices using "
+				<< "glDrawElements\n";
+		}
 		// Upload the vertex data to OpenGL
 		glBufferData(GL_ARRAY_BUFFER,
 			sizeof(float) * vertexData.size(),

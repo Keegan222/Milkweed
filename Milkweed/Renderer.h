@@ -21,23 +21,6 @@ namespace MW {
 	};
 
 	/*
-	* A string of text to draw
-	*/
-	struct Label {
-		std::string text = "";
-		glm::vec3 position = glm::vec3();
-		glm::vec4 bounds = glm::vec4();
-		float scale = 1.0f;
-		glm::vec3 color = glm::vec3();
-
-		Label() {}
-		Label(const std::string& Text, const glm::vec3& Position,
-			const glm::vec4& Bounds, float Scale,
-			const glm::vec3& Color) : text(Text), position(Position),
-			bounds(Bounds), scale(Scale), color(Color) {}
-	};
-
-	/*
 	* The Milkweed engine's utility for drawing graphics
 	*/
 	class Renderer {
@@ -70,7 +53,9 @@ namespace MW {
 		* @param font: The font the draw the text int
 		* @param shader: The shader to render the text with
 		*/
-		void submit(const Label& text, Font* font, Shader* shader);
+		void submit(const std::string& text, const glm::vec3& position,
+			const glm::vec4& bounds, float scale, const glm::vec3& color,
+			Font* font, Shader* shader);
 		/*
 		* End a frame and draw it on the screen
 		*/
@@ -102,8 +87,12 @@ namespace MW {
 		static Renderer& getInstance() {
 			return m_instance;
 		}
+		// TODO: Remove this function later it's for debugging
+		void dumpNextFrame() { m_dumpFrame = true; }
 
 	private:
+		// TODO: Variable for debugging, remove later
+		bool m_dumpFrame = false;
 		// The vertex array for this renderer
 		GLuint m_VAOID = 0;
 		// The vertex data buffer for this renderer
@@ -113,7 +102,7 @@ namespace MW {
 		// The sprites to be rendered this frame
 		std::unordered_map<Shader*, std::vector<Sprite*>> m_sprites;
 		// The text characters to render this frame
-		std::unordered_map<Shader*, std::vector<Character>> m_text;
+		std::unordered_map<Shader*, std::vector<Sprite>> m_text;
 		// The type of sorting to perform when rendering sprites
 		SortType m_sortType = SortType::DEPTH;
 		// Normalized RGB color to clear the screen to

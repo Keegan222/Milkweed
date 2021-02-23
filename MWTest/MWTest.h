@@ -17,7 +17,7 @@ private:
 	MW::Sound* m_sound = nullptr;
 	MW::Shader m_shader;
 	MW::Font* m_font = nullptr;
-	MW::Label m_text;
+	float m_width = 0.0f;
 };
 
 class MWTest {

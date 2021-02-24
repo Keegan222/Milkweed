@@ -4,6 +4,9 @@
 * Date: 2020.11.14.2225
 */
 
+#ifndef MW_CAMERA_H
+#define MW_CAMERA_H
+
 #pragma once
 
 #include "Sprite.h"
@@ -55,3 +58,5 @@ namespace MW {
 		void updateMatrix();
 	};
 }
+
+#endif

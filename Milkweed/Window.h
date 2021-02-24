@@ -4,6 +4,9 @@
 * Date: 2020.10.20.2024
 */
 
+#ifndef MW_WINDOW_H
+#define MW_WINDOW_H
+
 #pragma once
 
 #include <GL/glew.h>
@@ -80,3 +83,5 @@ namespace MW {
 		Window() {}
 	};
 }
+
+#endif

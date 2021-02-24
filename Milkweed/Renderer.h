@@ -4,13 +4,16 @@
 * Date: 2020.11.01.2209
 */
 
+#ifndef MW_RENDERER_H
+#define MW_RENDERER_H
+
 #pragma once
 
 #include <unordered_map>
 
 #include "Camera.h"
 #include "Shader.h"
-#include "ResourceManager.h"
+#include "Resources.h"
 
 namespace MW {
 	/*
@@ -82,16 +85,19 @@ namespace MW {
 			glClearColor(clearColor.x, clearColor.y, clearColor.z, 1.0f);
 		}
 		/*
+		* Prepare the renderer to dump the next frame's rendering information
+		* to the application's log
+		*/
+		void dumpNextFrame() { m_dumpFrame = true; }
+		/*
 		* Get the singleton instance of this class
 		*/
 		static Renderer& getInstance() {
 			return m_instance;
 		}
-		// TODO: Remove this function later it's for debugging
-		void dumpNextFrame() { m_dumpFrame = true; }
 
 	private:
-		// TODO: Variable for debugging, remove later
+		// Whether to dump the next frame's rendering information to the log
 		bool m_dumpFrame = false;
 		// The vertex array for this renderer
 		GLuint m_VAOID = 0;
@@ -119,3 +125,5 @@ namespace MW {
 			const std::vector<unsigned int>& indices);
 	};
 }
+
+#endif

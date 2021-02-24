@@ -6,7 +6,7 @@
 
 #include "MW.h"
 #include "Sprite.h"
-#include "ResourceManager.h"
+#include "Resources.h"
 
 namespace MW {
 	std::vector<unsigned int> Sprite::SPRITE_INDICES = {

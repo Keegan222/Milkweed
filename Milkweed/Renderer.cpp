@@ -10,7 +10,7 @@
 #include "MW.h"
 #include "Renderer.h"
 #include "Sprite.h"
-#include "ResourceManager.h"
+#include "Resources.h"
 
 namespace MW {
 	Renderer Renderer::m_instance;
@@ -224,11 +224,26 @@ namespace MW {
 				}
 				// Add this sprite's data to the current texture group's vertex
 				// data to be uploaded to OpenGL
+				if (m_dumpFrame) {
+					App::LOG << "Pushing new vertex data:\n";
+				}
 				for (float f : sprite->getVertexData()) {
+					if (m_dumpFrame) {
+						App::LOG << f << ", ";
+					}
 					vertexData.push_back(f);
+				}
+				if (m_dumpFrame) {
+					App::LOG << "\nPushing new index data:\n";
 				}
 				for (unsigned int i : Sprite::SPRITE_INDICES) {
 					indices.push_back(i + 4 * spriteCount);
+					if (m_dumpFrame) {
+						App::LOG << (i + 4 * spriteCount) << ", ";
+					}
+				}
+				if (m_dumpFrame) {
+					App::LOG << "\n";
 				}
 				spriteCount++;
 			}

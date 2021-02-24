@@ -4,6 +4,9 @@
 * Date: 2020.10.22.1656
 */
 
+#ifndef MW_INPUT_H
+#define MW_INPUT_H
+
 #pragma once
 
 #include <unordered_map>
@@ -274,3 +277,5 @@ namespace MW {
 		static void cursor_callback(GLFWwindow* window, double x, double y);
 	};
 }
+
+#endif

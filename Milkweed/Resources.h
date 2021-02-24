@@ -4,6 +4,9 @@
 * Date: 2020.11.22.1939
 */
 
+#ifndef MW_RESOURCES_H
+#define MW_RESOURCES_H
+
 #pragma once
 
 #include <GL/glew.h>
@@ -14,8 +17,8 @@
 #include <AL/al.h>
 #include <ft2build.h>
 #include <freetype/freetype.h>
-#include <exception>
-#include <glm/glm.hpp>
+
+#include "Sprite.h"
 
 extern int decodePNG(std::vector<unsigned char>& out_image,
 	unsigned long& image_width, unsigned long& image_height,
@@ -23,30 +26,25 @@ extern int decodePNG(std::vector<unsigned char>& out_image,
 
 namespace MW {
 	/*
-	* A general error for the resource manager to throw
-	*/
-	class ResourceException : public std::exception {
-	public:
-		ResourceException(const std::string& message) : m_message(message) {}
-		virtual const char* what() const throw() {
-			return m_message.c_str();
-		}
-
-	private:
-		std::string m_message;
-	};
-
-	/*
 	* A wrapper for the ID of an OpenGL texture
 	*/
-	class Texture {
-	public:
+	struct Texture {
 		// The OpenGL ID of this texture
 		GLuint textureID = 0;
 		// The width of this texture in pixels
 		unsigned int width = 0;
 		// The height of this texture in pixels
 		unsigned int height = 0;
+
+		/*
+		* Make a blank texture with no ID, width, or height
+		*/
+		Texture() : textureID(0), width(0), height(0) {}
+		/*
+		* Make a texture with the given ID, width, and height
+		*/
+		Texture(GLuint TextureID, unsigned int Width, unsigned int Height) :
+			textureID(TextureID), width(Width), height(Height) {}
 	};
 
 	/*
@@ -55,15 +53,24 @@ namespace MW {
 	struct Sound {
 		// The ID number of this sound in OpenAL
 		ALuint soundID = 0;
+
+		/*
+		* Make a blank sound with no ID
+		*/
+		Sound() {}
+		/*
+		* Make a sound with the given ID
+		*/
+		Sound(ALuint SoundID) : soundID(SoundID) {}
 	};
 
 	/*
 	* A single character in a font
 	*/
 	struct Character {
-		// The size of the character
+		// The dimensions of this character
 		glm::vec2 dimensions = glm::vec2();
-		// The offset from the origin of this character to the top-left
+		// The offset from the origin to this sprite to the top-left
 		glm::ivec2 bearing = glm::ivec2();
 		// The distance to the next character in a string of text
 		unsigned int offset = 0;
@@ -72,10 +79,10 @@ namespace MW {
 	};
 
 	/*
-	* A wrapper for a map of char to Characters
+	* A font, wrapper for a map of char to Characters
 	*/
 	struct Font {
-		std::unordered_map<char, Character> characters;
+		std::map<char, Character> characters;
 	};
 
 	/*
@@ -84,12 +91,12 @@ namespace MW {
 	*/
 	class ResourceManager {
 	public:
-		// An empty texture to return when texture loading fails
-		static Texture NO_TEXTURE;
-		// An empty sound to return when sound loading fails
-		static Sound NO_SOUND;
-		// An empty font to return when font loading fails
-		static Font NO_FONT;
+		// An empty texture to initialize sprites with
+		static Texture* NO_TEXTURE;
+		// An empty sound to initialize objects with
+		static Sound* NO_SOUND;
+		// An empty font to initialize objects with
+		static Font* NO_FONT;
 
 		// Disable the copy constructor
 		ResourceManager(ResourceManager& rm) = delete;
@@ -104,7 +111,7 @@ namespace MW {
 		* @return The texture either from memory or the disk if found,
 		* NO_TEXTURE otherwise
 		*/
-		Texture& getTexture(const std::string& fileName);
+		Texture* getTexture(const std::string& fileName);
 		/*
 		* Get a sound from memory or the disk
 		*
@@ -112,15 +119,28 @@ namespace MW {
 		* @return The sound either from memory or the disk if found,
 		* NO_SOUND otherwise
 		*/
-		Sound& getSound(const std::string& fileName);
+		Sound* getSound(const std::string& fileName);
 		/*
 		* Get a font from memory or the disk
-		* 
-		* @param fileName: The file name of this font on disk
+		*
+		* @param fileName: The file name of this TTF font on disk
 		* @return The font either from memory or the disk if found,
 		* NO_FONT otherwise
 		*/
-		Font& getFont(const std::string& fileName);
+		Font* getFont(const std::string& fileName);
+		/*
+		* Set the point size to load fonts from TTF files at
+		*
+		* @param fontPointSize: The pixel height to load fonts at from TTF
+		* files, larger sizes take more video memory
+		*/
+		void setFontPointSize(unsigned int fontPointSize) {
+			m_fontPointSize = fontPointSize;
+		}
+		/*
+		* Test whether this resource manager can load TTF files
+		*/
+		bool isFontLoadingEnabled() const { return m_fontLoadingEnabled; }
 		/*
 		* Delete all resources loaded into memory by this resource manager
 		*/
@@ -137,10 +157,14 @@ namespace MW {
 		std::unordered_map<std::string, Texture> m_textures;
 		// The map of sounds in memory with their file names on disk
 		std::unordered_map<std::string, Sound> m_sounds;
-		// The instance of the freetype library to load fonts with
-		FT_Library m_FTLib;
 		// The map of fonts in memory with their file names on disk
 		std::unordered_map<std::string, Font> m_fonts;
+		// The instance of the FreeType library to load fonts with
+		FT_Library m_freeTypeLibrary;
+		// Whether this resource manager can load TTF files
+		bool m_fontLoadingEnabled = false;
+		// The default point size of fonts
+		FT_UInt m_fontPointSize = 48;
 		// The singleton instance of this class
 		static ResourceManager m_instance;
 
@@ -164,3 +188,5 @@ namespace MW {
 			ALsizei& size);
 	};
 }
+
+#endif

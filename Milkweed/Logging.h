@@ -4,6 +4,9 @@
 * Date: 2021.01.08.2110
 */
 
+#ifndef MW_LOGGING_H
+#define MW_LOGGING_H
+
 #pragma once
 
 #include <fstream>
@@ -93,3 +96,5 @@ namespace MW {
 		LogManager() {}
 	};
 }
+
+#endif

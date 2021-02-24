@@ -4,6 +4,9 @@
 * Date: 2020.12.16.1146
 */
 
+#ifndef MW_AUDIO_H
+#define MW_AUDIO_H
+
 #pragma once
 
 #include <AL/al.h>
@@ -56,7 +59,7 @@ namespace MW {
 		*
 		* @param music: A pointer to the music to play
 		*/
-		void playMusic(const Sound& sound);
+		void playMusic(const Sound* sound);
 		/*
 		* Play the most recently played music track
 		*/
@@ -74,7 +77,7 @@ namespace MW {
 		*
 		* @param sound: A pointer to the sound effect to play
 		*/
-		void playSound(const Sound& sound);
+		void playSound(const Sound* sound);
 		/*
 		* Stop the music track and all sound effects
 		*/
@@ -120,3 +123,5 @@ namespace MW {
 		ALint getSourceState(ALuint source);
 	};
 }
+
+#endif

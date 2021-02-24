@@ -4,6 +4,9 @@
 * Date: 2020.11.15.1629
 */
 
+#ifndef MW_SPRITE_H
+#define MW_SPRITE_H
+
 #pragma once
 
 #include <glm/glm.hpp>
@@ -148,3 +151,5 @@ namespace MW {
 		float m_timer = 0.0f;
 	};
 }
+
+#endif

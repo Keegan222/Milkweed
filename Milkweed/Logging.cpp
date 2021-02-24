@@ -7,7 +7,7 @@
 #include <time.h>
 #include <direct.h>
 
-#include "LogManager.h"
+#include "Logging.h"
 
 namespace MW {
 	LogManager LogManager::m_instance;

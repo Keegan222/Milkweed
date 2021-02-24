@@ -4,19 +4,22 @@
 * Date: 2020.10.20.1427
 */
 
+#ifndef MW_MW_H
+#define MW_MW_H
+
 #pragma once
 
 #include <string>
 #include <fstream>
 #include <vector>
 
-#include "NetworkManager.h"
+#include "Network.h"
 #include "Window.h"
-#include "InputManager.h"
+#include "Input.h"
 #include "Renderer.h"
-#include "ResourceManager.h"
-#include "LogManager.h"
-#include "AudioManager.h"
+#include "Resources.h"
+#include "Logging.h"
+#include "Audio.h"
 
 namespace MW {
 	/*
@@ -137,3 +140,5 @@ namespace MW {
 		static void Destroy();
 	};
 }
+
+#endif

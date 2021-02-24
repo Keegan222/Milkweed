@@ -4,6 +4,9 @@
 * Date: 2020.10.30.0857
 */
 
+#ifndef MW_SHADER_H
+#define MW_SHADER_H
+
 #pragma once
 
 #include <string>
@@ -187,3 +190,5 @@ namespace MW {
 		std::string m_cameraUniformName = "";
 	};
 }
+
+#endif

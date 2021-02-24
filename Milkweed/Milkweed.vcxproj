@@ -19,28 +19,28 @@
     </ProjectConfiguration>
   </ItemGroup>
   <ItemGroup>
-    <ClCompile Include="AudioManager.cpp" />
-    <ClCompile Include="InputManager.cpp" />
-    <ClCompile Include="LogManager.cpp" />
+    <ClCompile Include="Audio.cpp" />
+    <ClCompile Include="Input.cpp" />
+    <ClCompile Include="Logging.cpp" />
     <ClCompile Include="MW.cpp" />
-    <ClCompile Include="NetworkManager.cpp" />
+    <ClCompile Include="Network.cpp" />
     <ClCompile Include="picoPNG.cpp" />
     <ClCompile Include="Renderer.cpp" />
-    <ClCompile Include="ResourceManager.cpp" />
+    <ClCompile Include="Resources.cpp" />
     <ClCompile Include="Shader.cpp" />
     <ClCompile Include="Camera.cpp" />
     <ClCompile Include="Sprite.cpp" />
     <ClCompile Include="Window.cpp" />
   </ItemGroup>
   <ItemGroup>
-    <ClInclude Include="AudioManager.h" />
+    <ClInclude Include="Audio.h" />
     <ClInclude Include="Camera.h" />
-    <ClInclude Include="InputManager.h" />
-    <ClInclude Include="LogManager.h" />
+    <ClInclude Include="Input.h" />
+    <ClInclude Include="Logging.h" />
     <ClInclude Include="MW.h" />
-    <ClInclude Include="NetworkManager.h" />
+    <ClInclude Include="Network.h" />
     <ClInclude Include="Renderer.h" />
-    <ClInclude Include="ResourceManager.h" />
+    <ClInclude Include="Resources.h" />
     <ClInclude Include="Shader.h" />
     <ClInclude Include="Sprite.h" />
     <ClInclude Include="Window.h" />

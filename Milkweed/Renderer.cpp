@@ -12,22 +12,20 @@
 #include "Sprite.h"
 #include "Resources.h"
 
-namespace MW {
+namespace Milkweed {
 	Renderer Renderer::m_instance;
 
-	void Renderer::init() {
+	bool Renderer::init() {
 		// Give the window the OpenGL context
-		glfwMakeContextCurrent(App::WINDOW.getWindowHandle());
+		glfwMakeContextCurrent(MW::WINDOW.getWindowHandle());
 
 		// Initialize GLEW and get the running OpenGL version
 		if (glewInit() != GLEW_OK) {
 			// GLEW could not be initialize
-			App::LOG << "Failed to initialize GLEW\n";
-			return;
+			return false;
 		}
 
 		const GLubyte* version = glGetString(GL_VERSION);
-		App::LOG << "OpenGL version: " << version << "\n";
 
 		// Set the clear color
 		glClearColor(m_clearColor.x, m_clearColor.y, m_clearColor.z, 1.0f);
@@ -50,6 +48,8 @@ namespace MW {
 		// Default to texture slot 0
 		// TODO: This should probably be changed later
 		glActiveTexture(GL_TEXTURE0);
+
+		return true;
 	}
 
 	void Renderer::begin() {
@@ -124,32 +124,32 @@ namespace MW {
 
 	void Renderer::end() {
 		if (m_dumpFrame) {
-			App::LOG << "NEW FRAME DUMP BEGIN\n";
+			//MW::LOG << "NEW FRAME DUMP BEGIN\n";
 		}
 
 		// Submit all the characters to be rendered this frame as sprites
 		for (std::pair<Shader*, std::vector<Sprite>> text : m_text) {
 			if (m_dumpFrame) {
-				App::LOG << "New text shader found\n";
+				//MW::LOG << "New text shader found\n";
 			}
 			Shader* shader = text.first;
 			std::vector<Sprite*> sprites(text.second.size());
 			for (unsigned int i = 0; i < sprites.size(); i++) {
 				if (m_dumpFrame) {
-					App::LOG << "Adding pointer to character sprite " << i << "\n";
+					//MW::LOG << "Adding pointer to character sprite " << i << "\n";
 				}
 				sprites[i] = &(m_text[shader][i]);
 			}
 			if (m_dumpFrame) {
-				App::LOG << "Submitting shader batch of " << sprites.size()
-					<< " character sprites\n";
+				//MW::LOG << "Submitting shader batch of " << sprites.size()
+				//	<< " character sprites\n";
 			}
 			submit(sprites, shader);
 		}
 
 		for (std::pair<Shader*, std::vector<Sprite*>> shaderBatch : m_sprites) {
 			if (m_dumpFrame) {
-				App::LOG << "New sprite shader batch found\n";
+				//MW::LOG << "New sprite shader batch found\n";
 			}
 			// Get the shader to render this batch of sprites with
 			Shader* shader = shaderBatch.first;
@@ -165,7 +165,7 @@ namespace MW {
 			// Start the shader
 			shader->begin();
 			if (m_dumpFrame) {
-				App::LOG << "Started shader\n";
+				//MW::LOG << "Started shader\n";
 			}
 
 			// Initialize the data to send to OpenGL
@@ -174,12 +174,12 @@ namespace MW {
 			unsigned int spriteCount = 0;
 
 			if (m_dumpFrame) {
-				App::LOG << "Sprites sorted by ";
+				//MW::LOG << "Sprites sorted by ";
 				if (m_sortType == SortType::TEXTURE) {
-					App::LOG << "texture\n";
+					//MW::LOG << "texture\n";
 				}
 				else if (m_sortType == SortType::DEPTH) {
-					App::LOG << "depth\n";
+					//MW::LOG << "depth\n";
 				}
 			}
 
@@ -187,18 +187,18 @@ namespace MW {
 			GLuint currentTextureID = 0;
 			for (unsigned int i = 0; i < m_sprites[shader].size(); i++) {
 				if (m_dumpFrame) {
-					App::LOG << "Testing sprite " << i << "'s texture ID\n";
+					//MW::LOG << "Testing sprite " << i << "'s texture ID\n";
 				}
 				Sprite* sprite = m_sprites[shader][i];
 				// Test if a new texture group has started
 				if (currentTextureID != sprite->texture->textureID) {
 					if (m_dumpFrame) {
-						App::LOG << "Sprite " << i << " has a new texture ID\n";
+						//MW::LOG << "Sprite " << i << " has a new texture ID\n";
 					}
 					if (spriteCount > 0) {
 						if (m_dumpFrame) {
-							App::LOG << "There were sprites drawn with the "
-								<< "last texture ID, render their vertices\n";
+							//MW::LOG << "There were sprites drawn with the "
+							//	<< "last texture ID, render their vertices\n";
 						}
 						// If there were sprites in the last texture batch,
 						// draw them
@@ -206,9 +206,9 @@ namespace MW {
 					}
 
 					if (m_dumpFrame) {
-						App::LOG << "Binding the new texture ID "
-							<< sprite->texture->textureID << " and clearing "
-							<< "old vertex and index data\n";
+						//MW::LOG << "Binding the new texture ID "
+						//	<< sprite->texture->textureID << " and clearing "
+						//	<< "old vertex and index data\n";
 					}
 					// Reset the vertex data and bind the new texture
 					currentTextureID = sprite->texture->textureID;
@@ -219,38 +219,38 @@ namespace MW {
 				}
 
 				if (m_dumpFrame) {
-					App::LOG << "Adding sprite " << i << "'s vertex and index"
-						<< " data to the new texture frame\n";
+					//MW::LOG << "Adding sprite " << i << "'s vertex and index"
+					//	<< " data to the new texture frame\n";
 				}
 				// Add this sprite's data to the current texture group's vertex
 				// data to be uploaded to OpenGL
 				if (m_dumpFrame) {
-					App::LOG << "Pushing new vertex data:\n";
+					//MW::LOG << "Pushing new vertex data:\n";
 				}
 				for (float f : sprite->getVertexData()) {
 					if (m_dumpFrame) {
-						App::LOG << f << ", ";
+						//MW::LOG << f << ", ";
 					}
 					vertexData.push_back(f);
 				}
 				if (m_dumpFrame) {
-					App::LOG << "\nPushing new index data:\n";
+					//MW::LOG << "\nPushing new index data:\n";
 				}
 				for (unsigned int i : Sprite::SPRITE_INDICES) {
 					indices.push_back(i + 4 * spriteCount);
 					if (m_dumpFrame) {
-						App::LOG << (i + 4 * spriteCount) << ", ";
+						//MW::LOG << (i + 4 * spriteCount) << ", ";
 					}
 				}
 				if (m_dumpFrame) {
-					App::LOG << "\n";
+					//MW::LOG << "\n";
 				}
 				spriteCount++;
 			}
 
 			if (m_dumpFrame) {
-				App::LOG << "Drawing remaning vertices and indices and clearing"
-					<< " vertex and index buffers\n";
+				//MW::LOG << "Drawing remaning vertices and indices and clearing"
+				//	<< " vertex and index buffers\n";
 			}
 			// Draw the remaining vertex data from the final texture group
 			drawVertices(vertexData, indices);
@@ -258,7 +258,7 @@ namespace MW {
 			indices.clear();
 
 			if (m_dumpFrame) {
-				App::LOG << "Stopping shader\n";
+				//MW::LOG << "Stopping shader\n";
 			}
 			// Stop this shader
 			shader->end();
@@ -272,9 +272,9 @@ namespace MW {
 	void Renderer::drawVertices(const std::vector<float>& vertexData,
 		const std::vector<unsigned int>& indices) {
 		if (m_dumpFrame) {
-			App::LOG << "Drawing " << vertexData.size() << " float vertex data"
-				<< " points with " << indices.size() << " indices using "
-				<< "glDrawElements\n";
+			//MW::LOG << "Drawing " << vertexData.size() << " float vertex data"
+			//	<< " points with " << indices.size() << " indices using "
+			//	<< "glDrawElements\n";
 		}
 		// Upload the vertex data to OpenGL
 		glBufferData(GL_ARRAY_BUFFER,

@@ -14,7 +14,7 @@
 #include <glm/glm.hpp>
 #include <string>
 
-namespace MW {
+namespace Milkweed {
 	/*
 	* A wrapper for a GLFW window handle
 	*/

@@ -15,7 +15,7 @@
 #include "Shader.h"
 #include "Resources.h"
 
-namespace MW {
+namespace Milkweed {
 	/*
 	* The ways to sort sprites to be rendered
 	*/
@@ -35,7 +35,7 @@ namespace MW {
 		/*
 		* Set up this renderer in OpenGL
 		*/
-		void init();
+		bool init();
 		/*
 		* Begin a frame
 		*/

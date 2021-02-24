@@ -6,30 +6,23 @@
 
 #include "MW.h"
 
-namespace MW {
+namespace Milkweed {
 	AudioManager AudioManager::m_instance;
 
 	bool AudioManager::init() {
-		App::LOG << "Initialize audio manager\n";
-
 		// Open the default sound device with OpenAL
 		m_device = alcOpenDevice(nullptr);
 		if (m_device == nullptr) {
-			App::LOG << "Failed to open default sound device\n";
 			return false;
 		}
-		App::LOG << "Opened audio device \"" << alcGetString(m_device,
-			ALC_ALL_DEVICES_SPECIFIER) << "\"\n";
 
 		// Create an OpenAL context and make it current
 		m_context = alcCreateContext(m_device, nullptr);
 		if (m_context == nullptr) {
-			App::LOG << "Failed to create OpenAL context\n";
 			return false;
 		}
 		ALCboolean contextCurrent = alcMakeContextCurrent(m_context);
 		if (contextCurrent != ALC_TRUE) {
-			App::LOG << "Failed to make OpenAL context current\n";
 			return false;
 		}
 

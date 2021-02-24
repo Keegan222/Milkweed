@@ -8,7 +8,7 @@
 #include "Sprite.h"
 #include "Resources.h"
 
-namespace MW {
+namespace Milkweed {
 	std::vector<unsigned int> Sprite::SPRITE_INDICES = {
 		// Triangle 1
 		0, 1, 2,

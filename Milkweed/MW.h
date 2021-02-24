@@ -21,7 +21,10 @@
 #include "Logging.h"
 #include "Audio.h"
 
-namespace MW {
+#define MWLOG(LEVEL, SOURCE, ...) MW::LOG << MW::LOG.getDate() << ": [" \
+	<< #LEVEL << "] [" << #SOURCE << "] " << __VA_ARGS__ << "\n"
+
+namespace Milkweed {
 	/*
 	* An abstract scene in a Milkweed engine application
 	*/
@@ -45,7 +48,7 @@ namespace MW {
 		virtual void processInput() = 0;
 		/*
 		* Update this scene's physics
-		* 
+		*
 		* @param deltaTime: The elapsed time in frames for this scene based on
 		* the frame rate, always between 0.0f and 1.0f
 		*/
@@ -62,9 +65,9 @@ namespace MW {
 
 	/*
 	* The main class of the Milkweed engine, provides static access to all of
-	* the engine's functionality
+	* the framework's functionality and contains the framework's entry point
 	*/
-	class App {
+	class MW {
 	public:
 		// The application's window
 		static Window& WINDOW;
@@ -82,10 +85,10 @@ namespace MW {
 		static AudioManager& AUDIO;
 
 		// Disable the copy constructor
-		App(App& a) = delete;
+		MW(MW& a) = delete;
 		/*
 		* Set up and start an application using the Milkweed engine
-		* 
+		*
 		* @param windowAttrib: The set of window attributes to open the
 		* application's window with
 		* @param physicsUPS: The target number of physics updates per second
@@ -94,10 +97,11 @@ namespace MW {
 		*/
 		static void Init(const std::string& windowTitle,
 			const glm::ivec2& windowDimensions, bool windowFullScreen,
-			float physicsUPS, const std::vector<Scene*>& scenes, Scene* scene);
+			float physicsUPS, const std::vector<Scene*>& scenes,
+			Scene* scene);
 		/*
 		* Change the active scene of this application
-		* 
+		*
 		* @param scene: The scene to switch to, must be contained in the list
 		* of scenes passed into Init()
 		* @return Whether the scene was switched successfully
@@ -115,7 +119,7 @@ namespace MW {
 		/*
 		* Disable the constructor
 		*/
-		App() {}
+		MW() {}
 		/*
 		* Run the main loop of this application
 		*/
@@ -130,7 +134,7 @@ namespace MW {
 		static void ProcessInput();
 		/*
 		* Update the application's physics
-		* 
+		*
 		* @param deltaTime: The time elapsed in frames
 		*/
 		static void Update(float deltaTime);

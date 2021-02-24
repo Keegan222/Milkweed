@@ -24,7 +24,7 @@ extern int decodePNG(std::vector<unsigned char>& out_image,
 	unsigned long& image_width, unsigned long& image_height,
 	const unsigned char* in_png, size_t in_size, bool convert_to_rgba32 = true);
 
-namespace MW {
+namespace Milkweed {
 	/*
 	* A wrapper for the ID of an OpenGL texture
 	*/
@@ -91,13 +91,6 @@ namespace MW {
 	*/
 	class ResourceManager {
 	public:
-		// An empty texture to initialize sprites with
-		static Texture* NO_TEXTURE;
-		// An empty sound to initialize objects with
-		static Sound* NO_SOUND;
-		// An empty font to initialize objects with
-		static Font* NO_FONT;
-
 		// Disable the copy constructor
 		ResourceManager(ResourceManager& rm) = delete;
 		/*
@@ -160,7 +153,7 @@ namespace MW {
 		// The map of fonts in memory with their file names on disk
 		std::unordered_map<std::string, Font> m_fonts;
 		// The instance of the FreeType library to load fonts with
-		FT_Library m_freeTypeLibrary;
+		FT_Library m_freeTypeLibrary = nullptr;
 		// Whether this resource manager can load TTF files
 		bool m_fontLoadingEnabled = false;
 		// The default point size of fonts

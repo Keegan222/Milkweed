@@ -9,7 +9,7 @@
 
 #include "Logging.h"
 
-namespace MW {
+namespace Milkweed {
 	LogManager LogManager::m_instance;
 
 	void LogManager::init(const std::string& dirName, bool printToConsole) {

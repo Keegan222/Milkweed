@@ -13,7 +13,7 @@
 
 #include "Camera.h"
 
-namespace MW {
+namespace Milkweed {
 	/*
 	* Wrapper for GLFW key bindings
 	*/

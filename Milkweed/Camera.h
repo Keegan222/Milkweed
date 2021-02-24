@@ -11,7 +11,7 @@
 
 #include "Sprite.h"
 
-namespace MW {
+namespace Milkweed {
 	/*
 	* A 2D camera used to position sprites on the screen
 	*/

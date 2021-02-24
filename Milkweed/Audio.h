@@ -14,7 +14,7 @@
 
 #include "Resources.h"
 
-namespace MW {
+namespace Milkweed {
 	/*
 	* The MW engine utility for playing audio files (sound effects and music)
 	*/

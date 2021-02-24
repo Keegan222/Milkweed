@@ -28,7 +28,7 @@
 
 #include "Logging.h"
 
-namespace MW {
+namespace Milkweed {
 	/*
 	* The header information of NetMessage
 	*/
@@ -218,7 +218,7 @@ namespace MW {
 		* @param maxMessageSize: The maximum message body size which can be
 		* received by this connection in bytes (1024 by default)
 		*/
-		void init(LogManager* log, TSQueue<NetMessage>* messagesIn,
+		void init(TSQueue<NetMessage>* messagesIn,
 			unsigned int maxMessageSize = 1024);
 		/*
 		* Attach this connection to a remote server (for NetClient's only)
@@ -268,8 +268,6 @@ namespace MW {
 	private:
 		// Whether this connection is connected to a remote machine
 		bool m_connected = false;
-		// The logging system for this connection
-		LogManager* m_log = nullptr;
 		// The ASIO context to perform networking within
 		asio::io_context& m_context;
 		// The ASIO socket to read and write data with

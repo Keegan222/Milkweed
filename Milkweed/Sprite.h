@@ -12,7 +12,7 @@
 #include <glm/glm.hpp>
 #include <vector>
 
-namespace MW {
+namespace Milkweed {
 	// Declare the Texture class from ResourceManager here
 	struct Texture;
 

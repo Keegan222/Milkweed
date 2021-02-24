@@ -6,16 +6,16 @@
 
 #include "MW.h"
 
-namespace MW {
+namespace Milkweed {
 	InputManager InputManager::m_instance;
 
 	void InputManager::init() {
 		// Add the GLFW callback functions
-		glfwSetKeyCallback(App::WINDOW.getWindowHandle(), key_callback);
-		glfwSetCharCallback(App::WINDOW.getWindowHandle(), char_callback);
-		glfwSetMouseButtonCallback(App::WINDOW.getWindowHandle(),
+		glfwSetKeyCallback(MW::WINDOW.getWindowHandle(), key_callback);
+		glfwSetCharCallback(MW::WINDOW.getWindowHandle(), char_callback);
+		glfwSetMouseButtonCallback(MW::WINDOW.getWindowHandle(),
 			button_callback);
-		glfwSetCursorPosCallback(App::WINDOW.getWindowHandle(),
+		glfwSetCursorPosCallback(MW::WINDOW.getWindowHandle(),
 			cursor_callback);
 	}
 
@@ -26,15 +26,15 @@ namespace MW {
 		switch (action) {
 		case GLFW_PRESS:
 			// Update the state of the key and notify input listeners
-			App::INPUT.m_keys[key] = true;
-			for (InputListener* l : App::INPUT.m_listeners) {
+			MW::INPUT.m_keys[key] = true;
+			for (InputListener* l : MW::INPUT.m_listeners) {
 				l->keyPressed(key);
 			}
 			break;
 		case GLFW_RELEASE:
 			// Update the state of the key and notify input listeners
-			App::INPUT.m_keys[key] = false;
-			for (InputListener* l : App::INPUT.m_listeners) {
+			MW::INPUT.m_keys[key] = false;
+			for (InputListener* l : MW::INPUT.m_listeners) {
 				l->keyReleased(key);
 			}
 			break;
@@ -44,7 +44,7 @@ namespace MW {
 	void InputManager::char_callback(GLFWwindow* window,
 		unsigned int codepoint) {
 		// Notify input listeners
-		for (InputListener* l : App::INPUT.m_listeners) {
+		for (InputListener* l : MW::INPUT.m_listeners) {
 			l->textTyped((char)codepoint);
 		}
 	}
@@ -56,15 +56,15 @@ namespace MW {
 		switch (action) {
 		case GLFW_PRESS:
 			// Update the state of the button and notify input listeners
-			App::INPUT.m_buttons[button] = true;
-			for (InputListener* l : App::INPUT.m_listeners) {
+			MW::INPUT.m_buttons[button] = true;
+			for (InputListener* l : MW::INPUT.m_listeners) {
 				l->buttonPressed(button);
 			}
 			break;
 		case GLFW_RELEASE:
 			// Update the state of the button and notify input listeners
-			App::INPUT.m_buttons[button] = false;
-			for (InputListener* l : App::INPUT.m_listeners) {
+			MW::INPUT.m_buttons[button] = false;
+			for (InputListener* l : MW::INPUT.m_listeners) {
 				l->buttonReleased(button);
 			}
 			break;
@@ -74,7 +74,7 @@ namespace MW {
 	void InputManager::cursor_callback(GLFWwindow* window, double x, double y) {
 		// Set the new cursor position and notify input listeners (invert the
 		// y-axis)
-		for (InputListener* l : App::INPUT.m_listeners) {
+		for (InputListener* l : MW::INPUT.m_listeners) {
 			l->cursorMoved();
 		}
 	}
@@ -107,9 +107,9 @@ namespace MW {
 
 		// Update the cursor position
 		double x = 0.0, y = 0.0;
-		glfwGetCursorPos(App::WINDOW.getWindowHandle(), &x, &y);
+		glfwGetCursorPos(MW::WINDOW.getWindowHandle(), &x, &y);
 		m_cursorPosition.x = (float)x;
-		m_cursorPosition.y = App::WINDOW.getDimensions().y - (float)y;
+		m_cursorPosition.y = MW::WINDOW.getDimensions().y - (float)y;
 	}
 
 	bool InputManager::isKeyDown(int key) {
@@ -212,8 +212,8 @@ namespace MW {
 		
 		// Transform the cursor position on the window to its position in the
 		// camera's world-space
-		cursorPosition.x -= (float)App::WINDOW.getDimensions().x / 2;
-		cursorPosition.y -= (float)App::WINDOW.getDimensions().y / 2;
+		cursorPosition.x -= (float)MW::WINDOW.getDimensions().x / 2;
+		cursorPosition.y -= (float)MW::WINDOW.getDimensions().y / 2;
 		cursorPosition /= camera->scale;
 		cursorPosition.x += camera->position.x;
 		cursorPosition.y += camera->position.y;

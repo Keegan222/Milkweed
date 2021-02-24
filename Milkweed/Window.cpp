@@ -7,7 +7,7 @@
 #include "MW.h"
 #include "Window.h"
 
-namespace MW {
+namespace Milkweed {
 	Window Window::m_instance;
 
 	bool Window::init(const std::string& title, const glm::ivec2& dimensions,
@@ -15,7 +15,6 @@ namespace MW {
 		// Initialize GLFW
 		if (glfwInit() != GLFW_TRUE) {
 			// GLFW could not be initialized
-			App::LOG << "Failed to initialize GLFW\n";
 			return false;
 		}
 
@@ -36,17 +35,13 @@ namespace MW {
 			dimensions.y, title.c_str(), NULL, NULL);
 		if (m_window == NULL) {
 			// The window could not be created
-			App::LOG << "GLFW failed to create window\n";
 			return false;
 		}
 
 		setFullScreen(fullScreen);
 
 		// Give the window the OpenGL context
-		glfwMakeContextCurrent(App::WINDOW.getWindowHandle());
-
-		App::LOG << "Opened window with dimensions (" << m_dimensions.x << ", "
-			<< m_dimensions.y << ")\n";
+		glfwMakeContextCurrent(MW::WINDOW.getWindowHandle());
 
 		// The window was successfully created
 		m_initialized = true;

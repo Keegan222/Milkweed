@@ -2,7 +2,9 @@
 
 #include <Milkweed/MW.h>
 
-class TestScene : public MW::Scene {
+using namespace Milkweed;
+
+class TestScene : public Scene {
 public:
 	void init() override;
 	void enter() override;
@@ -13,10 +15,10 @@ public:
 	void destroy() override;
 
 private:
-	MW::Sound* m_music = nullptr;
-	MW::Sound* m_sound = nullptr;
-	MW::Shader m_shader;
-	MW::Font* m_font = nullptr;
+	Sound* m_music = nullptr;
+	Sound* m_sound = nullptr;
+	Shader m_shader;
+	Font* m_font = nullptr;
 	float m_width = 0.0f;
 };
 

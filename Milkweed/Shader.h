@@ -13,7 +13,7 @@
 #include <vector>
 #include <GL/glew.h>
 
-namespace MW {
+namespace Milkweed {
 	/*
 	* An input vertex attribute for a Shader
 	*/

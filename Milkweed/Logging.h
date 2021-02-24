@@ -12,7 +12,7 @@
 #include <fstream>
 #include <iostream>
 
-namespace MW {
+namespace Milkweed {
 	/*
 	* A system for managing log files and writing messages to a file and the
 	* console, wrapper for an std::ofstream

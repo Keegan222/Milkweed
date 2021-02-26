@@ -1,13 +1,12 @@
 /*
 * File: Camera.cpp
 * Author: Keegan MacDonald (keeganm742@gmail.com)
-* Date: 2020.11.14.2226
+* Created: 2020.11.14
 */
 
 #include <glm/gtc/matrix_transform.hpp>
 
 #include "MW.h"
-#include "Camera.h"
 
 namespace Milkweed {
 	void Camera::init() {

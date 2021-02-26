@@ -1,13 +1,11 @@
 /*
 * File: Camera.h
 * Author: Keegan MacDonald (keeganm742@gmail.com)
-* Date: 2020.11.14.2225
+* Created: 2020.11.14
 */
 
 #ifndef MW_CAMERA_H
 #define MW_CAMERA_H
-
-#pragma once
 
 #include "Sprite.h"
 
@@ -23,9 +21,7 @@ namespace Milkweed {
 		float scaleVelocity = 0.0f;
 
 		/*
-		* Initialize this camera with the window's dimensions
-		*
-		* @param windowDimensions: The dimensions of the window in pixels
+		* Initialize this camera with the application window's dimensions
 		*/
 		void init();
 		/*

@@ -1,19 +1,17 @@
 /*
 * File: Renderer.h
 * Author: Keegan MacDonald (keeganm742@gmail.com)
-* Date: 2020.11.01.2209
+* Created: 2020.11.01
 */
 
 #ifndef MW_RENDERER_H
 #define MW_RENDERER_H
 
-#pragma once
-
 #include <unordered_map>
 
 #include "Camera.h"
-#include "Shader.h"
 #include "Resources.h"
+#include "Shader.h"
 
 namespace Milkweed {
 	/*
@@ -24,16 +22,25 @@ namespace Milkweed {
 	};
 
 	/*
-	* The Milkweed engine's utility for drawing graphics
+	* The Milkweed framework's utility for drawing graphics
 	*/
 	class Renderer {
 	public:
 		/*
-		* Disable copy constructor
+		* The copy constructor is disabled for this class
 		*/
 		Renderer(Renderer& r) = delete;
 		/*
+		* Get the singleton instance of this class
+		*/
+		static Renderer& getInstance() {
+			return m_instance;
+		}
+
+		/*
 		* Set up this renderer in OpenGL
+		* 
+		* @return Whether the renderer could be successfully initialized
 		*/
 		bool init();
 		/*
@@ -52,9 +59,15 @@ namespace Milkweed {
 		* Submit a string of text to be converted to sprites and rendered this
 		* frame in the given color
 		* 
-		* @param text: The text label to draw
-		* @param font: The font the draw the text int
-		* @param shader: The shader to render the text with
+		* @param text: The text to draw this frame
+		* @param position: The position to draw this text label at
+		* @param bounds: The bounds within which to draw the text (x, y, w, h)
+		* @param scale: The factor to scale the size of the characters in font
+		* by when drawing text
+		* @param color: The RGB color to draw this text in, in normalized
+		* floating point values (0.0 - 1.0)
+		* @param font: The typeface to draw this text in
+		* @param shader: The text shader to use to draw this text
 		*/
 		void submit(const std::string& text, const glm::vec3& position,
 			const glm::vec4& bounds, float scale, const glm::vec3& color,
@@ -64,13 +77,13 @@ namespace Milkweed {
 		*/
 		void end();
 		/*
-		* Set the type of sorting to perform when rendering sprites
-		*/
-		void setSortType(SortType sortType) { m_sortType = sortType; }
-		/*
 		* Free this renderer's memory and stop using it
 		*/
 		void destroy();
+		/*
+		* Set the type of sorting to perform when rendering sprites
+		*/
+		void setSortType(SortType sortType) { m_sortType = sortType; }
 		/*
 		* Get the current clear color
 		*/
@@ -80,23 +93,21 @@ namespace Milkweed {
 		* 
 		* @param clearColor: Normalized RGB color
 		*/
-		void setClearColor(const glm::vec3& clearColor) {
-			m_clearColor = clearColor;
-			glClearColor(clearColor.x, clearColor.y, clearColor.z, 1.0f);
-		}
+		void setClearColor(const glm::vec3& clearColor);
 		/*
 		* Prepare the renderer to dump the next frame's rendering information
 		* to the application's log
 		*/
 		void dumpNextFrame() { m_dumpFrame = true; }
-		/*
-		* Get the singleton instance of this class
-		*/
-		static Renderer& getInstance() {
-			return m_instance;
-		}
 
 	private:
+		// Singleton instance of this class
+		static Renderer m_instance;
+		/*
+		* The constructor is disabled for this class
+		*/
+		Renderer() {}
+
 		// Whether to dump the next frame's rendering information to the log
 		bool m_dumpFrame = false;
 		// The vertex array for this renderer
@@ -113,11 +124,7 @@ namespace Milkweed {
 		SortType m_sortType = SortType::DEPTH;
 		// Normalized RGB color to clear the screen to
 		glm::vec3 m_clearColor = glm::vec3();
-		// Singleton instance of this class
-		static Renderer m_instance;
 
-		// Disable constructor
-		Renderer() {}
 		/*
 		* Draw a set of sprites with a single texture
 		*/

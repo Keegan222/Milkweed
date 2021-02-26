@@ -1,13 +1,11 @@
 /*
 * File: Window.h
 * Author: Keegan MacDonald (keeganm742@gmail.com)
-* Date: 2020.10.20.2024
+* Created: 2020.10.20
 */
 
 #ifndef MW_WINDOW_H
 #define MW_WINDOW_H
-
-#pragma once
 
 #include <GL/glew.h>
 #include <GLFW/glfw3.h>
@@ -21,13 +19,23 @@ namespace Milkweed {
 	class Window {
 	public:
 		/*
-		* Disable copy constructor
+		* The copy constructor is disabled for this class
 		*/
 		Window(Window& w) = delete;
 		/*
+		* Get the singleton instance of this class
+		*/
+		static Window& getInstance() {
+			return m_instance;
+		}
+
+		/*
 		* Create and open a window using GLFW
 		*
-		* @param attrib: The set of window attributes to create the window by
+		* @param title: The title to appear at the top of this window
+		* @param dimensions: The desired dimensions of this window in pixels
+		* @param fullScreen: Whether this window should ignore the title and
+		*	dimensions and appear in full screen mode
 		* @return Whether the window could be successfully opened
 		*/
 		bool init(const std::string& title, const glm::ivec2& dimensions,
@@ -56,14 +64,15 @@ namespace Milkweed {
 		* Set whether this window should appear in fullscreen mode
 		*/
 		void setFullScreen(bool fullScreen);
-		/*
-		* Get the singleton instance of this class
-		*/
-		static Window& getInstance() {
-			return m_instance;
-		}
 
 	private:
+		// The singleton instance of this class
+		static Window m_instance;
+		/*
+		* The constructor is disabled for this class
+		*/
+		Window() {}
+
 		// The GLFW handle for this window
 		GLFWwindow* m_window = nullptr;
 		// The dimensions of this window in pixels
@@ -76,11 +85,6 @@ namespace Milkweed {
 		bool m_fullScreen = false;
 		// Whether this window has been initialized or not
 		bool m_initialized = false;
-		// The singleton instance of this class
-		static Window m_instance;
-
-		// Disable the constructor
-		Window() {}
 	};
 }
 

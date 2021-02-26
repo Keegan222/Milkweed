@@ -1,13 +1,18 @@
  /*
 * File: NetworkManager.cpp
 * Author: Keegan MacDonald (keeganm742@gmail.com)
-* Date: 2020.12.26.1854
+* Created: 2020.12.26
 */
 
-#include "Network.h"
 #include "MW.h"
 
 namespace Milkweed {
+	NetMessage::NetMessage(unsigned int ID,
+		std::shared_ptr<NetConnection> owner) {
+		header.ID = ID;
+		this->owner = owner;
+	}
+
 	void NetConnection::init(TSQueue<NetMessage>* messagesIn,
 		unsigned int maxMessageSize) {
 		// Set the context, message in TSQ, and let the owner of the temporary

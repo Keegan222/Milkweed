@@ -1,13 +1,11 @@
 /*
 * File: MW.h
 * Author: Keegan MacDonald (keeganm742@gmail.com)
-* Date: 2020.10.20.1427
+* Created: 2020.10.20
 */
 
 #ifndef MW_MW_H
 #define MW_MW_H
-
-#pragma once
 
 #include <string>
 #include <fstream>
@@ -26,7 +24,7 @@
 
 namespace Milkweed {
 	/*
-	* An abstract scene in a Milkweed engine application
+	* An abstract scene in a Milkweed framework application
 	*/
 	class Scene {
 	public:
@@ -64,7 +62,7 @@ namespace Milkweed {
 	};
 
 	/*
-	* The main class of the Milkweed engine, provides static access to all of
+	* The main class of the Milkweed framework, provides static access to all of
 	* the framework's functionality and contains the framework's entry point
 	*/
 	class MW {
@@ -84,16 +82,24 @@ namespace Milkweed {
 		// The application audio player
 		static AudioManager& AUDIO;
 
-		// Disable the copy constructor
+		/*
+		* The copy constructor is disabled for this class
+		*/
 		MW(MW& a) = delete;
 		/*
-		* Set up and start an application using the Milkweed engine
+		* Set up and start an application using the Milkweed framework
 		*
-		* @param windowAttrib: The set of window attributes to open the
-		* application's window with
-		* @param physicsUPS: The target number of physics updates per second
-		* @param scenes: The set of scenes the application will/may use
-		* @param scene: The initial scene to be active in the application
+		* @param windowTitle: The title to appear on this application's window
+		* @param windowDimensions: The desired dimensions of this application's
+		* window in pixels
+		* @param windowFullScreen: Whether this window should initially appear
+		* in fullscreen mode
+		* @param physicsUPS: The desired number of physics updates to perform
+		* per second
+		* @param scenes: A vector of pointers to all scenes this application
+		* will use while running
+		* @param scene: A pointer to the initial scene to be active in the
+		* application
 		*/
 		static void Init(const std::string& windowTitle,
 			const glm::ivec2& windowDimensions, bool windowFullScreen,
@@ -117,7 +123,7 @@ namespace Milkweed {
 		static Scene* SCENE;
 
 		/*
-		* Disable the constructor
+		* The constructor is disabled for this class
 		*/
 		MW() {}
 		/*
@@ -134,12 +140,10 @@ namespace Milkweed {
 		static void ProcessInput();
 		/*
 		* Update the application's physics
-		*
-		* @param deltaTime: The time elapsed in frames
 		*/
 		static void Update(float deltaTime);
 		/*
-		* Free the Milkweed engine application's memory and terminate
+		* Free the Milkweed application's memory and terminate
 		*/
 		static void Destroy();
 	};

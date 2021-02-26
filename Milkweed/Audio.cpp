@@ -1,7 +1,7 @@
 /*
 * File: AudioManager.cpp
 * Author: Keegan MacDonald (keeganm742@gmail.com)
-* Date: 2020.12.16.1156
+* Created: 2020.12.16
 */
 
 #include "MW.h"

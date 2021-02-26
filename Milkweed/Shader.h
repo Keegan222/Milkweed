@@ -1,13 +1,11 @@
 /*
 * File: Shader.h
 * Author: Keegan MacDonald (keeganm742@gmail.com)
-* Date: 2020.10.30.0857
+* Created: 2020.10.30
 */
 
 #ifndef MW_SHADER_H
 #define MW_SHADER_H
-
-#pragma once
 
 #include <string>
 #include <vector>
@@ -57,7 +55,7 @@ namespace Milkweed {
 	};
 
 	/*
-	* A wrapper for an OpenGL shader program (vertex shader and fragment shader)
+	* A compiler and wrapper for an OpenGL vertex and fragment shader program
 	*/
 	class Shader {
 	public:
@@ -89,29 +87,15 @@ namespace Milkweed {
 		* source
 		* @param attributes: The vertex attributes this shader will use when
 		* rendering a VAO from OpenGL
-		* @return Whether the shader could be created successfully
-		*/
-		bool init(const std::string& vFileName, const std::string& fFileName,
-			const std::vector<VertexAttribute>& attributes);
-		/*
-		* Locate this shader's GLSL source code, compile it, and create this
-		* shader with OpenGL
-		* 
-		* @param vFileName: The path to the file containing the vertex shader
-		* source
-		* @param fFileName: The path to the file containing the fragment shader
-		* source
-		* @param attributes: The vertex attributes this shader will use when
-		* rendering a VAO from OpenGL
 		* @param cameraUniformName: The uniform name for the projection matrix
-		* of this shader's camera
+		* of this shader's camera, empty by default
 		* @return Whether the shader could be created successfully
 		*/
 		bool init(const std::string& vFileName, const std::string& fFileName,
 			const std::vector<VertexAttribute>& attributes,
-			const std::string& cameraUniformName);
+			const std::string& cameraUniformName = "");
 		/*
-		* Tell OpenGL to draw graphics using this shader
+		* Use this shader to draw graphics
 		*/
 		void begin();
 		/*

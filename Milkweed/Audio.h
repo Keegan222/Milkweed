@@ -1,13 +1,11 @@
 /*
 * File: AudioManager.h
 * Author: Keegan MacDonald (keeganm742@gmail.com)
-* Date: 2020.12.16.1146
+* Created: 2020.12.16
 */
 
 #ifndef MW_AUDIO_H
 #define MW_AUDIO_H
-
-#pragma once
 
 #include <AL/al.h>
 #include <AL/alc.h>
@@ -16,14 +14,21 @@
 
 namespace Milkweed {
 	/*
-	* The MW engine utility for playing audio files (sound effects and music)
+	* The MW framework utility for playing audio files (sound effects and music)
 	*/
 	class AudioManager {
 	public:
 		/*
-		* Disable the copy constructor
+		* The copy constructor is disabled for this class
 		*/
 		AudioManager(AudioManager& am) = delete;
+		/*
+		* Get the singleton instance of this class
+		*/
+		static AudioManager& getInstance() {
+			return m_instance;
+		}
+
 		/*
 		* Initialize the audio manager, set up a sound source
 		*/
@@ -86,14 +91,15 @@ namespace Milkweed {
 		* Free this audio manager's memory
 		*/
 		void destroy();
-		/*
-		* Get the singleton instance of this class
-		*/
-		static AudioManager& getInstance() {
-			return m_instance;
-		}
 
 	private:
+		// The singleton instance of this class
+		static AudioManager m_instance;
+		/*
+		* The constructor is disabled for this class
+		*/
+		AudioManager() {}
+
 		// The OpenAL sound device
 		ALCdevice* m_device = nullptr;
 		// The OpenAL context
@@ -104,17 +110,9 @@ namespace Milkweed {
 		ALuint m_musicSourceID = 0;
 		// The audio sources for sound effects
 		std::vector<ALuint> m_effectSources;
-		// The singleton instance of this class
-		static AudioManager m_instance;
 
-		// Disable the constructor
-		AudioManager() {}
 		/*
-		* Create a new audio source
-		*
-		* @param looping: Whether the source's audio should loop to the
-		* beginning when finished (false by default)
-		* @return The ID number of the new audio source
+		* Create a new OpenAL audio source to play a sound effect
 		*/
 		ALuint createSource(bool looping = false);
 		/*

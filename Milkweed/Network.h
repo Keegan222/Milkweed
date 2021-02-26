@@ -1,13 +1,11 @@
 /*
 * File: NetworkManager.h
 * Author: Keegan MacDonald (keeganm742@gmail.com)
-* Date: 2020.12.26.1852
+* Created: 2020.12.26
 */
 
 #ifndef MW_NETWORK_H
 #define MW_NETWORK_H
-
-#pragma once
 
 #include <ostream>
 #include <vector>
@@ -20,7 +18,6 @@
 #ifdef _WIN32
 #define _WIN32_WINNT 0x0A00
 #endif
-#define ASIO_STANDALONE
 
 #include <asio.hpp>
 #include <asio/ts/internet.hpp>
@@ -29,8 +26,11 @@
 #include "Logging.h"
 
 namespace Milkweed {
+	// Forward declare NetConnection
+	class NetConnection;
+
 	/*
-	* The header information of NetMessage
+	* The header information of a NetMessage
 	*/
 	struct NetMessageHeader {
 		// The ID number of this message, identifies the type of message
@@ -39,13 +39,11 @@ namespace Milkweed {
 		unsigned int size = sizeof(NetMessageHeader);
 	};
 
-	// Forward declare NetConnection
-	class NetConnection;
-
 	/*
-	* A message to pass over the network
+	* A message to pass over the internet between NetClient's and servers
 	*/
-	struct NetMessage {
+	class NetMessage {
+	public:
 		// The connection which owns this message
 		std::shared_ptr<NetConnection> owner = nullptr;
 		// The header information of this message
@@ -62,10 +60,7 @@ namespace Milkweed {
 		* (owner optional, nullptr by default)
 		*/
 		NetMessage(unsigned int ID,
-			std::shared_ptr<NetConnection> Owner = nullptr) {
-			header.ID = ID;
-			owner = Owner;
-		}
+			std::shared_ptr<NetConnection> owner = nullptr);
 		/*
 		* Override for the bitshift left operator to print header information
 		* to an output stream
@@ -124,62 +119,103 @@ namespace Milkweed {
 	template <typename T>
 	class TSQueue {
 	public:
-		// Ensure that this queue uses the default constructor
+		/*
+		* This class uses the default constructor for an std::deque
+		*/
 		TSQueue() = default;
-		// Ensure that this queue can't be copied
+		/*
+		* The copy constructor is disabled for this class
+		*/
 		TSQueue(const TSQueue<T>&) = delete;
-		// Clear this TSQueue's memory on destruction
+		/*
+		* Clear this TSQueue's memory and delete it
+		*/
 		virtual ~TSQueue() { clear(); }
-		// Delete all items from this queue
+		/*
+		* Delete all items from this queue's memory
+		*/
 		void clear() {
 			std::scoped_lock(m_mtx);
 			m_DEQueue.clear();
 		}
-		// Get the number of items in this queue
+		/*
+		* Get the number of items in this queue
+		*/
 		size_t size() {
 			std::scoped_lock(m_mtx);
 			return m_DEQueue.size();
 		}
-		// Get a reference to the element at the given index
+		/*
+		* Retrieve an element from the queue
+		* 
+		* @param index: The index of the element in the queue
+		* @return A reference to the element of this queue at the given index
+		*/
 		T& at(unsigned int index) {
 			std::scoped_lock(m_mtx);
 			return m_DEQueue.at(index);
 		}
-		// Test whether this queue contains no items
+		/*
+		* Test whether this queue is empty
+		*/
 		bool empty() {
 			std::scoped_lock(m_mtx);
 			return m_DEQueue.empty();
 		}
-		// Get the item at the front of this queue
+		/*
+		* Get the item at the front of this queue
+		* 
+		* @return A reference to the item at the front of the double-ended queue
+		*/
 		const T& front() {
 			std::scoped_lock(m_mtx);
 			return m_DEQueue.front();
 		}
-		// Get the item at the front of this queue and remove it from the queue
+		/*
+		* Get the item at the front of this queue and remove it
+		* 
+		* @return The item at the front of this queue by value
+		*/
 		T popFront() {
 			std::scoped_lock(m_mtx);
 			T t = std::move(m_DEQueue.front());
 			m_DEQueue.pop_front();
 			return t;
 		}
-		// Get the item at the back of this queue
+		/*
+		* Get the item at the back of this queue
+		*
+		* @return A reference to the item at the back of the double-ended queue
+		*/
 		const T& back() {
 			std::scoped_lock(m_mtx);
 			return m_DEQueue.back();
 		}
-		// Get the item at the back of this queue and remove it from the queue
+		/*
+		* Get the item at the back of this queue and remove it
+		*
+		* @return The item at the back of this queue by value
+		*/
 		T popBack() {
 			std::scoped_lock(m_mtx);
 			T t = std::move(m_DEQueue.back());
 			m_DEQueue.pop_back();
 			return t;
 		}
-		// Add an item to the front of this queue
+		/*
+		* Add an item to the front of this queue
+		* 
+		* @param t: A reference to the item to push onto the front of the queue
+		*/
 		void pushFront(const T& t) {
 			std::scoped_lock(m_mtx);
 			m_DEQueue.emplace_front(std::move(t));
 		}
-		// Add an item to the back of this queue
+		/*
+		* Add an item to the back of this queue
+		* 
+		* @param t: A reference to the item to push onto the back of the queue
+		*/
 		void pushBack(const T& t) {
 			std::scoped_lock(m_mtx);
 			m_DEQueue.emplace_back(std::move(t));
@@ -211,8 +247,6 @@ namespace Milkweed {
 		* Initialize this connection with a context and a place to send incoming
 		* messages (for NetClient's)
 		* 
-		* @param log: A pointer to a LogManager for this connection to print
-		* messages to
 		* @param messagesIn: A pointer to a TSQueue of NetMessage's for this
 		* connection to push back incoming messages to
 		* @param maxMessageSize: The maximum message body size which can be
@@ -261,7 +295,7 @@ namespace Milkweed {
 		*/
 		void disconnect();
 		/*
-		* Free this connection's memory
+		* Free this connection's memory and disconnect it
 		*/
 		void destroy();
 
@@ -303,9 +337,16 @@ namespace Milkweed {
 	class NetClient {
 	public:
 		/*
-		* Disable copy constructor
+		* The copy constructor is disabled for this class
 		*/
 		NetClient(NetClient& nc) = delete;
+		/*
+		* Get the singleton instance of this class
+		*/
+		static NetClient& getInstance() {
+			return m_instance;
+		}
+
 		/*
 		* Initialize this client's network connection
 		* 
@@ -333,6 +374,8 @@ namespace Milkweed {
 		}
 		/*
 		* Send a message to the server this network client is connected to
+		* 
+		* @param message: The NetMessage to send to the server
 		*/
 		void send(const NetMessage& message);
 		/*
@@ -348,14 +391,15 @@ namespace Milkweed {
 		* Disconnect this client and free it's memory
 		*/
 		void destroy();
-		/*
-		* Get the singleton instance of this class
-		*/
-		static NetClient& getInstance() {
-			return m_instance;
-		}
 
 	private:
+		// The singleton instance of this class
+		static NetClient m_instance;
+		/*
+		* The constructor is disabled for this class
+		*/
+		NetClient() : m_socket(m_context) {}
+
 		// The ASIO context to do networking with
 		asio::io_context m_context;
 		// The thread for the ASIO context to do work in
@@ -367,11 +411,6 @@ namespace Milkweed {
 		// The queue for the connection to push messages from the server into
 		// the back of
 		TSQueue<NetMessage> m_messagesIn;
-		// The singleton instance of this class
-		static NetClient m_instance;
-
-		// Disable the constructor
-		NetClient() : m_socket(m_context) {}
 	};
 
 	/*
@@ -397,7 +436,6 @@ namespace Milkweed {
 		bool init(unsigned int maxMessageSize = 1024);
 		/*
 		* Test whether this server is still listening for new connections
-		* (Wrapper for ASIO acceptor is_open() function)
 		*/
 		bool isActive() const { return m_acceptor.is_open(); }
 		/*
@@ -461,7 +499,7 @@ namespace Milkweed {
 		/*
 		* A client has been disconnected from the server
 		* 
-		* @param client: The client which just disconnected
+		* @param client: A pointer to the client which is disconnecting
 		*/
 		virtual void onDisconnect(std::shared_ptr<NetConnection> client) {}
 
@@ -479,8 +517,10 @@ namespace Milkweed {
 		// The maximum size of any messages to receive from clients
 		unsigned int m_maxMessageSize = 1024;
 
-		// Wait for a new client to connect to this server and generate a new
-		// NetConnection when one is found
+		/*
+		* Wait for a new client to connect to this server and generate a new
+		* NetConnection when one is found
+		*/
 		void waitForConnection();
 	};
 }

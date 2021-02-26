@@ -1,13 +1,11 @@
 /*
 * File: InputManager.h
 * Author: Keegan MacDonald (keeganm742@gmail.com)
-* Date: 2020.10.22.1656
+* Created: 2020.10.22
 */
 
 #ifndef MW_INPUT_H
 #define MW_INPUT_H
-
-#pragma once
 
 #include <unordered_map>
 
@@ -133,22 +131,32 @@ namespace Milkweed {
 	public:
 		/*
 		* A key has been pressed on the keyboard
+		* 
+		* @param key: The ID of the relevant key
 		*/
 		virtual void keyPressed(int key) = 0;
 		/*
 		* A key has been released on the keyboard
+		* 
+		* @param key: The ID of the relevant key
 		*/
 		virtual void keyReleased(int key) = 0;
 		/*
 		* Text has been typed on the keyboard
+		* 
+		* @param key: The ID of the relevant key
 		*/
 		virtual void textTyped(char text) = 0;
 		/*
 		* A button has been pressed on the mouse
+		* 
+		* @param key: The ID of the relevant button
 		*/
 		virtual void buttonPressed(int button) = 0;
 		/*
 		* A button has been released on the mouse
+		* 
+		* @param key: The ID of the relevant button
 		*/
 		virtual void buttonReleased(int button) = 0;
 		/*
@@ -158,15 +166,22 @@ namespace Milkweed {
 	};
 
 	/*
-	* Milkweed engine application's utility for handling user mouse and keyboard
+	* Milkweed application's utility for handling user mouse and keyboard
 	* input from GLFW
 	*/
 	class InputManager {
 	public:
 		/*
-		* Disable copy constructor
+		* The copy constructor is disabled for this class
 		*/
 		InputManager(InputManager& im) = delete;
+		/*
+		* Get the singleton instance of this class
+		*/
+		static InputManager& getInstance() {
+			return m_instance;
+		}
+
 		/*
 		* Register this input manager's callback functions with GLFW
 		*/
@@ -174,13 +189,13 @@ namespace Milkweed {
 		/*
 		* Add an input listener to this input manager
 		* 
-		* @param listener: The input listener to add
+		* @param listener: A pointer to the input listener to add
 		*/
 		void addInputListener(InputListener* listener);
 		/*
 		* Remove an input listener from this input manager
 		* 
-		* @param listener: The input listener to remove
+		* @param listener: A pointer to the input listener to remove
 		*/
 		void removeInputListener(InputListener* listener);
 		/*
@@ -232,14 +247,15 @@ namespace Milkweed {
 		* Get the position of the mouse cursor in world-space in a given camera
 		*/
 		glm::vec2 getCursorPosition(const Camera* camera) const;
-		/*
-		* Get the singleton instance of this class
-		*/
-		static InputManager& getInstance() {
-			return m_instance;
-		}
 
 	private:
+		// The singleton instance of this class
+		static InputManager m_instance;
+		/*
+		* The constructor is disabled for this class
+		*/
+		InputManager() {}
+
 		// The input listeners attached to this input manager
 		std::list<InputListener*> m_listeners;
 		// The states of the keys on the keyboard
@@ -252,11 +268,7 @@ namespace Milkweed {
 		std::unordered_map<int, bool> m_prevButtons;
 		// The position of the mouse cursor on the window
 		glm::vec2 m_cursorPosition = glm::vec2();
-		// The singleton instance of this class
-		static InputManager m_instance;
 
-		// Disable constructor
-		InputManager() {}
 		/*
 		* GLFW callback function for keyboard input events
 		*/

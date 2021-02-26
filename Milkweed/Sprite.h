@@ -1,13 +1,11 @@
 /*
 * File: Sprite.h
 * Author: Keegan MacDonald (keeganm742@gmail.com)
-* Date: 2020.11.15.1629
+* Created: 2020.11.15
 */
 
 #ifndef MW_SPRITE_H
 #define MW_SPRITE_H
-
-#pragma once
 
 #include <glm/glm.hpp>
 #include <vector>
@@ -38,19 +36,14 @@ namespace Milkweed {
 		bool flipVertical = false;
 
 		/*
-		* Construct a blank sprite
-		*/
-		Sprite() {}
-		/*
-		* Construct a sprite with position, dimensions, and texture
+		* Initialize this sprite with a position, dimensions, and texture
 		* 
-		* @param position: The position of this sprite
-		* @param dimensions: The dimensions of this sprite
-		* @param texture: A pointer to this sprite's texture
+		* @param position: The 3D position of this sprite
+		* @param dimensions: The dimensions of this sprite in pixels
+		* @param texture: A pointer to the texture to display this sprite with
 		*/
-		Sprite(const glm::vec3& Position, const glm::vec2& Dimensions,
-			Texture* Texture) : position(Position), dimensions(Dimensions),
-			texture(Texture) {}
+		void init(const glm::vec3& position, const glm::vec2& dimensions,
+			Texture* texture);
 		/*
 		* Update this sprite's physics
 		* 
@@ -74,7 +67,9 @@ namespace Milkweed {
 		void flip(std::vector<float>* vertices);
 
 	private:
-		// Swap the position of two elements of a std::vector
+		/*
+		* Swap the elements of the vector v whose indices are a and b
+		*/
 		void swapElements(std::vector<float>* v, unsigned int a,
 			unsigned int b);
 	};
@@ -84,10 +79,6 @@ namespace Milkweed {
 	*/
 	class AnimatedSprite : public Sprite {
 	public:
-		/*
-		* Construct blank animated sprite
-		*/
-		AnimatedSprite() {}
 		/*
 		* Construct a new animated sprite as a blank sprite
 		* 
@@ -100,7 +91,7 @@ namespace Milkweed {
 		* @param frameTime: The number of updates each frame of the animation
 		* should be displayed for
 		*/
-		AnimatedSprite(const glm::vec3& position, const glm::vec2& dimensions,
+		void init(const glm::vec3& position, const glm::vec2& dimensions,
 			Texture* texture, const glm::ivec2& frameDimensions,
 			float frameTime);
 		/*
@@ -112,19 +103,15 @@ namespace Milkweed {
 		/*
 		* Let the animation play from the current frame
 		*/
-		void play() { m_playing = true; }
+		void play();
 		/*
 		* Stop playing the animation on the current frame
 		*/
-		void pause() { m_playing = false; }
+		void pause();
 		/*
 		* Stop playing the animation and reset it to the first frame
 		*/
-		void stop() {
-			m_playing = false;
-			m_frame = 0;
-			m_timer = 0.0f;
-		}
+		void stop();
 		/*
 		* Get whether this sprite's animation is currently playing
 		*/

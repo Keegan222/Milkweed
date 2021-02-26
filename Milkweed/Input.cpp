@@ -1,7 +1,7 @@
 /*
 * File: InputManager.cpp
 * Author: Keegan MacDonald (keeganm742@gmail.com)
-* Date: 2020.10.22.1703
+* Created: 2020.10.22
 */
 
 #include "MW.h"

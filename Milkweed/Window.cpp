@@ -1,11 +1,10 @@
 /*
 * File: Window.cpp
 * Author: Keegan MacDonald (keeganm742@gmail.com)
-* Date: 2020.10.20.2025
+* Created: 2020.10.20
 */
 
 #include "MW.h"
-#include "Window.h"
 
 namespace Milkweed {
 	Window Window::m_instance;

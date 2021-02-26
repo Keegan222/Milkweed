@@ -1,18 +1,24 @@
 /*
 * File: Shader.cpp
 * Author: Keegan MacDonald (keeganm742@gmail.com)
-* Date: 2020.10.30.0900
+* Created: 2020.10.30
 */
 
 #include <fstream>
 
 #include "MW.h"
-#include "Shader.h"
 
 namespace Milkweed {
 	bool Shader::init(const std::string& vFileName,
 		const std::string& fFileName,
-		const std::vector<VertexAttribute>& attributes) {
+		const std::vector<VertexAttribute>& attributes,
+		const std::string& cameraUniformName) {
+		// Initialize the camera if this shader needs one
+		m_cameraUniformName = cameraUniformName;
+		if (!m_cameraUniformName.empty()) {
+			m_camera.init();
+		}
+
 		// Locate and read the GLSL source code for the vertex shader
 		std::ifstream vFile(vFileName);
 		if (vFile.fail()) {
@@ -81,15 +87,6 @@ namespace Milkweed {
 		return true;
 	}
 
-	bool Shader::init(const std::string& vFileName,
-		const std::string& fFileName,
-		const std::vector<VertexAttribute>& attributes,
-		const std::string& cameraUniformName) {
-		m_cameraUniformName = cameraUniformName;
-		m_camera.init();
-		return init(vFileName, fFileName, attributes);
-	}
-
 	void Shader::begin() {
 		// Tell OpenGL to use this shader and enable vertex attributes
 		glUseProgram(m_programID);
@@ -97,6 +94,7 @@ namespace Milkweed {
 			glEnableVertexAttribArray(i);
 		}
 
+		// Upload this shader's camera matrix if it needs one
 		if (!m_cameraUniformName.empty()) {
 			upload4x4Matrix(m_cameraUniformName, m_camera.getCameraMatrix());
 		}

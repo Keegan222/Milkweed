@@ -1,12 +1,10 @@
 /*
 * File: Sprite.cpp
 * Author: Keegan MacDonald (keeganm742@gmail.com)
-* Date: 2020.11.15.1651
+* Created: 2020.11.15
 */
 
-#include "MW.h"
 #include "Sprite.h"
-#include "Resources.h"
 
 namespace Milkweed {
 	std::vector<unsigned int> Sprite::SPRITE_INDICES = {
@@ -16,30 +14,48 @@ namespace Milkweed {
 		2, 3, 0,
 	};
 
+	void Sprite::init(const glm::vec3& position, const glm::vec2& dimensions,
+		Texture* texture) {
+		this->position = position;
+		this->dimensions = dimensions;
+		this->texture = texture;
+	}
+
 	void Sprite::update(float deltaTime) {
-		position.x += velocity.x * deltaTime;
-		position.y += velocity.y * deltaTime;
+		// Increment the position of this sprite by its velocity
+		position.x += (velocity.x * deltaTime);
+		position.y += (velocity.y * deltaTime);
 	}
 
 	std::vector<float> Sprite::getVertexData() {
+		// Generate the default set of vertex data
 		std::vector<float> vertices = {
 			// Vertex 1
+			// Position
 			position.x, position.y, position.z,
+			// Texture coordinates
 			0.0f, 1.0f,
 
 			// Vertex 2
+			// Position
 			position.x + dimensions.x, position.y, position.z,
+			// Texture coordinates
 			1.0f, 1.0f,
 
 			// Vertex 3
+			// Position
 			position.x + dimensions.x, position.y + dimensions.y, position.z,
+			// Texture coordinates
 			1.0f, 0.0f,
 
 			// Vertex 4
+			// Position
 			position.x, position.y + dimensions.y, position.z,
+			// Texture coordinates
 			0.0f, 0.0f,
 		};
 
+		// Flip vertex positions of needed
 		flip(&vertices);
 
 		return vertices;
@@ -47,10 +63,12 @@ namespace Milkweed {
 
 	void Sprite::flip(std::vector<float>* vertices) {
 		if (flipHorizontal) {
+			// Flip the positions of the vertices horizontally
 			swapElements(vertices, 3, 8);
 			swapElements(vertices, 13, 18);
 		}
 		if (flipVertical) {
+			// Flip the positions of the vertices vertically
 			swapElements(vertices, 4, 19);
 			swapElements(vertices, 9, 14);
 		}
@@ -58,15 +76,18 @@ namespace Milkweed {
 
 	void Sprite::swapElements(std::vector<float>* v, unsigned int a,
 		unsigned int b) {
+		// Swap the element of v at a with the element at b
 		float s = v->at(a);
 		v->at(a) = v->at(b);
 		v->at(b) = s;
 	}
 
-	AnimatedSprite::AnimatedSprite(const glm::vec3& position,
+	void AnimatedSprite::init(const glm::vec3& position,
 		const glm::vec2& dimensions, Texture* texture,
-		const glm::ivec2& frameDimensions, float frameTime)
-		: Sprite(position, dimensions, texture) {
+		const glm::ivec2& frameDimensions, float frameTime) {
+		// Initialize as a sprite first
+		((Sprite*)this)->init(position, dimensions, texture);
+
 		// Get the size of each frame in texture space
 		m_frameSize = glm::vec2(
 			1.0f / (float)frameDimensions.x,
@@ -104,25 +125,47 @@ namespace Milkweed {
 		m_timer += deltaTime;
 	}
 
+	void AnimatedSprite::play() {
+		m_playing = true;
+	}
+
+	void AnimatedSprite::pause() {
+		m_playing = false;
+	}
+
+	void AnimatedSprite::stop() {
+		m_playing = false;
+		m_frame = 0;
+		m_timer = 0.0f;
+	}
+
 	std::vector<float> AnimatedSprite::getVertexData() {
 		// The texture coordinates are the current frame of the animation
 		glm::vec2 textureCoords = m_frames[m_frame];
 
 		std::vector<float> vertices = {
 			// Vertex 1
+			// Position
 			position.x, position.y, position.z,
+			// Texture coordinates
 			textureCoords.x, textureCoords.y + m_frameSize.y,
 
 			// Vertex 2
+			// Position
 			position.x + dimensions.x, position.y, position.z,
+			// Texture coordinates
 			textureCoords.x + m_frameSize.x, textureCoords.y + m_frameSize.y,
 
 			// Vertex 3
+			// Position
 			position.x + dimensions.x, position.y + dimensions.y, position.z,
+			// Texture coordinates
 			textureCoords.x + m_frameSize.x, textureCoords.y,
 
 			// Vertex 4
+			// Position
 			position.x, position.y + dimensions.y, position.z,
+			// Texture coordinates
 			textureCoords.x, textureCoords.y,
 		};
 

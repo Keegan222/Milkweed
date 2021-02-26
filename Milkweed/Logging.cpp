@@ -1,7 +1,7 @@
 /*
 * File: LogManager.cpp
 * Author: Keegan MacDonald
-* Date: 2021.01.08.2115
+* Created: 2021.01.08
 */
 
 #include <time.h>
@@ -21,7 +21,7 @@ namespace Milkweed {
 		m_logFile.open(dirName + "/" + getDate() + ".mwlog");
 	}
 
-	std::string LogManager::getDate() {
+	std::string LogManager::getDate() const {
 		// Get the current time
 		time_t now = time(0);
 		tm tstruct;

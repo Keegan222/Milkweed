@@ -1,13 +1,11 @@
 /*
 * File: LogManager.h
 * Author: Keegan MacDonald
-* Date: 2021.01.08.2110
+* Created: 2021.01.08
 */
 
 #ifndef MW_LOGGING_H
 #define MW_LOGGING_H
-
-#pragma once
 
 #include <fstream>
 #include <iostream>
@@ -20,12 +18,20 @@ namespace Milkweed {
 	class LogManager {
 	public:
 		/*
-		* Disable copy constructor
+		* The copy constructor is disabled for this class
 		*/
 		LogManager(LogManager& lm) = delete;
 		/*
+		* Get the singleton instance of this class
+		*/
+		static LogManager& getInstance() {
+			return m_instance;
+		}
+
+		/*
 		* Set up the file for this log manager to write messages into
 		* 
+		* @param dirName: The desired directory to place the log file in
 		* @param printToConsole: Whether to print log messages to the console
 		* (true by default)
 		*/
@@ -33,10 +39,6 @@ namespace Milkweed {
 		/*
 		* Override for the bitshift left operator to push data to the console
 		* and log file simultaneously
-		* 
-		* @param ls: The log manager to push data to
-		* @param t: The data to push to the given log manager (any type)
-		* @return The log manager with new data pushed into its log file
 		*/
 		template <typename T>
 		friend LogManager& operator << (LogManager& ls, const T& t) {
@@ -56,9 +58,9 @@ namespace Milkweed {
 		}
 		/*
 		* Get the current date and time in this log manager's current date
-		* format ("%Y.%m.%d.%H%M.%S" by default)
+		* format
 		*/
-		std::string getDate();
+		std::string getDate() const;
 		/*
 		* Get the date format this log manager is currently using to generate
 		* new log files and execute its getDate() function
@@ -75,25 +77,21 @@ namespace Milkweed {
 		* Close this log manager's log file and free its memory
 		*/
 		void destroy();
-		/*
-		* Get the singleton instance of this class
-		*/
-		static LogManager& getInstance() {
-			return m_instance;
-		}
 
 	private:
+		// The singleton instance of this class
+		static LogManager m_instance;
+		/*
+		* The constructor is disabled for this class
+		*/
+		LogManager() {}
+
 		// Whether to print new messages to the console with std::cout
 		bool m_printToConsole = true;
 		// The file to print messages logged with the << operator to
 		std::ofstream m_logFile;
 		// The format to print the date in
 		std::string m_dateFormat = "%Y.%m.%d.%H%M.%S";
-		// The singleton instance of this class
-		static LogManager m_instance;
-
-		// Disable constructor
-		LogManager() {}
 	};
 }
 

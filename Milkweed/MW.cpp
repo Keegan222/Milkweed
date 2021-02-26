@@ -1,7 +1,7 @@
 /*
 * File: MW.cpp
 * Author: Keegan MacDonald (keeganm742@gmail.com)
-* Date: 2020.10.20.2018
+* Created: 2020.10.20
 */
 
 #include <iostream>
@@ -71,7 +71,7 @@ void MW::Init(const std::string& windowTitle,
 	}
 	SetScene(scene);
 
-	// The Milkweed engine has been initialized
+	// The Milkweed framework has been initialized
 	Run();
 }
 

@@ -1,14 +1,12 @@
 /*
 * File: ResourceManager.cpp
 * Author: Keegan MacDonald (keeganm742@gmail.com)
-* Date: 2020.11.27.1438
+* Created: 2020.11.27
 */
 
 #include <fstream>
-#include <iostream>
 
 #include "MW.h"
-#include "Resources.h"
 
 namespace Milkweed {
 	ResourceManager ResourceManager::m_instance;
@@ -79,8 +77,9 @@ namespace Milkweed {
 		glBindTexture(GL_TEXTURE_2D, 0);
 
 		// Add this texture to the map of textures in memory
-		m_textures[fileName] = Texture(textureID, (unsigned int)textureWidth,
-			(unsigned int)textureHeight);
+		m_textures[fileName] = Texture(textureID,
+			glm::ivec2((unsigned int)textureWidth,
+			(unsigned int)textureHeight));
 		return &m_textures[fileName];
 	}
 
@@ -181,17 +180,13 @@ namespace Milkweed {
 			glTexImage2D(GL_TEXTURE_2D, 0, GL_RED, face->glyph->bitmap.width,
 				face->glyph->bitmap.rows, 0, GL_RED, GL_UNSIGNED_BYTE,
 				face->glyph->bitmap.buffer);
-			texture.width = face->glyph->bitmap.width;
-			texture.height = face->glyph->bitmap.rows;
-			// Add the texture to a new character
-			Character character;
-			character.dimensions = glm::vec2(texture.width, texture.height);
-			character.bearing = glm::ivec2(face->glyph->bitmap_left,
-				face->glyph->bitmap_top);
-			character.offset = face->glyph->advance.x;
-			character.texture = texture;
+			texture.dimensions.x = face->glyph->bitmap.width;
+			texture.dimensions.y = face->glyph->bitmap.rows;
 			// Add the character to the font's character map
-			font.characters[c] = character;
+			font.characters[c] = Character(glm::vec2(texture.dimensions.x,
+				texture.dimensions.y), glm::ivec2(face->glyph->bitmap_left,
+					face->glyph->bitmap_top), face->glyph->advance.x,
+				texture);
 		}
 
 		FT_Done_Face(face);

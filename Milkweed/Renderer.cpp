@@ -1,16 +1,13 @@
 /*
 * File: Renderer.cpp
 * Author: Keegan MacDonald (keeganm742@gmail.com)
-* Date: 2020.11.01.2211
+* Created: 2020.11.01
 */
 
 #include <algorithm>
 #include <GL/glew.h>
 
 #include "MW.h"
-#include "Renderer.h"
-#include "Sprite.h"
-#include "Resources.h"
 
 namespace Milkweed {
 	Renderer Renderer::m_instance;
@@ -93,13 +90,14 @@ namespace Milkweed {
 			const Character& fc = font->characters[c];
 			Sprite ch;
 
-			ch.position.x = x + fc.bearing.x * scale;
-			ch.position.y = position.y - (fc.dimensions.y - fc.bearing.y)
-				* scale;
-			ch.position.z = position.z;
-			ch.dimensions = fc.dimensions * scale;
+			// Set the position, dimensions, and texture of this character and
+			// advance the offset to the start of the next character in the
+			// string
+			ch.init(glm::vec3(x + fc.bearing.x * scale,
+				position.y - (fc.dimensions.y - fc.bearing.y) * scale,
+				position.z), fc.dimensions * scale,
+				&(font->characters[c].texture));
 			x += (fc.offset >> 6) * scale;
-			ch.texture = &(font->characters[c].texture);
 			
 			if (ch.position.x >= bounds.x
 				&& ch.position.y >= bounds.y
@@ -296,5 +294,10 @@ namespace Milkweed {
 		glDeleteBuffers(1, &m_VBOID);
 		glBindVertexArray(0);
 		glDeleteVertexArrays(1, &m_VAOID);
+	}
+
+	void Renderer::setClearColor(const glm::vec3& clearColor) {
+		m_clearColor = clearColor;
+		glClearColor(clearColor.x, clearColor.y, clearColor.z, 1.0f);
 	}
 }

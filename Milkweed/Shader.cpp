@@ -23,6 +23,8 @@ namespace Milkweed {
 		std::ifstream vFile(vFileName);
 		if (vFile.fail()) {
 			// The vertex shader's file was not found
+			MWLOG(Warning, Shader, "Failed to open vertex shader file ",
+				vFileName);
 			return false;
 		}
 		std::string vFileContent((std::istreambuf_iterator<char>(vFile)),
@@ -34,6 +36,8 @@ namespace Milkweed {
 		std::ifstream fFile(fFileName);
 		if (fFile.fail()) {
 			// The fragment shader's file was not found
+			MWLOG(Warning, Shader, "Failed to open fragment shader file ",
+				fFileName);
 			return false;
 		}
 		std::string fFileContent((std::istreambuf_iterator<char>(fFile)),
@@ -55,8 +59,11 @@ namespace Milkweed {
 			// The vertex shader has failed to compile
 			char buffer[1024]; // TODO: Modify hardcoded buffer sizes
 			glGetShaderInfoLog(m_vID, 1024, NULL, buffer);
+			MWLOG(Warning, Shader, "Failed to compile vertex shader source ",
+				vFileName, "\n", buffer);
 			return false;
 		}
+		MWLOG(Info, Shader, "Compiled vertex shader source ", vFileName);
 		glCompileShader(m_fID);
 		GLint fStatus = 0;
 		glGetShaderiv(m_fID, GL_COMPILE_STATUS, &fStatus);
@@ -64,14 +71,19 @@ namespace Milkweed {
 			// The fragment shader has failed to compile
 			char buffer[1024];
 			glGetShaderInfoLog(m_fID, 1024, NULL, buffer);
+			MWLOG(Warning, Shader, "Failed to compile fragment shader source",
+				fFileName, "\n", buffer);
 			return false;
 		}
+		MWLOG(Info, Shader, "Compiled fragment shader source ", fFileName);
 
 		// Create the full shader program, attach the shaders and link
 		m_programID = glCreateProgram();
 		glAttachShader(m_programID, m_vID);
 		glAttachShader(m_programID, m_fID);
 		glLinkProgram(m_programID);
+
+		MWLOG(Info, Shader, "Created shader program with ID ", m_programID);
 
 		// Add all the vertex attributes to the program
 		m_attributeCount = (unsigned int)attributes.size();
@@ -165,6 +177,8 @@ namespace Milkweed {
 	}
 
 	void Shader::destroy() {
+		MWLOG(Info, Shader, "Destroying shader ", m_programID);
+
 		// Detach the vertex and fragment shaders and delete the program
 		glDetachShader(m_programID, m_fID);
 		glDetachShader(m_programID, m_vID);

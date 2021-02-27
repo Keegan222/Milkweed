@@ -425,7 +425,7 @@ namespace Milkweed {
 		* @param port: The port number to listen for new network connections on
 		*/
 		NetServer(unsigned short port) : m_acceptor(m_context,
-			asio::ip::tcp::endpoint(asio::ip::tcp::v4(), port)) {}
+			asio::ip::tcp::endpoint(asio::ip::tcp::v4(), port)), m_port(port) {}
 		/*
 		* Start listening for new clients connecting to this server
 		* 
@@ -516,6 +516,8 @@ namespace Milkweed {
 		unsigned int m_currentID = 100;
 		// The maximum size of any messages to receive from clients
 		unsigned int m_maxMessageSize = 1024;
+		// The port number this server was constructed with
+		unsigned short m_port = 0;
 
 		/*
 		* Wait for a new client to connect to this server and generate a new

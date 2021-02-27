@@ -11,9 +11,12 @@ namespace Milkweed {
 
 	bool Window::init(const std::string& title, const glm::ivec2& dimensions,
 		bool fullScreen) {
+		MWLOG(Info, Window, "Initializing GLFW and opening window");
+
 		// Initialize GLFW
 		if (glfwInit() != GLFW_TRUE) {
 			// GLFW could not be initialized
+			MWLOG(Error, Window, "Could not initialize GLFW");
 			return false;
 		}
 
@@ -34,6 +37,7 @@ namespace Milkweed {
 			dimensions.y, title.c_str(), NULL, NULL);
 		if (m_window == NULL) {
 			// The window could not be created
+			MWLOG(Error, Window, "Failed to create GLFW window");
 			return false;
 		}
 
@@ -50,9 +54,14 @@ namespace Milkweed {
 	void Window::setDimensions(const glm::ivec2& dimensions) {
 		// Window dimensions are fixed if this window is in fullscreen mode
 		if (m_fullScreen) {
+			MWLOG(Info, Window, "Setting window dimensions for windowed mode (",
+				dimensions.x, ", ", dimensions.y, "), no change now");
+			m_windowedDimensions = dimensions;
 			return;
 		}
 
+		MWLOG(Info, Window, "Updating window dimensions to (", dimensions.x,
+			", ", dimensions.y, ")");
 		// Set the current dimensions, update the windowed dimensions, and
 		// update the window
 		m_dimensions = dimensions;
@@ -71,6 +80,7 @@ namespace Milkweed {
 			= glfwGetVideoMode(glfwGetPrimaryMonitor());
 
 		if (fullScreen) {
+			MWLOG(Info, Window, "Setting window to fullscreen mode");
 			// Set the window to its fullscreen dimensions and let it take up
 			// the whole monitor
 			glfwSetWindowMonitor(m_window, glfwGetPrimaryMonitor(), 0, 0,
@@ -80,6 +90,8 @@ namespace Milkweed {
 			glViewport(0, 0, videoMode->width, videoMode->height);
 		}
 		else {
+			MWLOG(Info, Window, "Setting window to windowed mode, dimensions (",
+				m_dimensions.x, ", ", m_dimensions.y, ")");
 			// Set the window to its windowed dimensions and reset its position
 			// to the center of the monitor
 			glfwSetWindowMonitor(m_window, nullptr, 0, 0,

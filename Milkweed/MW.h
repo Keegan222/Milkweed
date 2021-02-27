@@ -19,8 +19,8 @@
 #include "Logging.h"
 #include "Audio.h"
 
-#define MWLOG(LEVEL, SOURCE, ...) MW::LOG << MW::LOG.getDate() << ": [" \
-	<< #LEVEL << "] [" << #SOURCE << "] " << __VA_ARGS__ << "\n"
+#define MWLOG(LEVEL, SOURCE, ...) MW::LOG , MW::LOG.getDate(), ": [",\
+	#LEVEL, "] [", #SOURCE, "] ", __VA_ARGS__, "\n"
 
 namespace Milkweed {
 	/*

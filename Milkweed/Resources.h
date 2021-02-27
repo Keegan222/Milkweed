@@ -124,10 +124,8 @@ namespace Milkweed {
 
 		/*
 		* Prepare this resource manager to load textures, sounds, and fonts
-		* 
-		* @return Whether the resource manager was initialized successfully
 		*/
-		bool init();
+		void init();
 		/*
 		* Get a PNG texture from memory or the disk
 		*

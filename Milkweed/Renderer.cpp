@@ -19,10 +19,12 @@ namespace Milkweed {
 		// Initialize GLEW and get the running OpenGL version
 		if (glewInit() != GLEW_OK) {
 			// GLEW could not be initialize
+			MWLOG(Error, Renderer, "Failed to initialize GLEW");
 			return false;
 		}
 
 		const GLubyte* version = glGetString(GL_VERSION);
+		MWLOG(Info, Renderer, "Initialized GLEW, OpenGL version: ", version);
 
 		// Set the clear color
 		glClearColor(m_clearColor.x, m_clearColor.y, m_clearColor.z, 1.0f);
@@ -122,32 +124,33 @@ namespace Milkweed {
 
 	void Renderer::end() {
 		if (m_dumpFrame) {
-			//MW::LOG << "NEW FRAME DUMP BEGIN\n";
+			MWLOG(Info, Renderer, "Renderer frame info dump:");
 		}
 
 		// Submit all the characters to be rendered this frame as sprites
 		for (std::pair<Shader*, std::vector<Sprite>> text : m_text) {
 			if (m_dumpFrame) {
-				//MW::LOG << "New text shader found\n";
+				MWLOG(Info, Renderer, "New text shader found");
 			}
 			Shader* shader = text.first;
 			std::vector<Sprite*> sprites(text.second.size());
 			for (unsigned int i = 0; i < sprites.size(); i++) {
 				if (m_dumpFrame) {
-					//MW::LOG << "Adding pointer to character sprite " << i << "\n";
+					MWLOG(Info, Renderer, "Adding pointer to character sprite ",
+						i);
 				}
 				sprites[i] = &(m_text[shader][i]);
 			}
 			if (m_dumpFrame) {
-				//MW::LOG << "Submitting shader batch of " << sprites.size()
-				//	<< " character sprites\n";
+				MWLOG(Info, Renderer, "Submitting shader batchs of ",
+					sprites.size(), " character sprites");
 			}
 			submit(sprites, shader);
 		}
 
 		for (std::pair<Shader*, std::vector<Sprite*>> shaderBatch : m_sprites) {
 			if (m_dumpFrame) {
-				//MW::LOG << "New sprite shader batch found\n";
+				MWLOG(Info, Renderer, "New sprite shader batch found");
 			}
 			// Get the shader to render this batch of sprites with
 			Shader* shader = shaderBatch.first;
@@ -155,15 +158,17 @@ namespace Milkweed {
 			if (m_sortType == SortType::TEXTURE) {
 				std::stable_sort(m_sprites[shader].begin(),
 					m_sprites[shader].end(), compareSpriteTexture);
+				MWLOG(Info, Renderer, "Sorted sprites by texture");
 			}
 			else if (m_sortType == SortType::DEPTH) {
 				std::stable_sort(m_sprites[shader].begin(),
 					m_sprites[shader].end(), compareSpriteDepth);
+				MWLOG(Info, Renderer, "Sorted sprites by depth");
 			}
 			// Start the shader
 			shader->begin();
 			if (m_dumpFrame) {
-				//MW::LOG << "Started shader\n";
+				MWLOG(Info, Renderer, "Started shader");
 			}
 
 			// Initialize the data to send to OpenGL
@@ -171,32 +176,24 @@ namespace Milkweed {
 			std::vector<unsigned int> indices;
 			unsigned int spriteCount = 0;
 
-			if (m_dumpFrame) {
-				//MW::LOG << "Sprites sorted by ";
-				if (m_sortType == SortType::TEXTURE) {
-					//MW::LOG << "texture\n";
-				}
-				else if (m_sortType == SortType::DEPTH) {
-					//MW::LOG << "depth\n";
-				}
-			}
-
 			// Draw the sprites in this batch
 			GLuint currentTextureID = 0;
 			for (unsigned int i = 0; i < m_sprites[shader].size(); i++) {
 				if (m_dumpFrame) {
-					//MW::LOG << "Testing sprite " << i << "'s texture ID\n";
+					MWLOG(Info, Renderer, "Testing sprite ", i, "'s texture ID");
 				}
 				Sprite* sprite = m_sprites[shader][i];
 				// Test if a new texture group has started
 				if (currentTextureID != sprite->texture->textureID) {
 					if (m_dumpFrame) {
-						//MW::LOG << "Sprite " << i << " has a new texture ID\n";
+						MWLOG(Info, Renderer, "Sprite ", i, " has a new ",
+							"texture ID");
 					}
 					if (spriteCount > 0) {
 						if (m_dumpFrame) {
-							//MW::LOG << "There were sprites drawn with the "
-							//	<< "last texture ID, render their vertices\n";
+							MWLOG(Info, Renderer, "There were sprites drawn ",
+								"with the last texture ID, render out their ",
+								"vertices");
 						}
 						// If there were sprites in the last texture batch,
 						// draw them
@@ -204,9 +201,9 @@ namespace Milkweed {
 					}
 
 					if (m_dumpFrame) {
-						//MW::LOG << "Binding the new texture ID "
-						//	<< sprite->texture->textureID << " and clearing "
-						//	<< "old vertex and index data\n";
+						MWLOG(Info, Renderer, "Binding new texture ID ",
+							sprite->texture->textureID, " and clearing out ",
+							"old vertex data and indices");
 					}
 					// Reset the vertex data and bind the new texture
 					currentTextureID = sprite->texture->textureID;
@@ -217,38 +214,35 @@ namespace Milkweed {
 				}
 
 				if (m_dumpFrame) {
-					//MW::LOG << "Adding sprite " << i << "'s vertex and index"
-					//	<< " data to the new texture frame\n";
+					MWLOG(Info, Renderer, "Adding sprite ", i, "'s vertex and ",
+						"index data to the new texture frame");
 				}
 				// Add this sprite's data to the current texture group's vertex
 				// data to be uploaded to OpenGL
-				if (m_dumpFrame) {
-					//MW::LOG << "Pushing new vertex data:\n";
-				}
+				unsigned int count = 0;
 				for (float f : sprite->getVertexData()) {
-					if (m_dumpFrame) {
-						//MW::LOG << f << ", ";
-					}
 					vertexData.push_back(f);
+					count++;
 				}
 				if (m_dumpFrame) {
-					//MW::LOG << "\nPushing new index data:\n";
+					MWLOG(Info, Renderer, "Pushed ", count, " new vertex data ",
+						"points");
 				}
+				count = 0;
 				for (unsigned int i : Sprite::SPRITE_INDICES) {
 					indices.push_back(i + 4 * spriteCount);
-					if (m_dumpFrame) {
-						//MW::LOG << (i + 4 * spriteCount) << ", ";
-					}
+					count++;
 				}
 				if (m_dumpFrame) {
-					//MW::LOG << "\n";
+					MWLOG(Info, Renderer, "Pushed ", count, " new index data ",
+						"points");
 				}
 				spriteCount++;
 			}
 
 			if (m_dumpFrame) {
-				//MW::LOG << "Drawing remaning vertices and indices and clearing"
-				//	<< " vertex and index buffers\n";
+				MWLOG(Info, Renderer, "Drawing remaining vertices and indices ",
+					"and clearing the frame's vertex data");
 			}
 			// Draw the remaining vertex data from the final texture group
 			drawVertices(vertexData, indices);
@@ -256,7 +250,7 @@ namespace Milkweed {
 			indices.clear();
 
 			if (m_dumpFrame) {
-				//MW::LOG << "Stopping shader\n";
+				MWLOG(Info, Renderer, "Stopping shader batch");
 			}
 			// Stop this shader
 			shader->end();
@@ -270,9 +264,9 @@ namespace Milkweed {
 	void Renderer::drawVertices(const std::vector<float>& vertexData,
 		const std::vector<unsigned int>& indices) {
 		if (m_dumpFrame) {
-			//MW::LOG << "Drawing " << vertexData.size() << " float vertex data"
-			//	<< " points with " << indices.size() << " indices using "
-			//	<< "glDrawElements\n";
+			MWLOG(Info, Renderer, "Drawing ", vertexData.size(), " float ",
+				"vertex data points with ", indices.size(), " indices using ",
+				"glDrawElements");
 		}
 		// Upload the vertex data to OpenGL
 		glBufferData(GL_ARRAY_BUFFER,
@@ -294,6 +288,8 @@ namespace Milkweed {
 		glDeleteBuffers(1, &m_VBOID);
 		glBindVertexArray(0);
 		glDeleteVertexArrays(1, &m_VAOID);
+
+		MWLOG(Info, Renderer, "Destroying renderer");
 	}
 
 	void Renderer::setClearColor(const glm::vec3& clearColor) {

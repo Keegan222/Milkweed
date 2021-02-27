@@ -10,21 +10,29 @@ namespace Milkweed {
 	AudioManager AudioManager::m_instance;
 
 	bool AudioManager::init() {
+		MWLOG(Info, AudioManager, "Initializing OpenAL-Soft audio");
+
 		// Open the default sound device with OpenAL
 		m_device = alcOpenDevice(nullptr);
 		if (m_device == nullptr) {
+			MWLOG(Error, AudioManager, "Failed to open default audio device");
 			return false;
 		}
 
 		// Create an OpenAL context and make it current
 		m_context = alcCreateContext(m_device, nullptr);
 		if (m_context == nullptr) {
+			MWLOG(Error, AudioManager, "Failed to create OpenAL context");
 			return false;
 		}
 		ALCboolean contextCurrent = alcMakeContextCurrent(m_context);
 		if (contextCurrent != ALC_TRUE) {
+			MWLOG(Error, AudioManager, "Failed to make OpenAL context current");
 			return false;
 		}
+
+		MWLOG(Info, AudioManager, "Opened OpenAL audio device \"",
+			alcGetString(m_device, ALC_ALL_DEVICES_SPECIFIER), "\"");
 
 		// Set up the music audio source
 		m_musicSourceID = createSource(true);
@@ -114,17 +122,25 @@ namespace Milkweed {
 	}
 
 	void AudioManager::destroy() {
+		int count = 1;
 		// Delete the music and sound effect sources
 		alDeleteSources(1, &m_musicSourceID);
 		for (unsigned int i = 0; i < m_effectSources.size(); i++) {
 			alDeleteSources(1, &m_effectSources[i]);
+			count++;
 		}
 		m_effectSources.clear();
+
+		MWLOG(Info, AudioManager, "Stopping audio system, deleted ", count,
+			" audio sources from OpenAL");
 
 		// Clear the OpenAL context and close the audio device
 		alcMakeContextCurrent(nullptr);
 		alcDestroyContext(m_context);
 		alcCloseDevice(m_device);
+
+		MWLOG(Info, ResourceManager, "Destroyed OpenAL context and closed ",
+			"audio device");
 	}
 
 	ALuint AudioManager::createSource(bool looping) {

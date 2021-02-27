@@ -17,6 +17,9 @@ namespace Milkweed {
 			button_callback);
 		glfwSetCursorPosCallback(MW::WINDOW.getWindowHandle(),
 			cursor_callback);
+
+		MWLOG(Info, InputManager, "Set GLFW input callback functions for ",
+			"keyboard, text, mouse buttons and mouse movement");
 	}
 
 	void InputManager::key_callback(GLFWwindow* window, int key, int scancode,

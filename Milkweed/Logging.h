@@ -41,7 +41,7 @@ namespace Milkweed {
 		* and log file simultaneously
 		*/
 		template <typename T>
-		friend LogManager& operator << (LogManager& ls, const T& t) {
+		friend LogManager& operator , (LogManager& ls, const T& t) {
 			// TODO: Print timestamps at the beginning of each message
 			if (ls.m_printToConsole) {
 				std::cout << t;

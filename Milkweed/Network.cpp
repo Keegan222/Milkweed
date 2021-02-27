@@ -218,10 +218,14 @@ namespace Milkweed {
 	void NetClient::init(unsigned int maxMessageSize) {
 		m_connection = std::make_shared<NetConnection>(m_context, m_socket);
 		m_connection->init(&m_messagesIn, maxMessageSize);
+
+		MWLOG(Info, NetClient, "Initialized network client with max message ",
+			"size ", maxMessageSize, " bytes");
 	}
 
 	void NetClient::connect(const std::string& address, unsigned int port) {
 		try {
+			MWLOG(Info, NetClient, "Connecting to ", address, " on port ", port);
 			// Attempt to resolve the host
 			asio::ip::tcp::resolver resolver(m_context);
 			asio::ip::tcp::resolver::results_type endpoints
@@ -236,6 +240,7 @@ namespace Milkweed {
 		catch (std::exception& e) {
 			// ASIO could not resolve the host
 			const char* error = e.what();
+			MWLOG(Warning, NetClient, "Network connection error: ", error);
 		}
 	}
 
@@ -245,11 +250,13 @@ namespace Milkweed {
 			m_connection->send(message);
 		}
 		else {
+			MWLOG(Warning, NetClient, "Failed to send NetMessage");
 			disconnect();
 		}
 	}
 
 	void NetClient::disconnect() {
+		MWLOG(Info, NetClient, "Disconnecting from server");
 		// Disconnect the connection if it is connected
 		if (isConnected()) {
 			m_connection->disconnect();
@@ -263,16 +270,23 @@ namespace Milkweed {
 	}
 
 	void NetClient::destroy() {
+		MWLOG(Info, NetClient, "Destroying network client");
 		disconnect();
 		m_connection->destroy();
 		m_connection.reset();
 		m_messagesIn.clear();
 	}
 
+#define SERVERLOG(LEVEL, ...) m_log, m_log.getDate(), "[", #LEVEL, "] ",\
+	"[NetServer] ", __VA_ARGS__, "\n"
+
 	bool NetServer::init(unsigned int maxMessageSize) {
 		m_log.init("mwlog/");
 
 		m_maxMessageSize = maxMessageSize;
+
+		SERVERLOG(Info, "Initializing network server on port ", m_port,
+			" with maximum message size ", maxMessageSize, " bytes");
 
 		try {
 			// Issue a task for waiting for a connection to the ASIO context
@@ -280,9 +294,12 @@ namespace Milkweed {
 
 			// Start the context in its thread
 			m_ASIOThread = std::thread([this]() { m_context.run(); });
+			SERVERLOG(Info, "Started ASIO listening thread");
 		}
 		catch (std::exception& e) {
 			const char* error = e.what();
+			SERVERLOG(Error, "Failed to start ASIO listening thread, error: ",
+				error);
 			return false;
 		}
 
@@ -301,6 +318,7 @@ namespace Milkweed {
 
 		// The client either was passed as nullptr, or is not connected,
 		// remove it
+		SERVERLOG(Info, "Client ", client->getID(), " has disconnected");
 		onDisconnect(client);
 		client.reset();
 		m_clients.erase(std::remove(m_clients.begin(), m_clients.end(), client),
@@ -310,9 +328,6 @@ namespace Milkweed {
 
 	void NetServer::messageAllClients(const NetMessage& message,
 		std::shared_ptr<NetConnection> ignoredClient) {
-		if (ignoredClient) {
-
-		}
 		bool invalidClientExists = false;
 		// Send the message to all valid and connected clients
 		for (std::shared_ptr<NetConnection> client : m_clients) {
@@ -329,6 +344,7 @@ namespace Milkweed {
 			}
 
 			// The client was invalid or not connected, remove it
+			SERVERLOG(Info, "Client ", client->getID(), " has disconnected");
 			onDisconnect(client);
 			client.reset();
 			invalidClientExists = true;
@@ -355,6 +371,8 @@ namespace Milkweed {
 	void NetServer::setMaxMessageSize(unsigned int maxMessageSize) {
 		// Set the message size for all new connections
 		m_maxMessageSize = maxMessageSize;
+		SERVERLOG(Info, "Updated maximum message size to ", maxMessageSize,
+			" bytes");
 		// Set the message size for all existing connections
 		for (std::shared_ptr<NetConnection> client : m_clients) {
 			client->setMaxMessageSize(maxMessageSize);
@@ -362,6 +380,16 @@ namespace Milkweed {
 	}
 
 	void NetServer::destroy() {
+		SERVERLOG(Info, "Stopping server, disconnecting all clients and ",
+			"stopping ASIO listening thread");
+
+		// Disconnect all clients
+		for (std::shared_ptr<NetConnection> client : m_clients) {
+			client->disconnect();
+			client.reset();
+		}
+		m_clients.clear();
+
 		// Stop the context and attempt to join its thread
 		m_context.stop();
 		if (m_ASIOThread.joinable()) {
@@ -379,10 +407,19 @@ namespace Milkweed {
 					client->init(&m_messagesIn, m_maxMessageSize);
 					client->connectToClient(m_currentID++);
 
+					SERVERLOG(Info, "Found new client connection at ",
+						socket.remote_endpoint());
+
 					if (onConnect(client)) {
 						// The program has decided to accept the client
+						SERVERLOG(Info, "Accepted client from ",
+							socket.remote_endpoint(), " assigned ID ",
+							client->getID());
 						m_clients.push_back(client);
 					}
+				}
+				else {
+					SERVERLOG(Warning, "Failed to find new client connection");
 				}
 
 				// Issue new work to the ASIO context

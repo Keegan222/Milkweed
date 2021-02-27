@@ -34,12 +34,16 @@ void MW::Init(const std::string& windowTitle,
 	LOG.init("mwlog/", false);
 #endif
 
+	MWLOG(Info, App, "Initializing Milkweed framework with physics UPS ",
+		physicsUPS);
+
 	// Set the physics seconds per update
 	PHYSICS_SPU = 1.0f / physicsUPS;
 
 	// Initialize the window
 	if (!WINDOW.init(windowTitle, windowDimensions, windowFullScreen)) {
 		// Could not open the window
+		MWLOG(Error, App, "Fatal window error");
 		return;
 	}
 	// Initialize the input manager
@@ -47,22 +51,23 @@ void MW::Init(const std::string& windowTitle,
 		
 	// Initialize the renderer
 	if (!RENDERER.init()) {
+		MWLOG(Error, App, "Fatal renderer error");
 		return;
 	}
 
 	// Initialize the resource manager
-	if (!RESOURCES.init()) {
-		return;
-	}
+	RESOURCES.init();
 
 	// Initialize the audio manager
 	if (!AUDIO.init()) {
-
+		MWLOG(Error, App, "Fatal audio error");
 	}
 
 	// Initialize the networking system
 	// TODO: Remove hardcoded message size
 	NETWORK.init();
+
+	MWLOG(Info, App, "Initializing all scenes");
 
 	// Initialize the application's scenes and set the initial scene
 	for (Scene* s : scenes) {
@@ -70,6 +75,8 @@ void MW::Init(const std::string& windowTitle,
 		s->init();
 	}
 	SetScene(scene);
+
+	MWLOG(Info, App, "Initialized Milkweed framework application");
 
 	// The Milkweed framework has been initialized
 	Run();
@@ -148,6 +155,8 @@ void MW::Update(float deltaTime) {
 }
 
 void MW::Destroy() {
+	MWLOG(Info, App, "Destroying Milkweed framework application, leaving ",
+		"and destroying scenes");
 	// Exit the active scene and destroy all the scenes
 	SCENE->exit();
 	for (Scene* s : SCENES) {

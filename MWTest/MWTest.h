@@ -19,7 +19,9 @@ private:
 	Sound* m_sound = nullptr;
 	Shader m_shader;
 	Font* m_font = nullptr;
-	Justification m_textJust = Justification::LEFT;
+	UIGroup m_UIGroup;
+	UILabel m_label;
+	UILabel m_label1;
 };
 
 class MWTest {

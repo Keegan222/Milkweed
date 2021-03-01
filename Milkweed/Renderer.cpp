@@ -55,8 +55,6 @@ namespace Milkweed {
 		// Clear the color buffer to the clearColor and the sprites from last
 		// frame
 		glClear(GL_COLOR_BUFFER_BIT);
-		m_sprites.clear();
-		m_text.clear();
 	}
 
 	void Renderer::submit(const std::vector<Sprite*>& sprites, Shader* shader) {
@@ -77,8 +75,8 @@ namespace Milkweed {
 	}
 
 	void Renderer::submit(const std::string& text, const glm::vec3& position,
-		const glm::vec2& bounds, float scale, const glm::vec3& color,
-		Font* font, Shader* shader, Justification justification) {
+		const glm::vec2& bounds, float scale, Font* font, Shader* shader,
+		Justification justification) {
 		// Attempt to find the shader in the text map
 		std::unordered_map<Shader*, std::vector<Sprite>>::iterator it
 			= m_text.find(shader);
@@ -131,11 +129,8 @@ namespace Milkweed {
 			x += fc.offset * scale;
 			
 			if (ch.position.x >= position.x
-				&& ch.position.y >= position.y
 				&& ch.position.x + ch.dimensions.x
-					<= position.x + bounds.x
-				&& ch.position.y + ch.dimensions.y
-					<= position.y + bounds.y) {
+					<= position.x + bounds.x) {
 				// Submit this character for rendering if it is in the bounds
 				// of the label
 				m_text[shader].push_back(ch);
@@ -288,6 +283,10 @@ namespace Milkweed {
 			// Stop this shader
 			shader->end();
 		}
+		
+		// Get rid of the data rendered this frame
+		m_sprites.clear();
+		m_text.clear();
 
 		if (m_dumpFrame) {
 			m_dumpFrame = false;

@@ -18,6 +18,14 @@ void TestScene::init() {
 	m_shader.getCamera()->position = glm::vec3(
 		MW::WINDOW.getDimensions().x / 2,
 		MW::WINDOW.getDimensions().y / 2, 0.0f);
+
+	m_UIGroup.init(this, m_font, &m_shader, "textColor");
+	m_label.init("Hello World!", glm::vec3(0.0f), glm::vec2(800.0f, 100.0f),
+		1.0f, glm::vec3(1.0f, 0.0f, 0.0f));
+	m_UIGroup.addComponent(&m_label);
+	m_label1.init("Goodbye World!", glm::vec3(0.0f), glm::vec2(800.0f, 100.0f),
+		1.0f, glm::vec3(0.0f, 0.0f, 1.0f), Justification::RIGHT);
+	m_UIGroup.addComponent(&m_label1);
 }
 
 void TestScene::enter() {
@@ -25,26 +33,16 @@ void TestScene::enter() {
 }
 
 void TestScene::draw() {
-	m_shader.upload3fVector("textColor", glm::vec3(1.0f, 0.0f, 1.0f));
-	MW::RENDERER.submit("Hello World", glm::vec3(0.0f),
-		glm::vec2(800.0f, 100.0f), 1.0f,
-		glm::vec3(1.0f, 0.0f, 1.0f), m_font, &m_shader, m_textJust);
+	m_UIGroup.draw();
 }
 
 void TestScene::processInput() {
-	if (MW::INPUT.isKeyPressed(K_L)) {
-		m_textJust = Justification::LEFT;
-	}
-	else if (MW::INPUT.isKeyPressed(K_C)) {
-		m_textJust = Justification::CENTER;
-	}
-	else if (MW::INPUT.isKeyPressed(K_R)) {
-		m_textJust = Justification::RIGHT;
-	}
+	m_UIGroup.processInput();
 }
 
 void TestScene::update(float deltaTime) {
 	m_shader.getCamera()->update(deltaTime);
+	m_UIGroup.update(deltaTime);
 }
 
 void TestScene::exit() {
@@ -52,6 +50,7 @@ void TestScene::exit() {
 }
 
 void TestScene::destroy() {
+	m_UIGroup.destroy();
 
 }
 

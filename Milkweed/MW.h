@@ -18,6 +18,7 @@
 #include "Resources.h"
 #include "Logging.h"
 #include "Audio.h"
+#include "UI.h"
 
 #define MWLOG(LEVEL, SOURCE, ...) MW::LOG , MW::LOG.getDate(), ": [",\
 	#LEVEL, "] [", #SOURCE, "] ", __VA_ARGS__, "\n"

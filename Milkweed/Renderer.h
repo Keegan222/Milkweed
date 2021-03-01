@@ -72,16 +72,13 @@ namespace Milkweed {
 		* in
 		* @param scale: The factor to scale the size of the characters in font
 		* by when drawing text
-		* @param color: The RGB color to draw this text in, in normalized
-		* floating point values (0.0 - 1.0)
 		* @param font: The typeface to draw this text in
 		* @param shader: The text shader to use to draw this text
 		* @param justification: The justification of the text within its bounds
 		*/
 		void submit(const std::string& text, const glm::vec3& position,
-			const glm::vec2& bounds, float scale, const glm::vec3& color,
-			Font* font, Shader* shader, Justification justification
-				= Justification::LEFT);
+			const glm::vec2& bounds, float scale, Font* font, Shader* shader,
+			Justification justification = Justification::LEFT);
 		/*
 		* End a frame and draw it on the screen
 		*/

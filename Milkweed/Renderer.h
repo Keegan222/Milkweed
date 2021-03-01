@@ -22,6 +22,13 @@ namespace Milkweed {
 	};
 
 	/*
+	* The justification to use when position text for rendering
+	*/
+	enum class Justification {
+		LEFT, CENTER, RIGHT,
+	};
+
+	/*
 	* The Milkweed framework's utility for drawing graphics
 	*/
 	class Renderer {
@@ -61,17 +68,20 @@ namespace Milkweed {
 		* 
 		* @param text: The text to draw this frame
 		* @param position: The position to draw this text label at
-		* @param bounds: The bounds within which to draw the text (x, y, w, h)
+		* @param bounds: The width and height of the rectangle to draw the text
+		* in
 		* @param scale: The factor to scale the size of the characters in font
 		* by when drawing text
 		* @param color: The RGB color to draw this text in, in normalized
 		* floating point values (0.0 - 1.0)
 		* @param font: The typeface to draw this text in
 		* @param shader: The text shader to use to draw this text
+		* @param justification: The justification of the text within its bounds
 		*/
 		void submit(const std::string& text, const glm::vec3& position,
-			const glm::vec4& bounds, float scale, const glm::vec3& color,
-			Font* font, Shader* shader);
+			const glm::vec2& bounds, float scale, const glm::vec3& color,
+			Font* font, Shader* shader, Justification justification
+				= Justification::LEFT);
 		/*
 		* End a frame and draw it on the screen
 		*/

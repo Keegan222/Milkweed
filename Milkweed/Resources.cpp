@@ -204,7 +204,7 @@ namespace Milkweed {
 			// Add the character to the font's character map
 			font.characters[c] = Character(glm::vec2(texture.dimensions.x,
 				texture.dimensions.y), glm::ivec2(face->glyph->bitmap_left,
-					face->glyph->bitmap_top), face->glyph->advance.x,
+					face->glyph->bitmap_top), face->glyph->advance.x >> 6,
 				texture);
 		}
 

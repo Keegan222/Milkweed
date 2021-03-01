@@ -81,6 +81,8 @@ namespace Milkweed {
 		static NetClient& NETWORK;
 		// The application audio player
 		static AudioManager& AUDIO;
+		// Whether the application is still running
+		static bool RUNNING;
 
 		/*
 		* The copy constructor is disabled for this class

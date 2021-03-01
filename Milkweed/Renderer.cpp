@@ -77,8 +77,8 @@ namespace Milkweed {
 	}
 
 	void Renderer::submit(const std::string& text, const glm::vec3& position,
-		const glm::vec4& bounds, float scale, const glm::vec3& color,
-		Font* font, Shader* shader) {
+		const glm::vec2& bounds, float scale, const glm::vec3& color,
+		Font* font, Shader* shader, Justification justification) {
 		// Attempt to find the shader in the text map
 		std::unordered_map<Shader*, std::vector<Sprite>>::iterator it
 			= m_text.find(shader);
@@ -87,7 +87,36 @@ namespace Milkweed {
 			m_text[shader] = std::vector<Sprite>(0);
 		}
 
-		float x = position.x;
+		float x;
+		switch (justification) {
+		case Justification::LEFT: {
+			x = position.x;
+			break;
+		}
+		case Justification::CENTER: {
+			// Get the full width of the text label
+			float labelWidth = 0.0f;
+			for (char c : text) {
+				labelWidth += font->characters[c].offset * scale;
+			}
+			x = position.x + (bounds.x / 2) - (labelWidth / 2);
+			break;
+		}
+		case Justification::RIGHT: {
+			// Get the full width of the text label
+			float labelWidth = 0.0f;
+			for (char c : text) {
+				labelWidth += font->characters[c].offset * scale;
+			}
+			// The right of the text label is clamped to the right of the bounds
+			x = position.x + bounds.x - labelWidth;
+			break;
+		}
+		default: {
+			x = position.x;
+			break;
+		}
+		}
 		for (char c : text) {
 			const Character& fc = font->characters[c];
 			Sprite ch;
@@ -99,14 +128,14 @@ namespace Milkweed {
 				position.y - (fc.dimensions.y - fc.bearing.y) * scale,
 				position.z), fc.dimensions * scale,
 				&(font->characters[c].texture));
-			x += (fc.offset >> 6) * scale;
+			x += fc.offset * scale;
 			
-			if (ch.position.x >= bounds.x
-				&& ch.position.y >= bounds.y
+			if (ch.position.x >= position.x
+				&& ch.position.y >= position.y
 				&& ch.position.x + ch.dimensions.x
-					<= bounds.x + bounds.z
+					<= position.x + bounds.x
 				&& ch.position.y + ch.dimensions.y
-					<= bounds.y + bounds.w) {
+					<= position.y + bounds.y) {
 				// Submit this character for rendering if it is in the bounds
 				// of the label
 				m_text[shader].push_back(ch);
@@ -158,12 +187,16 @@ namespace Milkweed {
 			if (m_sortType == SortType::TEXTURE) {
 				std::stable_sort(m_sprites[shader].begin(),
 					m_sprites[shader].end(), compareSpriteTexture);
-				MWLOG(Info, Renderer, "Sorted sprites by texture");
+				if (m_dumpFrame) {
+					MWLOG(Info, Renderer, "Sorted sprites by texture");
+				}
 			}
 			else if (m_sortType == SortType::DEPTH) {
 				std::stable_sort(m_sprites[shader].begin(),
 					m_sprites[shader].end(), compareSpriteDepth);
-				MWLOG(Info, Renderer, "Sorted sprites by depth");
+				if (m_dumpFrame) {
+					MWLOG(Info, Renderer, "Sorted sprites by depth");
+				}
 			}
 			// Start the shader
 			shader->begin();

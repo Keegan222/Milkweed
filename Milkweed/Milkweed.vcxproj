@@ -30,6 +30,7 @@
     <ClCompile Include="Shader.cpp" />
     <ClCompile Include="Camera.cpp" />
     <ClCompile Include="Sprite.cpp" />
+    <ClCompile Include="UI.cpp" />
     <ClCompile Include="Window.cpp" />
   </ItemGroup>
   <ItemGroup>
@@ -43,6 +44,7 @@
     <ClInclude Include="Resources.h" />
     <ClInclude Include="Shader.h" />
     <ClInclude Include="Sprite.h" />
+    <ClInclude Include="UI.h" />
     <ClInclude Include="Window.h" />
   </ItemGroup>
   <PropertyGroup Label="Globals">

@@ -1,12 +1,12 @@
 /*
 * File: UI.cpp
 * Author: Keegan MacDonald (keeganm742@gmail.com)
-* Date: 2021.01.28.1146
+* Created: 2021.01.28
 */
 
 #include "UI.h"
 
-namespace MW {
+namespace Milkweed {
 	void UIGroup::init(Scene* parent, unsigned int ID) {
 		// Set the parent scene and ID number of this group
 		m_parent = parent;

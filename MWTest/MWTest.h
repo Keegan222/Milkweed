@@ -19,7 +19,7 @@ private:
 	Sound* m_sound = nullptr;
 	Shader m_shader;
 	Font* m_font = nullptr;
-	float m_width = 0.0f;
+	Justification m_textJust = Justification::LEFT;
 };
 
 class MWTest {

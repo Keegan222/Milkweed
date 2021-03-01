@@ -27,28 +27,24 @@ void TestScene::enter() {
 void TestScene::draw() {
 	m_shader.upload3fVector("textColor", glm::vec3(1.0f, 0.0f, 1.0f));
 	MW::RENDERER.submit("Hello World", glm::vec3(0.0f),
-		glm::vec4(0.0f, 0.0f, m_width, 100.0f), 1.0f,
-		glm::vec3(1.0f, 0.0f, 1.0f), m_font, &m_shader);
+		glm::vec2(800.0f, 100.0f), 1.0f,
+		glm::vec3(1.0f, 0.0f, 1.0f), m_font, &m_shader, m_textJust);
 }
 
 void TestScene::processInput() {
-	if (MW::INPUT.isKeyPressed(Key::K_R)) {
-		if (MW::WINDOW.isFullScreen()) {
-			MW::WINDOW.setFullScreen(false);
-		}
-		else {
-			MW::WINDOW.setFullScreen(true);
-		}
+	if (MW::INPUT.isKeyPressed(K_L)) {
+		m_textJust = Justification::LEFT;
 	}
-
-	if (MW::INPUT.isKeyPressed(Key::K_W)) {
-		MW::RENDERER.dumpNextFrame();
+	else if (MW::INPUT.isKeyPressed(K_C)) {
+		m_textJust = Justification::CENTER;
+	}
+	else if (MW::INPUT.isKeyPressed(K_R)) {
+		m_textJust = Justification::RIGHT;
 	}
 }
 
 void TestScene::update(float deltaTime) {
 	m_shader.getCamera()->update(deltaTime);
-	m_width += 0.4f * deltaTime;
 }
 
 void TestScene::exit() {

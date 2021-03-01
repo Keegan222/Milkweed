@@ -1,7 +1,7 @@
 /*
 * File: UI.h
 * Author: Keegan MacDonald (keeganm742@gmail.com)
-* Date: 2021.01.27.1501
+* Created: 2021.01.27
 */
 
 #pragma once
@@ -9,7 +9,7 @@
 #include "MW.h"
 #include "Sprite.h"
 
-namespace MW {
+namespace Milkweed {
 	// Forward declare the UIGroup class
 	class UIGroup;
 
@@ -22,7 +22,6 @@ namespace MW {
 		* Initialize this component with a parent and ID
 		* 
 		* @param parent: A pointer to the UIGroup containing this component
-		* @param ID: The ID number of this component within its group
 		*/
 		virtual void init(UIGroup* parent) {
 			m_parent = parent;

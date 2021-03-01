@@ -18,6 +18,7 @@ ResourceManager& MW::RESOURCES = ResourceManager::getInstance();
 LogManager& MW::LOG = LogManager::getInstance();
 NetClient& MW::NETWORK = NetClient::getInstance();
 AudioManager& MW::AUDIO = AudioManager::getInstance();
+bool MW::RUNNING = false;
 
 // Instantiate the application's private static members
 float MW::PHYSICS_SPU;
@@ -77,6 +78,7 @@ void MW::Init(const std::string& windowTitle,
 	SetScene(scene);
 
 	MWLOG(Info, App, "Initialized Milkweed framework application");
+	RUNNING = true;
 
 	// The Milkweed framework has been initialized
 	Run();
@@ -109,7 +111,7 @@ void MW::Run() {
 	unsigned int physicsSteps = 0, maxPhysicsSteps = 10;
 
 	// Start the game loop
-	while (!glfwWindowShouldClose(WINDOW.getWindowHandle())) {
+	while (RUNNING) {
 		// Draw the application's graphics and process input
 		Draw();
 		ProcessInput();
@@ -132,6 +134,11 @@ void MW::Run() {
 		// Update with the remaining delta time and reset the steps counter
 		Update(deltaTime);
 		physicsSteps = 0;
+
+		// Test if the user has requested the window be closed
+		if (glfwWindowShouldClose(WINDOW.getWindowHandle())) {
+			RUNNING = false;
+		}
 	}
 
 	// The game loop has stopped, termimate the application

@@ -161,6 +161,8 @@
     <Media Include="Assets\audio\sound.wav" />
   </ItemGroup>
   <ItemGroup>
+    <None Include="Assets\shader\sprite_fragment_shader.glsl" />
+    <None Include="Assets\shader\sprite_vertex_shader.glsl" />
     <None Include="Assets\shader\text_fragment_shader.glsl" />
     <None Include="Assets\shader\text_vertex_shader.glsl" />
   </ItemGroup>

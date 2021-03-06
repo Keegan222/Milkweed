@@ -21,12 +21,14 @@ namespace Milkweed {
 	}
 
 	void UIGroup::init(Scene* parent, unsigned int ID, Font* font,
-		Shader* shader, const std::string& textColorUniform) {
+		Shader* spriteShader, Shader* textShader,
+		const std::string& textColorUniform) {
 		// Set the parent scene and ID number of this group
 		m_parent = parent;
 		m_ID = ID;
 		m_font = font;
-		m_shader = shader;
+		m_spriteShader = spriteShader;
+		m_textShader = textShader;
 		m_textColorUniform = textColorUniform;
 	}
 
@@ -100,6 +102,11 @@ namespace Milkweed {
 		return false;
 	}
 
+	void UIGroup::componentEvent(unsigned int componentID,
+		unsigned int eventID) {
+		m_parent->componentEvent(m_ID, componentID, eventID);
+	}
+
 	bool UIGroup::removeComponent(UIComponent* c) {
 		// Attempt to find the component in this group
 		std::vector<UIComponent*>::iterator it = std::find(m_components.begin(),
@@ -116,8 +123,7 @@ namespace Milkweed {
 
 	void UILabel::init(const std::string& text, const glm::vec3& position,
 		const glm::vec2& dimensions, float textScale, const glm::vec3& textColor,
-		Justification hJustification, Justification vJustification,
-		bool lineWrap) {
+		Justification hJustification, Justification vJustification) {
 		m_text = text;
 		m_position = position;
 		m_dimensions = dimensions;
@@ -125,15 +131,14 @@ namespace Milkweed {
 		m_textColor = textColor;
 		m_hJustification = hJustification;
 		m_vJustification = vJustification;
-		m_lineWrap = lineWrap;
 	}
 
 	void UILabel::draw() {
-		m_parent->getShader()->upload3fVector(m_parent->getTextColorUniform(),
-			m_textColor);
+		m_parent->getTextShader()->upload3fVector(
+			m_parent->getTextColorUniform(), m_textColor);
 		MW::RENDERER.submit(m_text, m_position, m_dimensions, m_textScale,
-			m_parent->getFont(), m_parent->getShader(), m_hJustification,
-			m_vJustification, m_lineWrap);
+			m_parent->getFont(), m_parent->getTextShader(), m_hJustification,
+			m_vJustification);
 		MW::RENDERER.end();
 	}
 
@@ -145,5 +150,87 @@ namespace Milkweed {
 		m_textColor = glm::vec3();
 		m_hJustification = Justification::LEFT;
 		m_vJustification = Justification::BOTTOM;
+	}
+
+	unsigned int UIButton::UNSELECTED_EVENT = 0;
+	unsigned int UIButton::SELECTED_EVENT = 1;
+	unsigned int UIButton::CLICKED_EVENT = 2;
+	glm::vec4 UIButton::UNSELECTED_COORDS = glm::vec4(0.0f, 0.0f, 1.0f / 3.0f,
+		1.0f);
+	glm::vec4 UIButton::SELECTED_COORDS = glm::vec4(1.0f / 3.0f, 0.0f,
+		1.0f / 3.0f, 1.0f);
+	glm::vec4 UIButton::CLICKED_COORDS = glm::vec4(2.0f / 3.0f, 0.0f,
+		1.0f / 3.0f, 1.0f);
+
+	void UIButton::init(const std::string& text, const glm::vec3& position,
+		const glm::vec2& dimensions, float textScale,
+		const glm::vec3& textColor, Justification textHJustification,
+		Justification textVJustification, Texture* texture) {
+		((UILabel*)this)->init(text, position, dimensions, textScale,
+			textColor, textHJustification, textVJustification);
+		m_sprite.init(position, dimensions, texture);
+		setPosition(position);
+		m_sprite.textureCoords = UNSELECTED_COORDS;
+	}
+
+	void UIButton::draw() {
+		MW::RENDERER.submit({ &m_sprite }, m_parent->getSpriteShader());
+		((UILabel)*this).draw();
+	}
+
+	void UIButton::processInput() {
+		// Test if the button is selected, and set texture coordinates
+		// appropriately
+		if (rectContains(glm::vec4(m_position.x, m_position.y, m_dimensions.x,
+			m_dimensions.y), MW::INPUT.getCursorPosition(
+				m_parent->getSpriteShader()->getCamera()))) {
+			m_sprite.textureCoords = SELECTED_COORDS;
+			if (!m_selected) {
+				m_parent->componentEvent(m_ID, SELECTED_EVENT);
+			}
+			m_selected = true;
+		}
+		else {
+			m_sprite.textureCoords = UNSELECTED_COORDS;
+			if (m_selected) {
+				m_parent->componentEvent(m_ID, UNSELECTED_EVENT);
+			}
+			m_selected = false;
+		}
+
+		// If the button is selected test if it's been clicked
+		if (m_selected) {
+			if (MW::INPUT.isButtonPressed(B_LEFT)) {
+				m_parent->componentEvent(m_ID, CLICKED_EVENT);
+			}
+			if (MW::INPUT.isButtonDown(B_LEFT)) {
+				m_sprite.textureCoords = CLICKED_COORDS;
+			}
+		}
+	}
+
+	void UIButton::destroy() {
+		// Destroy all the label memory for this button
+		m_text = "";
+		m_position = glm::vec3();
+		m_dimensions = glm::vec2();
+		m_textScale = 1.0f;
+		m_textColor = glm::vec3();
+		m_hJustification = Justification::CENTER;
+		m_vJustification = Justification::CENTER;
+		// Destroy this button's texture memory
+		m_selected = false;
+		m_sprite.destroy();
+	}
+
+	void UIButton::setPosition(const glm::vec3& position) {
+		((UILabel)*this).setPosition(position);
+		m_sprite.position = glm::vec3(position.x, position.y,
+			position.z - DEPTH_INCREMENT);
+	}
+	
+	void UIButton::setDimensions(const glm::vec2& dimensions) {
+		((UILabel)*this).setDimensions(dimensions);
+		m_sprite.dimensions = dimensions;
 	}
 }

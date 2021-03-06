@@ -50,6 +50,12 @@
     <None Include="Assets\shader\text_vertex_shader.glsl">
       <Filter>Assets\shader</Filter>
     </None>
+    <None Include="Assets\shader\sprite_fragment_shader.glsl">
+      <Filter>Assets\shader</Filter>
+    </None>
+    <None Include="Assets\shader\sprite_vertex_shader.glsl">
+      <Filter>Assets\shader</Filter>
+    </None>
   </ItemGroup>
   <ItemGroup>
     <Font Include="Assets\font\arial.ttf">

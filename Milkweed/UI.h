@@ -39,6 +39,10 @@ namespace Milkweed {
 		friend UIGroup;
 		// The group containing this component
 		UIGroup* m_parent = nullptr;
+		// Whether this component is currently enabled
+		bool m_enabled = true;
+		// The ID number of this component within its group
+		unsigned int m_ID = 0;
 
 		/*
 		* Test whether a 2D point falls in a rectangle
@@ -64,14 +68,6 @@ namespace Milkweed {
 		* Free this component's memory
 		*/
 		virtual void destroy() = 0;
-
-	private:
-		// Allow groups to edit component ID's
-		friend UIGroup;
-		// Whether this component is currently enabled
-		bool m_enabled = true;
-		// The ID number of this component within its group
-		unsigned int m_ID = 0;
 	};
 
 	// Forward declare the Scene class from MW.h
@@ -89,12 +85,15 @@ namespace Milkweed {
 		* @param ID: The ID number of this UI group in its scene
 		* @param font: The font to draw the text in the components of this UI
 		* group
-		* @param shader: The shader to draw the components of this UI group with
-		* (this shader must have a uniform vec3 textColor)
+		* @param spriteShader: The shader to draw the components of this UI
+		* group with
+		* @param textShader: The shader to draw text for all components of this
+		* UI group with (this shader must have a uniform vec3 textColor)
 		* @param textColorUniform: The uniform name of the text color in the
 		* shader
 		*/
-		void init(Scene* parent, unsigned int ID, Font* font, Shader* shader,
+		void init(Scene* parent, unsigned int ID, Font* font,
+			Shader* spriteShader, Shader* textShader,
 			const std::string& textColorUniform);
 		/*
 		* Draw all components in this group
@@ -127,6 +126,14 @@ namespace Milkweed {
 		*/
 		bool addComponent(UIComponent* c);
 		/*
+		* An event has occurred in one of the components of this UI group and
+		* the parent scene must be notified
+		* 
+		* @param componentID: The ID number of the relevant component
+		* @param eventID: The ID number of the event
+		*/
+		void componentEvent(unsigned int componentID, unsigned int eventID);
+		/*
 		* Remove a component from this group if it is in the group
 		* 
 		* @return Whether this component was found and removed
@@ -147,11 +154,23 @@ namespace Milkweed {
 		/*
 		* Get the shader used to draw the components of this UI group
 		*/
-		Shader* getShader() { return m_shader; }
+		Shader* getSpriteShader() { return m_spriteShader; }
 		/*
 		* Set the shader used to draw the components of this UI group
 		*/
-		void setShader(Shader* shader) { m_shader = shader; }
+		void setSpriteShader(Shader* spriteShader) {
+			m_spriteShader = spriteShader;
+		}
+		/*
+		* Get the shader used to draw text in this UI group
+		*/
+		Shader* getTextShader() { return m_textShader; }
+		/*
+		* Set the shader used to draw text in this UI group
+		*/
+		void setTextShader(Shader* textShader) {
+			m_textShader = textShader;
+		}
 		/*
 		* Get the uniform name of the text color in the shader
 		*/
@@ -173,7 +192,9 @@ namespace Milkweed {
 		// The font to draw components of this UI group in
 		Font* m_font = nullptr;
 		// The shader to draw components of this UI group in
-		Shader* m_shader = nullptr;
+		Shader* m_spriteShader = nullptr;
+		// The shader to draw text for components of this UI group in
+		Shader* m_textShader = nullptr;
 		// The uniform name of the text color in the shader
 		std::string m_textColorUniform = "";
 		// The components in this group mapped to their ID numbers
@@ -200,21 +221,27 @@ namespace Milkweed {
 		* on the x-axis
 		* @param vJustification: The justification to draw this label's text with
 		* on the y-axis
-		* @param lineWrap: Whether this label should break its text into
-		* multiple lines
 		*/
-		void init(const std::string& text, const glm::vec3& position,
+		virtual void init(const std::string& text, const glm::vec3& position,
 			const glm::vec2& dimensions, float textScale,
 			const glm::vec3& textColor, Justification hJustification,
-			Justification vJustification, bool lineWrap);
+			Justification vJustification);
 		/*
 		* Draw this label's text to the screen
 		*/
-		virtual void draw();
+		virtual void draw() override;
+		/*
+		* Process input to this label (does nothing)
+		*/
+		virtual void processInput() override {}
+		/*
+		* Update physics in this label (does nothing by default)
+		*/
+		virtual void update(float deltaTime) override {}
 		/*
 		* Free this label's memory
 		*/
-		virtual void destroy();
+		virtual void destroy() override;
 		/*
 		* Get the text this label displays
 		*/
@@ -281,16 +308,8 @@ namespace Milkweed {
 		void setVJustification(Justification vJustification) {
 			m_vJustification = vJustification;
 		}
-		/*
-		* Test whether this label is set to break its text into multiple lines
-		*/
-		bool getLineWrap() const { return m_lineWrap; }
-		/*
-		* Set whether this label should break its text into multiple lines
-		*/
-		void setLineWrap(bool lineWrap) { m_lineWrap = lineWrap; }
 
-	private:
+	protected:
 		// The text for this label to display
 		std::string m_text = "";
 		// The position to display this label's text at
@@ -305,17 +324,70 @@ namespace Milkweed {
 		Justification m_hJustification = Justification::LEFT;
 		// The justification to draw this label's text with on the y-axis
 		Justification m_vJustification = Justification::BOTTOM;
-		// Whether to break this label's text into multiple lines
-		bool m_lineWrap = false;
+	};
+
+	class UIButton : public UILabel {
+	public:
+		// The event ID number for a UIButton being unselected
+		static unsigned int UNSELECTED_EVENT;
+		// The event ID number for a UIButton being selected
+		static unsigned int SELECTED_EVENT;
+		// The event ID number for a click on a UIButton
+		static unsigned int CLICKED_EVENT;
 
 		/*
-		* Process input to this label (does nothing)
+		* Initialize this text label with some text to draw and data for it
+		*
+		* @param text: The string of text this button will draw
+		* @param position: The position of this button
+		* @param dimensions: The width and height of the rectangle to render
+		* this button's text in
+		* @param scale: The scale to draw this button's text at
+		* @param color: The color to draw this button's text in
+		* @param textHJustification: The justification to draw this button's
+		* text with on the x-axis
+		* @param textVJustification: The justification to draw this button's
+		* text with on the y-axis
+		* @param texture: The texture containing the unselected, selected, and
+		* clicked textures for this button from left to right
 		*/
-		virtual void processInput() {}
+		void init(const std::string& text, const glm::vec3& position,
+			const glm::vec2& dimensions, float textScale,
+			const glm::vec3& textColor, Justification textHJustification,
+			Justification textVJustification, Texture* texture);
 		/*
-		* Update physics in this label (does nothing by default)
+		* Draw this button
 		*/
-		virtual void update(float deltaTime) {}
+		void draw() override;
+		/*
+		* Process input to this button
+		*/
+		void processInput() override;
+		/*
+		* Free this button's memory
+		*/
+		void destroy() override;
+		/*
+		* Set the position of this button
+		*/
+		void setPosition(const glm::vec3& position) override;
+		/*
+		* Set the dimensions of this button
+		*/
+		void setDimensions(const glm::vec2& dimensions) override;
+
+	protected:
+		// The texture coordinates of this button's unselected texture
+		static glm::vec4 UNSELECTED_COORDS;
+		// The texture coordinates of this button's selected texture
+		static glm::vec4 SELECTED_COORDS;
+		// The texture coordinates of this button's clicked texture
+		static glm::vec4 CLICKED_COORDS;
+
+		// Whether the mouse cursor is over this button
+		bool m_selected = false;
+		// The sprite containing this button's textures
+		Sprite m_sprite;
 	};
 }
 

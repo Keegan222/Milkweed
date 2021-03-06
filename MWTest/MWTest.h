@@ -20,10 +20,12 @@ public:
 private:
 	Sound* m_music = nullptr;
 	Sound* m_sound = nullptr;
-	Shader m_shader;
+	Camera m_camera;
+	Shader m_spriteShader;
+	Shader m_textShader;
 	Font* m_font = nullptr;
 	UIGroup m_UIGroup;
-	UILabel m_label;
+	UIButton m_button;
 };
 
 class MWTest {

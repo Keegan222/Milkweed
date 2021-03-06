@@ -89,11 +89,12 @@ namespace Milkweed {
 		* rendering a VAO from OpenGL
 		* @param cameraUniformName: The uniform name for the projection matrix
 		* of this shader's camera, empty by default
+		* @param camera: The camera this shader uses for rendering
 		* @return Whether the shader could be created successfully
 		*/
 		bool init(const std::string& vFileName, const std::string& fFileName,
 			const std::vector<VertexAttribute>& attributes,
-			const std::string& cameraUniformName = "");
+			const std::string& cameraUniformName, Camera* camera);
 		/*
 		* Use this shader to draw graphics
 		*/
@@ -157,7 +158,11 @@ namespace Milkweed {
 		/*
 		* Get a pointer to this shader's camera
 		*/
-		Camera* getCamera() { return &m_camera; }
+		Camera* getCamera() { return m_camera; }
+		/*
+		* Set this shader's camera
+		*/
+		void setCamera(Camera* camera) { m_camera = camera; }
 
 	private:
 		// The OpenGL ID of the vertex shader
@@ -169,7 +174,7 @@ namespace Milkweed {
 		// The number of attributes this shader uses
 		unsigned int m_attributeCount = 0;
 		// The camera this shader gets its projection matrix from
-		Camera m_camera = Camera();
+		Camera* m_camera = nullptr;
 		// The uniform name of the camera's projection matrix in this shader
 		std::string m_cameraUniformName = "";
 	};

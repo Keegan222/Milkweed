@@ -12,12 +12,10 @@ namespace Milkweed {
 	bool Shader::init(const std::string& vFileName,
 		const std::string& fFileName,
 		const std::vector<VertexAttribute>& attributes,
-		const std::string& cameraUniformName) {
+		const std::string& cameraUniformName, Camera* camera) {
 		// Initialize the camera if this shader needs one
 		m_cameraUniformName = cameraUniformName;
-		if (!m_cameraUniformName.empty()) {
-			m_camera.init();
-		}
+		m_camera = camera;
 
 		// Locate and read the GLSL source code for the vertex shader
 		std::ifstream vFile(vFileName);
@@ -108,7 +106,7 @@ namespace Milkweed {
 
 		// Upload this shader's camera matrix if it needs one
 		if (!m_cameraUniformName.empty()) {
-			upload4x4Matrix(m_cameraUniformName, m_camera.getCameraMatrix());
+			upload4x4Matrix(m_cameraUniformName, m_camera->getCameraMatrix());
 		}
 	}
 

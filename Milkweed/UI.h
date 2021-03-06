@@ -4,9 +4,12 @@
 * Created: 2021.01.27
 */
 
-#pragma once
+#ifndef MW_UI_H
+#define MW_UI_H
 
 #include "Sprite.h"
+
+#define DEPTH_INCREMENT 0.01f
 
 namespace Milkweed {
 	// Forward declare the UIGroup class
@@ -37,6 +40,14 @@ namespace Milkweed {
 		// The group containing this component
 		UIGroup* m_parent = nullptr;
 
+		/*
+		* Test whether a 2D point falls in a rectangle
+		* 
+		* @param rect: The rectangle's 2D position and dimensions (x, y, w, h)
+		* @param p: The point to test
+		* @return Whether the point p falls inside the given rectangle
+		*/
+		static bool rectContains(const glm::vec4& rect, const glm::vec2& p);
 		/*
 		* Draw this component's graphics in the screen
 		*/
@@ -75,6 +86,7 @@ namespace Milkweed {
 		* Initialize this group with a parent and an ID
 		* 
 		* @param parent: The scene containing this UI group
+		* @param ID: The ID number of this UI group in its scene
 		* @param font: The font to draw the text in the components of this UI
 		* group
 		* @param shader: The shader to draw the components of this UI group with
@@ -82,7 +94,7 @@ namespace Milkweed {
 		* @param textColorUniform: The uniform name of the text color in the
 		* shader
 		*/
-		void init(Scene* parent, Font* font, Shader* shader,
+		void init(Scene* parent, unsigned int ID, Font* font, Shader* shader,
 			const std::string& textColorUniform);
 		/*
 		* Draw all components in this group
@@ -121,6 +133,10 @@ namespace Milkweed {
 		*/
 		bool removeComponent(UIComponent* c);
 		/*
+		* Get the ID number of this group within its parent scene
+		*/
+		unsigned int getID() const { return m_ID; }
+		/*
 		* Get the font used to draw the components of this UI group
 		*/
 		Font* getFont() { return m_font; }
@@ -152,6 +168,8 @@ namespace Milkweed {
 	private:
 		// The parent scene of this group
 		Scene* m_parent = nullptr;
+		// The ID number of this group in its scene
+		unsigned int m_ID = 0;
 		// The font to draw components of this UI group in
 		Font* m_font = nullptr;
 		// The shader to draw components of this UI group in
@@ -173,16 +191,104 @@ namespace Milkweed {
 		* Initialize this text label with some text to draw and data for it
 		*
 		* @param text: The string of text this label will render
-		* @param position: The position of this label in the camera space
-		* @param bounds: The width and height of the rectangle to render this
-		* label's text in
+		* @param position: The position of this label
+		* @param dimensions: The width and height of the rectangle to render
+		* this label's text in
 		* @param scale: The scale to draw this label's text at
 		* @param color: The color to draw this label's text in
-		* @param justification: the justification to draw this label's text with
+		* @param hJustification: The justification to draw this label's text with
+		* on the x-axis
+		* @param vJustification: The justification to draw this label's text with
+		* on the y-axis
+		* @param lineWrap: Whether this label should break its text into
+		* multiple lines
 		*/
 		void init(const std::string& text, const glm::vec3& position,
-			const glm::vec2& bounds, float scale, const glm::vec3& color,
-			Justification justification = Justification::LEFT);
+			const glm::vec2& dimensions, float textScale,
+			const glm::vec3& textColor, Justification hJustification,
+			Justification vJustification, bool lineWrap);
+		/*
+		* Draw this label's text to the screen
+		*/
+		virtual void draw();
+		/*
+		* Free this label's memory
+		*/
+		virtual void destroy();
+		/*
+		* Get the text this label displays
+		*/
+		const std::string& getText() const { return m_text; }
+		/*
+		* Set the text this label displays
+		*/
+		void setText(const std::string& text) { m_text = text; }
+		/*
+		* Get the position of this label on the screen
+		*/
+		const glm::vec3& getPosition() const { return m_position; }
+		/*
+		* Set the position of this label on the screen
+		*/
+		virtual void setPosition(const glm::vec3& position) {
+			m_position = position;
+		}
+		/*
+		* Get the dimensions of the rectangle this label's text appears in on
+		* the screen
+		*/
+		const glm::vec2& getDimensions() const { return m_dimensions; }
+		/*
+		* Set the dimensions of the rectangle this label's text appears in on
+		* the screen
+		*/
+		virtual void setDimensions(const glm::vec2& dimensions) {
+			m_dimensions = dimensions;
+		}
+		/*
+		* Get the scale of the text in this label
+		*/
+		float getTextScale() const { return m_textScale; }
+		/*
+		* Set the scale of the text in this label
+		*/
+		void setTextScale(float textScale) { m_textScale = textScale; }
+		/*
+		* Get the color of this label's text
+		*/
+		const glm::vec3& getTextColor() const { return m_textColor; }
+		/*
+		* Set the color of this label's text
+		*/
+		void setTextColor(const glm::vec3& textColor) { m_textColor = textColor; }
+		/*
+		* Get the justification of this label's text on the x-axis
+		*/
+		Justification getHJustification() const { return m_hJustification; }
+		/*
+		* Set the justification of this label's text
+		*/
+		void setHJustification(Justification hJustification) {
+			m_hJustification = hJustification;
+		}
+		/*
+		* Get the justification of this label's text on the y-axis
+		*/
+		Justification getVJustification() const { return m_vJustification; }
+		/*
+		* Set the justification of this label's text on the y-axis
+		*/
+		void setVJustification(Justification vJustification) {
+			m_vJustification = vJustification;
+		}
+		/*
+		* Test whether this label is set to break its text into multiple lines
+		*/
+		bool getLineWrap() const { return m_lineWrap; }
+		/*
+		* Set whether this label should break its text into multiple lines
+		*/
+		void setLineWrap(bool lineWrap) { m_lineWrap = lineWrap; }
 
 	private:
 		// The text for this label to display
@@ -190,29 +296,27 @@ namespace Milkweed {
 		// The position to display this label's text at
 		glm::vec3 m_position = glm::vec3();
 		// The bounds to draw this label's text in
-		glm::vec2 m_bounds = glm::vec2();
+		glm::vec2 m_dimensions = glm::vec2();
 		// The scale to draw this label's text at
-		float m_scale = 1.0f;
+		float m_textScale = 1.0f;
 		// The color to draw this label's text in
-		glm::vec3 m_color = glm::vec3();
-		// The justification to draw this label's text with
-		Justification m_justification = Justification::LEFT;
+		glm::vec3 m_textColor = glm::vec3();
+		// The justification to draw this label's text with on the x-axis
+		Justification m_hJustification = Justification::LEFT;
+		// The justification to draw this label's text with on the y-axis
+		Justification m_vJustification = Justification::BOTTOM;
+		// Whether to break this label's text into multiple lines
+		bool m_lineWrap = false;
 
-		/*
-		* Draw this label's text to the screen
-		*/
-		void draw() override;
 		/*
 		* Process input to this label (does nothing)
 		*/
-		void processInput() override {}
+		virtual void processInput() {}
 		/*
-		* Update physics in this label (does nothing)
+		* Update physics in this label (does nothing by default)
 		*/
-		void update(float deltaTime) override {}
-		/*
-		* Free this label's memory
-		*/
-		void destroy() override;
+		virtual void update(float deltaTime) {}
 	};
 }
+
+#endif

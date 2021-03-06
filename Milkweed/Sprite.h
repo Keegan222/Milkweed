@@ -30,6 +30,8 @@ namespace Milkweed {
 		glm::vec2 dimensions = glm::vec2();
 		// The texture for this sprite
 		Texture* texture = nullptr;
+		// The texture coordinates for this sprite
+		glm::vec4 textureCoords = glm::vec4(0.0f, 0.0f, 1.0f, 1.0f);
 		// Whether the sprite's texture should be flipped horizontally
 		bool flipHorizontal = false;
 		// Whether the sprite's texture should be flipped vertically
@@ -56,6 +58,10 @@ namespace Milkweed {
 		* @return The array of vertices making up this sprite
 		*/
 		virtual std::vector<float> getVertexData();
+		/*
+		* Free this sprite's memory
+		*/
+		virtual void destroy();
 
 	protected:
 		/*

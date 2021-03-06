@@ -19,13 +19,13 @@ void TestScene::init() {
 		MW::WINDOW.getDimensions().x / 2,
 		MW::WINDOW.getDimensions().y / 2, 0.0f);
 
-	m_UIGroup.init(this, m_font, &m_shader, "textColor");
-	m_label.init("Hello World!", glm::vec3(0.0f), glm::vec2(800.0f, 100.0f),
-		1.0f, glm::vec3(1.0f, 0.0f, 0.0f));
+	m_UIGroup.init(this, 0, m_font, &m_shader, "textColor");
+	m_label.init("", glm::vec3(0.0f), glm::vec2(800.0f, 600.0f),
+		1.0f, glm::vec3(1.0f, 0.0f, 0.0f), Justification::LEFT,
+		Justification::TOP, true);
 	m_UIGroup.addComponent(&m_label);
-	m_label1.init("Goodbye World!", glm::vec3(0.0f), glm::vec2(800.0f, 100.0f),
-		1.0f, glm::vec3(0.0f, 0.0f, 1.0f), Justification::RIGHT);
-	m_UIGroup.addComponent(&m_label1);
+
+	MW::INPUT.addInputListener(this);
 }
 
 void TestScene::enter() {
@@ -38,6 +38,47 @@ void TestScene::draw() {
 
 void TestScene::processInput() {
 	m_UIGroup.processInput();
+
+	if (MW::INPUT.isKeyPressed(F_BACKSPACE)) {
+		if (!m_label.getText().empty()) {
+			m_label.setText(m_label.getText().substr(0,
+				m_label.getText().length() - 1));
+		}
+	}
+
+	if (MW::INPUT.isKeyPressed(F_LEFT)) {
+		if (MW::INPUT.isKeyDown(F_LEFT_SHIFT)) {
+			m_label.setVJustification(Justification::TOP);
+		}
+		else {
+			m_label.setHJustification(Justification::LEFT);
+		}
+	}
+	else if (MW::INPUT.isKeyPressed(F_UP)) {
+		if (MW::INPUT.isKeyDown(F_LEFT_SHIFT)) {
+			m_label.setVJustification(Justification::CENTER);
+		}
+		else {
+			m_label.setHJustification(Justification::CENTER);
+		}
+	}
+	else if (MW::INPUT.isKeyPressed(F_RIGHT)) {
+		if (MW::INPUT.isKeyDown(F_LEFT_SHIFT)) {
+			m_label.setVJustification(Justification::BOTTOM);
+		}
+		else {
+			m_label.setHJustification(Justification::RIGHT);
+		}
+	}
+}
+
+void TestScene::textTyped(char text) {
+	m_label.setText(m_label.getText() + std::string(1, text));
+}
+
+void TestScene::componentEvent(unsigned int groupID, unsigned int componentID,
+	unsigned int eventID) {
+
 }
 
 void TestScene::update(float deltaTime) {
@@ -50,8 +91,8 @@ void TestScene::exit() {
 }
 
 void TestScene::destroy() {
+	MW::INPUT.removeInputListener(this);
 	m_UIGroup.destroy();
-
 }
 
 TestScene MWTest::TEST_SCENE;

@@ -206,6 +206,11 @@ namespace Milkweed {
 				texture.dimensions.y), glm::ivec2(face->glyph->bitmap_left,
 					face->glyph->bitmap_top), face->glyph->advance.x >> 6,
 				texture);
+
+			// Test if the max character height needs to be reset
+			if (font.characters[c].bearing.y > font.maxCharacterHeight) {
+				font.maxCharacterHeight = (float)font.characters[c].bearing.y;
+			}
 		}
 
 		FT_Done_Face(face);

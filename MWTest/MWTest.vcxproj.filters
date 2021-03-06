@@ -21,6 +21,9 @@
     <Filter Include="Assets\font">
       <UniqueIdentifier>{0e32820a-342a-4510-a745-6657d3cdfb62}</UniqueIdentifier>
     </Filter>
+    <Filter Include="Assets\texture">
+      <UniqueIdentifier>{bbaa26f0-9939-43af-91a5-7503f71669c7}</UniqueIdentifier>
+    </Filter>
   </ItemGroup>
   <ItemGroup>
     <ClInclude Include="MWTest.h">
@@ -52,5 +55,16 @@
     <Font Include="Assets\font\arial.ttf">
       <Filter>Assets\font</Filter>
     </Font>
+  </ItemGroup>
+  <ItemGroup>
+    <Image Include="Assets\texture\button.png">
+      <Filter>Assets\texture</Filter>
+    </Image>
+    <Image Include="Assets\texture\image.png">
+      <Filter>Assets\texture</Filter>
+    </Image>
+    <Image Include="Assets\texture\image1.png">
+      <Filter>Assets\texture</Filter>
+    </Image>
   </ItemGroup>
 </Project>

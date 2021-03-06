@@ -68,6 +68,7 @@ namespace Milkweed {
 		m_windowedDimensions = dimensions;
 		glfwSetWindowSize(m_window, dimensions.x, dimensions.y);
 		glViewport(0, 0, dimensions.x, dimensions.y);
+		updateSize();
 	}
 
 	void Window::setFullScreen(bool fullScreen) {
@@ -88,6 +89,7 @@ namespace Milkweed {
 			glfwSetWindowSize(m_window, videoMode->width, videoMode->height);
 			m_dimensions = glm::ivec2(videoMode->width, videoMode->height);
 			glViewport(0, 0, videoMode->width, videoMode->height);
+			updateSize();
 		}
 		else {
 			MWLOG(Info, Window, "Setting window to windowed mode, dimensions (",
@@ -104,8 +106,15 @@ namespace Milkweed {
 				(videoMode->height - m_windowedDimensions.y) / 2);
 			m_dimensions = m_windowedDimensions;
 			glViewport(0, 0, m_dimensions.x, m_dimensions.y);
+			updateSize();
 		}
 
 		m_fullScreen = fullScreen;
+	}
+
+	void Window::updateSize() {
+		for (Scene* s : MW::SCENES) {
+			s->updateWindowSize();
+		}
 	}
 }

@@ -85,6 +85,12 @@ namespace Milkweed {
 		bool m_fullScreen = false;
 		// Whether this window has been initialized or not
 		bool m_initialized = false;
+
+		/*
+		* The size of the window has changes, notify all the application's
+		* scenes
+		*/
+		void updateSize();
 	};
 }
 

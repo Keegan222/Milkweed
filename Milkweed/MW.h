@@ -46,6 +46,20 @@ namespace Milkweed {
 		*/
 		virtual void processInput() = 0;
 		/*
+		* Process a UI component event on this scene
+		* 
+		* @param groupID: The ID of the UI group this event originated from
+		* @param componentID: The ID of the component this event originated from
+		* @param eventID: The ID of the event that has occurred in this component
+		*/
+		virtual void componentEvent(unsigned int groupID,
+			unsigned int componentID, unsigned int eventID) {};
+		/*
+		* Update the graphics in this scene when the size of the application's
+		* window changes
+		*/
+		virtual void updateWindowSize() {}
+		/*
 		* Update this scene's physics
 		*
 		* @param deltaTime: The elapsed time in frames for this scene based on
@@ -118,6 +132,9 @@ namespace Milkweed {
 		static bool SetScene(Scene* scene);
 
 	private:
+		// Allow the Window class to access the array of SCENES
+		friend Window;
+
 		// The number of physics upates per second
 		static float PHYSICS_SPU;
 		// The set of scenes in this application

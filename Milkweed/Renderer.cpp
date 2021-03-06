@@ -76,7 +76,7 @@ namespace Milkweed {
 
 	void Renderer::submit(const std::string& text, const glm::vec3& position,
 		const glm::vec2& bounds, float scale, Font* font, Shader* shader,
-		Justification justification) {
+		Justification hJustification, Justification vJustification) {
 		// Attempt to find the shader in the text map
 		std::unordered_map<Shader*, std::vector<Sprite>>::iterator it
 			= m_text.find(shader);
@@ -85,28 +85,31 @@ namespace Milkweed {
 			m_text[shader] = std::vector<Sprite>(0);
 		}
 
+		// Calculate the width and height of the text clamped to the boundaries
+		// of the characters
+		float labelWidth = 0.0f, max = font->maxCharacterHeight * scale,
+			min = 0.0f, labelHeight = 0.0f;
+		for (char c : text) {
+			labelWidth += font->characters[c].offset * scale;
+			if (min > -(font->characters[c].dimensions.y
+				- font->characters[c].bearing.y) * scale) {
+				min = -(font->characters[c].dimensions.y
+					- font->characters[c].bearing.y) * scale;
+			}
+		}
+		labelHeight = max - min;
+
 		float x;
-		switch (justification) {
+		switch (hJustification) {
 		case Justification::LEFT: {
 			x = position.x;
 			break;
 		}
 		case Justification::CENTER: {
-			// Get the full width of the text label
-			float labelWidth = 0.0f;
-			for (char c : text) {
-				labelWidth += font->characters[c].offset * scale;
-			}
-			x = position.x + (bounds.x / 2) - (labelWidth / 2);
+			x = position.x + ((bounds.x - labelWidth) / 2);
 			break;
 		}
 		case Justification::RIGHT: {
-			// Get the full width of the text label
-			float labelWidth = 0.0f;
-			for (char c : text) {
-				labelWidth += font->characters[c].offset * scale;
-			}
-			// The right of the text label is clamped to the right of the bounds
 			x = position.x + bounds.x - labelWidth;
 			break;
 		}
@@ -114,6 +117,24 @@ namespace Milkweed {
 			x = position.x;
 			break;
 		}
+		}
+		float y;
+		switch (vJustification) {
+		case Justification::TOP: {
+			y = position.y + bounds.y - max;
+			break;
+		}
+		case Justification::CENTER: {
+			y = position.y + ((bounds.y - labelHeight) / 2.0f);
+			break;
+		}
+		case Justification::BOTTOM: {
+			y = position.y;
+			break;
+		}
+		default:
+			y = position.y;
+			break;
 		}
 		for (char c : text) {
 			const Character& fc = font->characters[c];
@@ -123,17 +144,39 @@ namespace Milkweed {
 			// advance the offset to the start of the next character in the
 			// string
 			ch.init(glm::vec3(x + fc.bearing.x * scale,
-				position.y - (fc.dimensions.y - fc.bearing.y) * scale,
+				y - ((fc.dimensions.y - fc.bearing.y) * scale),
 				position.z), fc.dimensions * scale,
 				&(font->characters[c].texture));
 			x += fc.offset * scale;
 			
-			if (ch.position.x >= position.x
-				&& ch.position.x + ch.dimensions.x
+			switch (hJustification) {
+			case Justification::LEFT: {
+				if (ch.position.x + ch.dimensions.x <= position.x + bounds.x) {
+					m_text[shader].push_back(ch);
+				}
+				break;
+			}
+			case Justification::CENTER: {
+				if (ch.position.x >= position.x
+					&& ch.position.x + ch.dimensions.x
 					<= position.x + bounds.x) {
-				// Submit this character for rendering if it is in the bounds
-				// of the label
-				m_text[shader].push_back(ch);
+					// Submit this character for rendering if it is in the bounds
+					// of the label
+					m_text[shader].push_back(ch);
+				}
+				break;
+			}
+			case Justification::RIGHT: {
+				if (ch.position.x >= position.x) {
+					m_text[shader].push_back(ch);
+				}
+				break;
+			}
+			default:
+				if (ch.position.x + ch.dimensions.x <= position.x + bounds.x) {
+					m_text[shader].push_back(ch);
+				}
+				break;
 			}
 		}
 	}

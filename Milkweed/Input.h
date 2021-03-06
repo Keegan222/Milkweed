@@ -134,35 +134,35 @@ namespace Milkweed {
 		* 
 		* @param key: The ID of the relevant key
 		*/
-		virtual void keyPressed(int key) = 0;
+		virtual void keyPressed(int key) {};
 		/*
 		* A key has been released on the keyboard
 		* 
 		* @param key: The ID of the relevant key
 		*/
-		virtual void keyReleased(int key) = 0;
+		virtual void keyReleased(int key) {};
 		/*
 		* Text has been typed on the keyboard
 		* 
 		* @param key: The ID of the relevant key
 		*/
-		virtual void textTyped(char text) = 0;
+		virtual void textTyped(char text) {};
 		/*
 		* A button has been pressed on the mouse
 		* 
 		* @param key: The ID of the relevant button
 		*/
-		virtual void buttonPressed(int button) = 0;
+		virtual void buttonPressed(int button) {};
 		/*
 		* A button has been released on the mouse
 		* 
 		* @param key: The ID of the relevant button
 		*/
-		virtual void buttonReleased(int button) = 0;
+		virtual void buttonReleased(int button) {};
 		/*
 		* The mouse cursor has been moved on the window
 		*/
-		virtual void cursorMoved() = 0;
+		virtual void cursorMoved() {};
 	};
 
 	/*

@@ -4,12 +4,15 @@
 
 using namespace Milkweed;
 
-class TestScene : public Scene {
+class TestScene : public Scene, InputListener {
 public:
 	void init() override;
 	void enter() override;
 	void draw() override;
 	void processInput() override;
+	void textTyped(char text) override;
+	void componentEvent(unsigned int groupID,
+		unsigned int componentID, unsigned int eventID) override;
 	void update(float deltaTime) override;
 	void exit() override;
 	void destroy() override;
@@ -21,7 +24,6 @@ private:
 	Font* m_font = nullptr;
 	UIGroup m_UIGroup;
 	UILabel m_label;
-	UILabel m_label1;
 };
 
 class MWTest {

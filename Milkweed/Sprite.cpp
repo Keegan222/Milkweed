@@ -34,31 +34,44 @@ namespace Milkweed {
 			// Position
 			position.x, position.y, position.z,
 			// Texture coordinates
-			0.0f, 1.0f,
+			// 0.0f, 1.0f,
+			textureCoords.x, textureCoords.y + textureCoords.w,
 
 			// Vertex 2
 			// Position
 			position.x + dimensions.x, position.y, position.z,
 			// Texture coordinates
-			1.0f, 1.0f,
+			// 1.0f, 1.0f,
+			textureCoords.x + textureCoords.z, textureCoords.y + textureCoords.w,
 
 			// Vertex 3
 			// Position
 			position.x + dimensions.x, position.y + dimensions.y, position.z,
 			// Texture coordinates
-			1.0f, 0.0f,
+			// 1.0f, 0.0f,
+			textureCoords.x + textureCoords.z, textureCoords.y,
 
 			// Vertex 4
 			// Position
 			position.x, position.y + dimensions.y, position.z,
 			// Texture coordinates
-			0.0f, 0.0f,
+			// 0.0f, 0.0f,
+			textureCoords.x, textureCoords.y,
 		};
 
 		// Flip vertex positions of needed
 		flip(&vertices);
 
 		return vertices;
+	}
+
+	void Sprite::destroy() {
+		position = glm::vec3();
+		velocity = glm::vec2();
+		dimensions = glm::vec2();
+		texture = nullptr;
+		textureCoords = glm::vec4(0.0f, 0.0f, 1.0f, 1.0f);
+		flipHorizontal = flipVertical = false;
 	}
 
 	void Sprite::flip(std::vector<float>* vertices) {

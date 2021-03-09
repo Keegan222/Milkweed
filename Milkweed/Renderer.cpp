@@ -58,19 +58,15 @@ namespace Milkweed {
 	}
 
 	void Renderer::submit(const std::vector<Sprite*>& sprites, Shader* shader) {
-		if (sprites.empty()) {
+		// If there are no sprites or shader do nothing
+		if (sprites.empty() || shader == nullptr) {
 			return;
-		}
-		std::unordered_map<Shader*, std::vector<Sprite*>>::iterator it
-			= m_sprites.find(shader);
-		if (it == m_sprites.end()) {
-			// The shader was already found in this frame, it must be added
-			m_sprites[shader] = std::vector<Sprite*>(0);
 		}
 
 		// Add the sprites to their shader
 		for (Sprite* sprite : sprites) {
-			m_sprites[shader].push_back(sprite);
+			sprite->m_shader = shader;
+			m_sprites.push_back(sprite);
 		}
 	}
 
@@ -180,10 +176,6 @@ namespace Milkweed {
 			}
 		}
 	}
-
-	bool compareSpriteTexture(const Sprite* a, const Sprite* b) {
-		return a->texture->textureID < b->texture->textureID;
-	}
 	
 	bool compareSpriteDepth(const Sprite* a, const Sprite* b) {
 		return a->position.z < b->position.z;
@@ -215,119 +207,79 @@ namespace Milkweed {
 			submit(sprites, shader);
 		}
 
-		for (std::pair<Shader*, std::vector<Sprite*>> shaderBatch : m_sprites) {
-			if (m_dumpFrame) {
-				MWLOG(Info, Renderer, "New sprite shader batch found");
-			}
-			// Get the shader to render this batch of sprites with
-			Shader* shader = shaderBatch.first;
-			// Sort the sprites by their texture ID's
-			if (m_sortType == SortType::TEXTURE) {
-				std::stable_sort(m_sprites[shader].begin(),
-					m_sprites[shader].end(), compareSpriteTexture);
-				if (m_dumpFrame) {
-					MWLOG(Info, Renderer, "Sorted sprites by texture");
-				}
-			}
-			else if (m_sortType == SortType::DEPTH) {
-				std::stable_sort(m_sprites[shader].begin(),
-					m_sprites[shader].end(), compareSpriteDepth);
-				if (m_dumpFrame) {
-					MWLOG(Info, Renderer, "Sorted sprites by depth");
-				}
-			}
-			// Start the shader
-			shader->begin();
-			if (m_dumpFrame) {
-				MWLOG(Info, Renderer, "Started shader");
-			}
+		// Sort all the sprites by their depth
+		std::stable_sort(m_sprites.begin(), m_sprites.end(), compareSpriteDepth);
+		if (m_dumpFrame) {
+			MWLOG(Info, Renderer, "Sorted sprites by depth");
+		}
 
-			// Initialize the data to send to OpenGL
-			std::vector<float> vertexData;
-			std::vector<unsigned int> indices;
-			unsigned int spriteCount = 0;
+		// Initialize the sprite data
+		std::vector<float> vertexData;
+		std::vector<unsigned int> indices;
+		unsigned int spriteCount = 0;
 
-			// Draw the sprites in this batch
-			GLuint currentTextureID = 0;
-			for (unsigned int i = 0; i < m_sprites[shader].size(); i++) {
+		Shader* shader = nullptr;
+		// Bind the first texture
+		GLuint currentTextureID = m_sprites[0]->texture->textureID;
+		glBindTexture(GL_TEXTURE_2D, currentTextureID);
+		// Go through the sprites in this frame
+		for (Sprite* sprite : m_sprites) {
+			// Check if there is a new shader
+			if (shader != sprite->m_shader) {
 				if (m_dumpFrame) {
-					MWLOG(Info, Renderer, "Testing sprite ", i, "'s texture ID");
+					MWLOG(Info, Renderer, "New shader found");
 				}
-				Sprite* sprite = m_sprites[shader][i];
-				// Test if a new texture group has started
-				if (currentTextureID != sprite->texture->textureID) {
-					if (m_dumpFrame) {
-						MWLOG(Info, Renderer, "Sprite ", i, " has a new ",
-							"texture ID");
-					}
+				// New shader, draw out all current vertices and change shaders
+				if (shader != nullptr) {
 					if (spriteCount > 0) {
-						if (m_dumpFrame) {
-							MWLOG(Info, Renderer, "There were sprites drawn ",
-								"with the last texture ID, render out their ",
-								"vertices");
-						}
-						// If there were sprites in the last texture batch,
-						// draw them
 						drawVertices(vertexData, indices);
+						vertexData.clear();
+						indices.clear();
 					}
-
-					if (m_dumpFrame) {
-						MWLOG(Info, Renderer, "Binding new texture ID ",
-							sprite->texture->textureID, " and clearing out ",
-							"old vertex data and indices");
-					}
-					// Reset the vertex data and bind the new texture
-					currentTextureID = sprite->texture->textureID;
-					glBindTexture(GL_TEXTURE_2D, currentTextureID);
+					shader->end();
+				}
+				// Start the new shader
+				shader = sprite->m_shader;
+				shader->begin();
+				spriteCount = 0;
+			}
+			// Check if there is a new texture
+			if (currentTextureID != sprite->texture->textureID) {
+				if (m_dumpFrame) {
+					MWLOG(Info, Renderer, "New texture ID found, ",
+						sprite->texture->textureID);
+				}
+				// A new texture was found, draw out all old sprites
+				if (spriteCount > 0) {
+					drawVertices(vertexData, indices);
 					vertexData.clear();
 					indices.clear();
-					spriteCount = 0;
 				}
-
-				if (m_dumpFrame) {
-					MWLOG(Info, Renderer, "Adding sprite ", i, "'s vertex and ",
-						"index data to the new texture frame");
-				}
-				// Add this sprite's data to the current texture group's vertex
-				// data to be uploaded to OpenGL
-				unsigned int count = 0;
-				for (float f : sprite->getVertexData()) {
-					vertexData.push_back(f);
-					count++;
-				}
-				if (m_dumpFrame) {
-					MWLOG(Info, Renderer, "Pushed ", count, " new vertex data ",
-						"points");
-				}
-				count = 0;
-				for (unsigned int i : Sprite::SPRITE_INDICES) {
-					indices.push_back(i + 4 * spriteCount);
-					count++;
-				}
-				if (m_dumpFrame) {
-					MWLOG(Info, Renderer, "Pushed ", count, " new index data ",
-						"points");
-				}
-				spriteCount++;
+				// Update the texture ID
+				currentTextureID = sprite->texture->textureID;
+				glBindTexture(GL_TEXTURE_2D, currentTextureID);
+				spriteCount = 0;
 			}
 
+			// Add the next sprite's data to the group
 			if (m_dumpFrame) {
-				MWLOG(Info, Renderer, "Drawing remaining vertices and indices ",
-					"and clearing the frame's vertex data");
+				MWLOG(Info, Renderer, "Adding new sprite vertex and ",
+					"index data to the new texture frame");
 			}
-			// Draw the remaining vertex data from the final texture group
-			drawVertices(vertexData, indices);
-			vertexData.clear();
-			indices.clear();
-
-			if (m_dumpFrame) {
-				MWLOG(Info, Renderer, "Stopping shader batch");
+			for (float f : sprite->getVertexData()) {
+				vertexData.push_back(f);
 			}
-			// Stop this shader
-			shader->end();
+			for (unsigned int i : Sprite::SPRITE_INDICES) {
+				indices.push_back(i + 4 * spriteCount);
+			}
+			spriteCount++;
 		}
-		
-		// Get rid of the data rendered this frame
+
+		// Draw the last of the data for this frame
+		drawVertices(vertexData, indices);
+		shader->end();
+		vertexData.clear();
+		indices.clear();
 		m_sprites.clear();
 		m_text.clear();
 

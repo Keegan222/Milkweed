@@ -15,13 +15,6 @@
 
 namespace Milkweed {
 	/*
-	* The ways to sort sprites to be rendered
-	*/
-	enum class SortType {
-		TEXTURE, DEPTH,
-	};
-
-	/*
 	* The justification to use when position text for rendering
 	*/
 	enum class Justification {
@@ -91,10 +84,6 @@ namespace Milkweed {
 		*/
 		void destroy();
 		/*
-		* Set the type of sorting to perform when rendering sprites
-		*/
-		void setSortType(SortType sortType) { m_sortType = sortType; }
-		/*
 		* Get the current clear color
 		*/
 		glm::vec3 getClearColor() const { return m_clearColor; }
@@ -119,7 +108,7 @@ namespace Milkweed {
 		Renderer() {}
 
 		// Whether to dump the next frame's rendering information to the log
-		bool m_dumpFrame = false;
+		bool m_dumpFrame = true;
 		// The vertex array for this renderer
 		GLuint m_VAOID = 0;
 		// The vertex data buffer for this renderer
@@ -127,11 +116,9 @@ namespace Milkweed {
 		// The index buffer for this renderer
 		GLuint m_IBOID = 0;
 		// The sprites to be rendered this frame
-		std::unordered_map<Shader*, std::vector<Sprite*>> m_sprites;
+		std::vector<Sprite*> m_sprites;
 		// The text characters to render this frame
 		std::unordered_map<Shader*, std::vector<Sprite>> m_text;
-		// The type of sorting to perform when rendering sprites
-		SortType m_sortType = SortType::DEPTH;
 		// Normalized RGB color to clear the screen to
 		glm::vec3 m_clearColor = glm::vec3();
 

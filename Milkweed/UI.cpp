@@ -139,7 +139,6 @@ namespace Milkweed {
 		MW::RENDERER.submit(m_text, m_position, m_dimensions, m_textScale,
 			m_parent->getFont(), m_parent->getTextShader(), m_hJustification,
 			m_vJustification);
-		MW::RENDERER.end();
 	}
 
 	void UILabel::destroy() {

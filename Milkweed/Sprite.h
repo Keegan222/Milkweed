@@ -11,6 +11,10 @@
 #include <vector>
 
 namespace Milkweed {
+	// Declare the Shader class here so it doesn't have to be included
+	class Shader;
+	// Declare the Renderer class here so it doesn't have to be included
+	class Renderer;
 	// Declare the Texture class from ResourceManager here
 	struct Texture;
 
@@ -73,6 +77,11 @@ namespace Milkweed {
 		void flip(std::vector<float>* vertices);
 
 	private:
+		// Allow the renderer to access the shader
+		friend Renderer;
+		// The shader currently being used to draw this sprite
+		Shader* m_shader = nullptr;
+
 		/*
 		* Swap the elements of the vector v whose indices are a and b
 		*/

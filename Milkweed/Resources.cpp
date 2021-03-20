@@ -211,6 +211,11 @@ namespace Milkweed {
 			if (font.characters[c].bearing.y > font.maxCharacterHeight) {
 				font.maxCharacterHeight = (float)font.characters[c].bearing.y;
 			}
+			if (font.minCharacterHeight > -(font.characters[c].dimensions.y
+				- font.characters[c].bearing.y)) {
+				font.minCharacterHeight = -(font.characters[c].dimensions.y
+					- font.characters[c].bearing.y);
+			}
 		}
 
 		FT_Done_Face(face);

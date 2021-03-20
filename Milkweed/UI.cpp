@@ -278,6 +278,8 @@ namespace Milkweed {
 			((TextLabel)*this).draw();
 		}
 
+#define UI_UPDATE_TIME 10.0f
+
 		void TextBox::processInput() {
 			// Take no input if disabled
 			if (!m_enabled) {
@@ -308,8 +310,10 @@ namespace Milkweed {
 			}
 
 			// Set the cursor position
-			if (MW::INPUT.isKeyPressed(F_LEFT)) {
+			if (MW::INPUT.isKeyPressed(F_LEFT)
+				|| (MW::INPUT.isKeyDown(F_LEFT) && m_timer > UI_UPDATE_TIME)) {
 				if (m_cursorPosition > 0) {
+					m_timer = 0.0f;
 					m_cursorPosition--;
 					updateCursorPosition();
 					// Update the position of the text if necessary
@@ -322,8 +326,10 @@ namespace Milkweed {
 					}
 				}
 			}
-			else if (MW::INPUT.isKeyPressed(F_RIGHT)) {
+			else if (MW::INPUT.isKeyPressed(F_RIGHT)
+				|| (MW::INPUT.isKeyDown(F_RIGHT) && m_timer > UI_UPDATE_TIME)) {
 				if (m_cursorPosition < m_text.length()) {
+					m_timer = 0.0f;
 					m_cursorPosition++;
 					updateCursorPosition();
 					// Update the position of the text if necessary
@@ -336,8 +342,10 @@ namespace Milkweed {
 			}
 
 			// Handle backspace
-			if (MW::INPUT.isKeyPressed(F_BACKSPACE)) {
+			if (MW::INPUT.isKeyPressed(F_BACKSPACE)
+				|| (MW::INPUT.isKeyDown(F_BACKSPACE) && m_timer > UI_UPDATE_TIME)) {
 				if (m_cursorPosition > 0 && m_text.length() > 0) {
+					m_timer = 0.0f;
 					m_text = m_text.substr(0, m_cursorPosition - 1)
 						+ m_text.substr(m_cursorPosition, m_text.length());
 					m_cursorPosition--;
@@ -350,6 +358,13 @@ namespace Milkweed {
 						}
 					}
 				}
+			}
+		}
+
+		void TextBox::update(float deltaTime) {
+			m_timer += deltaTime;
+			if (m_timer > UI_UPDATE_TIME * 5) {
+				m_timer = 0.0f;
 			}
 		}
 

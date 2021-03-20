@@ -103,7 +103,7 @@ namespace Milkweed {
 	*/
 	struct Font {
 		std::map<char, Character> characters;
-		float maxCharacterHeight = 0.0f;
+		float maxCharacterHeight = 0.0f, minCharacterHeight = 0.0f;
 	};
 
 	/*

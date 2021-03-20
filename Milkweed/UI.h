@@ -457,6 +457,10 @@ namespace Milkweed {
 			*/
 			virtual void processInput() override;
 			/*
+			* Update this text box's timer for backspaces and cursor movement
+			*/
+			virtual void update(float deltaTime) override;
+			/*
 			* Free this text box's memory
 			*/
 			void destroy() override;
@@ -488,6 +492,8 @@ namespace Milkweed {
 			unsigned int m_cursorPosition = 0;
 			// The maximum characters allowed in this text box
 			int m_maxCharacters = 0;
+			// The timer for this text box's cursor movements
+			float m_timer = 0.0f;
 
 			/*
 			* Updates the position of the cursor when the position of this text

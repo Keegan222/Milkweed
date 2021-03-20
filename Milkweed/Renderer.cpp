@@ -95,14 +95,9 @@ namespace Milkweed {
 		// Calculate the width and height of the text clamped to the boundaries
 		// of the characters
 		float labelWidth = 0.0f, max = font->maxCharacterHeight * scale,
-			min = 0.0f, labelHeight = 0.0f;
+			min = font->minCharacterHeight * scale, labelHeight = 0.0f;
 		for (char c : text) {
 			labelWidth += font->characters[c].offset * scale;
-			if (min > -(font->characters[c].dimensions.y
-				- font->characters[c].bearing.y) * scale) {
-				min = -(font->characters[c].dimensions.y
-					- font->characters[c].bearing.y) * scale;
-			}
 		}
 		labelHeight = max - min;
 
@@ -110,7 +105,7 @@ namespace Milkweed {
 		float x;
 		switch (hJustification) {
 		case Justification::LEFT: {
-			x = position.x + scale;
+			x = position.x + 5.0f * scale;
 			break;
 		}
 		case Justification::CENTER: {
@@ -118,11 +113,11 @@ namespace Milkweed {
 			break;
 		}
 		case Justification::RIGHT: {
-			x = position.x + bounds.z- labelWidth - scale;
+			x = position.x + bounds.z - labelWidth - 5.0f * scale;
 			break;
 		}
 		default: {
-			x = position.x + scale;
+			x = position.x + 5.0f * scale;
 			break;
 		}
 		}
@@ -169,11 +164,6 @@ namespace Milkweed {
 				&& ch.position.y >= bounds.y
 				&& ch.position.y + ch.dimensions.y <= bounds.y + bounds.w) {
 				m_text[shader].push_back(ch);
-			}
-			else {
-				MWLOG(Info, Renderer, "Rejected character ", c, " at (",
-					ch.position.x, ", ", ch.position.y, ", ",
-					ch.dimensions.x, ", ", ch.dimensions.y, ")");
 			}
 		}
 	}

@@ -22,10 +22,14 @@ private:
 	Sound* m_sound = nullptr;
 	Camera m_camera;
 	Shader m_spriteShader;
+
 	Shader m_textShader;
 	Font* m_font = nullptr;
-	UIGroup m_UIGroup;
-	UIButton m_button;
+	UI::UIGroup m_UIGroup;
+	UI::Button m_button;
+	UI::TextBox m_textBox;
+	AnimatedSprite m_ASprite;
+	float m_timer = 0.0f;
 };
 
 class MWTest {

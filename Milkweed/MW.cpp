@@ -170,12 +170,12 @@ void MW::Destroy() {
 		s->destroy();
 	}
 
+	// Destroy the resource manager
+	RESOURCES.destroy();
 	// Stop the audio system
 	AUDIO.destroy();
 	// Stop the network client
 	NETWORK.destroy();
-	// Destroy the resource manager
-	RESOURCES.destroy();
 	// Destroy the renderer
 	RENDERER.destroy();
 

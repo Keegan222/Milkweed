@@ -36,6 +36,8 @@ namespace Milkweed {
 		Texture* texture = nullptr;
 		// The texture coordinates for this sprite
 		glm::vec4 textureCoords = glm::vec4(0.0f, 0.0f, 1.0f, 1.0f);
+		// The angle of this sprite's rotation in degrees
+		int rotation = 0;
 		// Whether the sprite's texture should be flipped horizontally
 		bool flipHorizontal = false;
 		// Whether the sprite's texture should be flipped vertically
@@ -63,6 +65,13 @@ namespace Milkweed {
 		*/
 		virtual std::vector<float> getVertexData();
 		/*
+		* Test if this sprite intersects with another given sprite
+		* 
+		* @param sprite: The sprite to test this one against
+		* @return Whether this sprite and the given sprite's bounds intersects
+		*/
+		bool intersects(Sprite* sprite);
+		/*
 		* Free this sprite's memory
 		*/
 		virtual void destroy();
@@ -75,6 +84,14 @@ namespace Milkweed {
 		* @param vertices: The vertex data of the animated or static sprite
 		*/
 		void flip(std::vector<float>* vertices);
+		/*
+		* Rotate a point about the center of this sprite
+		* 
+		* @param p: The point to rotate by this sprite's rotation about the
+		* center of this sprite
+		* @return The rotated point
+		*/
+		glm::vec3 rotatePoint(const glm::vec3& p);
 
 	private:
 		// Allow the renderer to access the shader
@@ -131,12 +148,6 @@ namespace Milkweed {
 		* Get whether this sprite's animation is currently playing
 		*/
 		bool isPlaying() const { return m_playing; }
-		/*
-		* Get the vertex data of this sprite to pass to OpenGL for rendering
-		* 
-		* @return The array of vertices making up this sprite
-		*/
-		std::vector<float> getVertexData() override;
 		
 	private:
 		// The time for which to display each frame of the animation

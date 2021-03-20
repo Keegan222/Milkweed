@@ -171,8 +171,9 @@
   </ItemGroup>
   <ItemGroup>
     <Image Include="Assets\texture\button.png" />
+    <Image Include="Assets\texture\cursor.png" />
     <Image Include="Assets\texture\image.png" />
-    <Image Include="Assets\texture\image1.png" />
+    <Image Include="Assets\texture\text_box.png" />
   </ItemGroup>
   <Import Project="$(VCTargetsPath)\Microsoft.Cpp.targets" />
   <ImportGroup Label="ExtensionTargets">

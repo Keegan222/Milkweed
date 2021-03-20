@@ -61,8 +61,8 @@ namespace Milkweed {
 		* 
 		* @param text: The text to draw this frame
 		* @param position: The position to draw this text label at
-		* @param bounds: The width and height of the rectangle to draw the text
-		* in
+		* @param bounds: The position and dimensions of the rectangle to draw
+		* the given text within
 		* @param scale: The factor to scale the size of the characters in font
 		* by when drawing text
 		* @param font: The typeface to draw this text in
@@ -73,7 +73,7 @@ namespace Milkweed {
 		* on the y-axis
 		*/
 		void submit(const std::string& text, const glm::vec3& position,
-			const glm::vec2& bounds, float scale, Font* font, Shader* shader,
+			const glm::vec4& bounds, float scale, Font* font, Shader* shader,
 			Justification hJustification, Justification vJustification);
 		/*
 		* End a frame and draw it on the screen
@@ -108,7 +108,7 @@ namespace Milkweed {
 		Renderer() {}
 
 		// Whether to dump the next frame's rendering information to the log
-		bool m_dumpFrame = true;
+		bool m_dumpFrame = false;
 		// The vertex array for this renderer
 		GLuint m_VAOID = 0;
 		// The vertex data buffer for this renderer

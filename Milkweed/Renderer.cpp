@@ -5,6 +5,7 @@
 */
 
 #include <algorithm>
+#include <cstdlib>
 #include <GL/glew.h>
 
 #include "MW.h"
@@ -65,14 +66,24 @@ namespace Milkweed {
 
 		// Add the sprites to their shader
 		for (Sprite* sprite : sprites) {
+			// Make sure the sprite has a texture, not nullptr
+			if (sprite->texture == nullptr) {
+				continue;
+			}
+			// Add the sprite to the frame
 			sprite->m_shader = shader;
 			m_sprites.push_back(sprite);
 		}
 	}
 
 	void Renderer::submit(const std::string& text, const glm::vec3& position,
-		const glm::vec2& bounds, float scale, Font* font, Shader* shader,
+		const glm::vec4& bounds, float scale, Font* font, Shader* shader,
 		Justification hJustification, Justification vJustification) {
+		// Make sure text has been submitted
+		if (text.empty()) {
+			return;
+		}
+
 		// Attempt to find the shader in the text map
 		std::unordered_map<Shader*, std::vector<Sprite>>::iterator it
 			= m_text.find(shader);
@@ -95,33 +106,36 @@ namespace Milkweed {
 		}
 		labelHeight = max - min;
 
+		// Position the text in the x-axis
 		float x;
 		switch (hJustification) {
 		case Justification::LEFT: {
-			x = position.x;
+			x = position.x + scale;
 			break;
 		}
 		case Justification::CENTER: {
-			x = position.x + ((bounds.x - labelWidth) / 2);
+			x = position.x + ((bounds.z - labelWidth) / 2);
 			break;
 		}
 		case Justification::RIGHT: {
-			x = position.x + bounds.x - labelWidth;
+			x = position.x + bounds.z- labelWidth - scale;
 			break;
 		}
 		default: {
-			x = position.x;
+			x = position.x + scale;
 			break;
 		}
 		}
+
+		// Position the text in the y-axis
 		float y;
 		switch (vJustification) {
 		case Justification::TOP: {
-			y = position.y + bounds.y - max;
+			y = position.y + bounds.w - max;
 			break;
 		}
 		case Justification::CENTER: {
-			y = position.y + ((bounds.y - labelHeight) / 2.0f);
+			y = position.y + ((bounds.w - labelHeight) / 2.0f);
 			break;
 		}
 		case Justification::BOTTOM: {
@@ -132,6 +146,10 @@ namespace Milkweed {
 			y = position.y;
 			break;
 		}
+
+		// Add the text to the frame as a set of sprites representing each
+		// character
+		int count = 0;
 		for (char c : text) {
 			const Character& fc = font->characters[c];
 			Sprite ch;
@@ -145,34 +163,17 @@ namespace Milkweed {
 				&(font->characters[c].texture));
 			x += fc.offset * scale;
 			
-			switch (hJustification) {
-			case Justification::LEFT: {
-				if (ch.position.x + ch.dimensions.x <= position.x + bounds.x) {
-					m_text[shader].push_back(ch);
-				}
-				break;
+			// Add the character to the frame if it is inside the bounds
+			if (ch.position.x >= bounds.x
+				&& ch.position.x + ch.dimensions.x <= bounds.x + bounds.z
+				&& ch.position.y >= bounds.y
+				&& ch.position.y + ch.dimensions.y <= bounds.y + bounds.w) {
+				m_text[shader].push_back(ch);
 			}
-			case Justification::CENTER: {
-				if (ch.position.x >= position.x
-					&& ch.position.x + ch.dimensions.x
-					<= position.x + bounds.x) {
-					// Submit this character for rendering if it is in the bounds
-					// of the label
-					m_text[shader].push_back(ch);
-				}
-				break;
-			}
-			case Justification::RIGHT: {
-				if (ch.position.x >= position.x) {
-					m_text[shader].push_back(ch);
-				}
-				break;
-			}
-			default:
-				if (ch.position.x + ch.dimensions.x <= position.x + bounds.x) {
-					m_text[shader].push_back(ch);
-				}
-				break;
+			else {
+				MWLOG(Info, Renderer, "Rejected character ", c, " at (",
+					ch.position.x, ", ", ch.position.y, ", ",
+					ch.dimensions.x, ", ", ch.dimensions.y, ")");
 			}
 		}
 	}
@@ -227,11 +228,16 @@ namespace Milkweed {
 			// Check if there is a new shader
 			if (shader != sprite->m_shader) {
 				if (m_dumpFrame) {
-					MWLOG(Info, Renderer, "New shader found");
+					MWLOG(Info, Renderer, "New shader group found");
 				}
 				// New shader, draw out all current vertices and change shaders
 				if (shader != nullptr) {
 					if (spriteCount > 0) {
+						if (m_dumpFrame) {
+							MWLOG(Info, Renderer, spriteCount, " sprites were ",
+								"drawn with the last shader and must be ",
+								"rendered out");
+						}
 						drawVertices(vertexData, indices);
 						vertexData.clear();
 						indices.clear();
@@ -239,6 +245,9 @@ namespace Milkweed {
 					shader->end();
 				}
 				// Start the new shader
+				if (m_dumpFrame) {
+					MWLOG(Info, Renderer, "Starting new shader group");
+				}
 				shader = sprite->m_shader;
 				shader->begin();
 				spriteCount = 0;
@@ -251,11 +260,18 @@ namespace Milkweed {
 				}
 				// A new texture was found, draw out all old sprites
 				if (spriteCount > 0) {
+					if (m_dumpFrame) {
+						MWLOG(Info, Renderer, "Sprites were drawn with the ",
+							"last texture ID and must be rendered out");
+					}
 					drawVertices(vertexData, indices);
 					vertexData.clear();
 					indices.clear();
 				}
 				// Update the texture ID
+				if (m_dumpFrame) {
+					MWLOG(Info, Renderer, "Starting new texture ID group");
+				}
 				currentTextureID = sprite->texture->textureID;
 				glBindTexture(GL_TEXTURE_2D, currentTextureID);
 				spriteCount = 0;
@@ -266,16 +282,30 @@ namespace Milkweed {
 				MWLOG(Info, Renderer, "Adding new sprite vertex and ",
 					"index data to the new texture frame");
 			}
+			int count = 0;
 			for (float f : sprite->getVertexData()) {
 				vertexData.push_back(f);
+				count++;
 			}
+			if (m_dumpFrame) {
+				MWLOG(Info, Renderer, "Added ", count, " vertex data points");
+			}
+			count = 0;
 			for (unsigned int i : Sprite::SPRITE_INDICES) {
 				indices.push_back(i + 4 * spriteCount);
+				count++;
+			}
+			if (m_dumpFrame) {
+				MWLOG(Info, Renderer, "Added ", count, " indices");
 			}
 			spriteCount++;
 		}
 
 		// Draw the last of the data for this frame
+		if (m_dumpFrame) {
+			MWLOG(Info, Renderer, "Rendering out remaining vertex data ",
+				"and ending the frame");
+		}
 		drawVertices(vertexData, indices);
 		shader->end();
 		vertexData.clear();
@@ -284,6 +314,7 @@ namespace Milkweed {
 		m_text.clear();
 
 		if (m_dumpFrame) {
+			MWLOG(Info, Renderer, "Renderer frame info dump complete");
 			m_dumpFrame = false;
 		}
 	}

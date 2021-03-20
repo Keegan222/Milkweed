@@ -69,7 +69,10 @@
     <Image Include="Assets\texture\image.png">
       <Filter>Assets\texture</Filter>
     </Image>
-    <Image Include="Assets\texture\image1.png">
+    <Image Include="Assets\texture\text_box.png">
+      <Filter>Assets\texture</Filter>
+    </Image>
+    <Image Include="Assets\texture\cursor.png">
       <Filter>Assets\texture</Filter>
     </Image>
   </ItemGroup>

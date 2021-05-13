@@ -25,6 +25,14 @@ float MW::PHYSICS_SPU;
 std::vector<Scene*> MW::SCENES;
 Scene* MW::SCENE = nullptr;
 
+void Scene::init() {
+	m_initialized = true;
+}
+
+void Scene::destroy() {
+	m_initialized = false;
+}
+
 void MW::Init(const std::string& windowTitle,
 	const glm::ivec2& windowDimensions, bool windowFullScreen,
 	float physicsUPS, const std::vector<Scene*>& scenes, Scene* scene) {
@@ -49,10 +57,10 @@ void MW::Init(const std::string& windowTitle,
 	}
 	// Initialize the input manager
 	INPUT.init();
-		
+	
 	// Initialize the renderer
 	if (!RENDERER.init()) {
-		MWLOG(Error, App, "Fatal renderer error");
+		MWLOG(Error, App, "Fatal graphical error");
 		return;
 	}
 
@@ -73,7 +81,6 @@ void MW::Init(const std::string& windowTitle,
 	// Initialize the application's scenes and set the initial scene
 	for (Scene* s : scenes) {
 		SCENES.push_back(s);
-		s->init();
 	}
 	SetScene(scene);
 
@@ -91,6 +98,10 @@ bool MW::SetScene(Scene* scene) {
 	}
 	if (std::find(SCENES.begin(), SCENES.end(), scene) == SCENES.end()) {
 		return false;
+	}
+
+	if (!scene->isInitialized()) {
+		scene->init();
 	}
 
 	// If the current scene is not nullptr, leave it
@@ -167,7 +178,9 @@ void MW::Destroy() {
 	// Exit the active scene and destroy all the scenes
 	SCENE->exit();
 	for (Scene* s : SCENES) {
-		s->destroy();
+		if (s->isInitialized()) {
+			s->destroy();
+		}
 	}
 
 	// Destroy the resource manager

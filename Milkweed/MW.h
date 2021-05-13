@@ -32,7 +32,7 @@ namespace Milkweed {
 		/*
 		* Initialize this scene on the start of the application
 		*/
-		virtual void init() = 0;
+		virtual void init();
 		/*
 		* Switch to this scene from another scene
 		*/
@@ -73,7 +73,14 @@ namespace Milkweed {
 		/*
 		* Free this scene's memory
 		*/
-		virtual void destroy() = 0;
+		virtual void destroy();
+		/*
+		* Test whether this scene has been initialized
+		*/
+		bool isInitialized() const { return m_initialized; }
+
+	protected:
+		bool m_initialized = false;
 	};
 
 	/*

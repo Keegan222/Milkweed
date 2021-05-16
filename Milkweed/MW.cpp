@@ -76,8 +76,6 @@ void MW::Init(const std::string& windowTitle,
 	// TODO: Remove hardcoded message size
 	NETWORK.init();
 
-	MWLOG(Info, App, "Initializing all scenes");
-
 	// Initialize the application's scenes and set the initial scene
 	for (Scene* s : scenes) {
 		SCENES.push_back(s);

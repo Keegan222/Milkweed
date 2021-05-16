@@ -198,6 +198,11 @@ namespace Milkweed {
 			submit(sprites, shader);
 		}
 
+		// Do not sort if no sprites
+		if (m_sprites.empty()) {
+			return;
+		}
+
 		// Sort all the sprites by their depth
 		std::stable_sort(m_sprites.begin(), m_sprites.end(), compareSpriteDepth);
 		if (m_dumpFrame) {

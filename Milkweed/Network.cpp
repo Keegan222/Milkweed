@@ -1,4 +1,4 @@
- /*
+/*
 * File: NetworkManager.cpp
 * Author: Keegan MacDonald (keeganm742@gmail.com)
 * Created: 2020.12.26
@@ -29,14 +29,14 @@ namespace Milkweed {
 		asio::async_connect(m_socket, endpoints,
 			[this](std::error_code error,
 				asio::ip::tcp::endpoint endpoint) {
-				if (!error) {
-					// The connection was successful, begin reading messages
-					m_connected = true;
-					readHeader();
-				}
-				else {
-					disconnect();
-				}
+					if (!error) {
+						// The connection was successful, begin reading messages
+						m_connected = true;
+						readHeader();
+					}
+					else {
+						disconnect();
+					}
 			}
 		);
 	}
@@ -328,7 +328,6 @@ namespace Milkweed {
 
 	void NetServer::messageAllClients(const NetMessage& message,
 		std::shared_ptr<NetConnection> ignoredClient) {
-		bool invalidClientExists = false;
 		// Send the message to all valid and connected clients
 		for (std::shared_ptr<NetConnection> client : m_clients) {
 			if (client) {
@@ -339,26 +338,33 @@ namespace Milkweed {
 						// and go to the next clients
 						client->send(message);
 					}
-					continue;
 				}
 			}
-
-			// The client was invalid or not connected, remove it
-			SERVERLOG(Info, "Client ", client->getID(), " has disconnected");
-			onDisconnect(client);
-			client.reset();
-			invalidClientExists = true;
-		}
-
-		if (invalidClientExists) {
-			// Remove all nullptr connections from the list of clients if
-			// we are required to do so
-			m_clients.erase(std::remove(m_clients.begin(), m_clients.end(),
-				nullptr), m_clients.end());
 		}
 	}
 
 	void NetServer::update(int maxMessages) {
+		// Attempt to remove disconnected clients
+		for (std::shared_ptr<NetConnection> client : m_clients) {
+			if (client) {
+				if (client->isConnected()) {
+					// The client is still connected, move on
+					continue;
+				}
+				else {
+					// The client has disconnected, destroy it
+					SERVERLOG(Info, "Client ", client->getID(),
+						" has disconnected");
+					onDisconnect(client);
+					client->destroy();
+				}
+			}
+
+			// Remove the invalid / disconnected client
+			m_clients.erase(std::remove(m_clients.begin(), m_clients.end(),
+				client), m_clients.end());
+		}
+
 		// Process up to maxMessages messages
 		int i = 0;
 		while (i != maxMessages && !m_messagesIn.empty()) {
@@ -407,13 +413,11 @@ namespace Milkweed {
 					client->init(&m_messagesIn, m_maxMessageSize);
 					client->connectToClient(m_currentID++);
 
-					SERVERLOG(Info, "Found new client connection at ",
-						socket.remote_endpoint());
+					SERVERLOG(Info, "Found new client connection");
 
 					if (onConnect(client)) {
 						// The program has decided to accept the client
-						SERVERLOG(Info, "Accepted client from ",
-							socket.remote_endpoint(), " assigned ID ",
+						SERVERLOG(Info, "Accepted client, assigned ID ",
 							client->getID());
 						m_clients.push_back(client);
 					}

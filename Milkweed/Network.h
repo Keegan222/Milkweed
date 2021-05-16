@@ -147,7 +147,7 @@ namespace Milkweed {
 		}
 		/*
 		* Retrieve an element from the queue
-		* 
+		*
 		* @param index: The index of the element in the queue
 		* @return A reference to the element of this queue at the given index
 		*/
@@ -164,7 +164,7 @@ namespace Milkweed {
 		}
 		/*
 		* Get the item at the front of this queue
-		* 
+		*
 		* @return A reference to the item at the front of the double-ended queue
 		*/
 		const T& front() {
@@ -173,7 +173,7 @@ namespace Milkweed {
 		}
 		/*
 		* Get the item at the front of this queue and remove it
-		* 
+		*
 		* @return The item at the front of this queue by value
 		*/
 		T popFront() {
@@ -204,7 +204,7 @@ namespace Milkweed {
 		}
 		/*
 		* Add an item to the front of this queue
-		* 
+		*
 		* @param t: A reference to the item to push onto the front of the queue
 		*/
 		void pushFront(const T& t) {
@@ -213,7 +213,7 @@ namespace Milkweed {
 		}
 		/*
 		* Add an item to the back of this queue
-		* 
+		*
 		* @param t: A reference to the item to push onto the back of the queue
 		*/
 		void pushBack(const T& t) {
@@ -236,7 +236,7 @@ namespace Milkweed {
 	public:
 		/*
 		* Construct a new NetConnection with an ASIO context and a socket
-		* 
+		*
 		* @param context: The ASIO context for this connection to use
 		* @param socket: The socket for this connection to use to connect to
 		* the internet
@@ -246,7 +246,7 @@ namespace Milkweed {
 		/*
 		* Initialize this connection with a context and a place to send incoming
 		* messages (for NetClient's)
-		* 
+		*
 		* @param messagesIn: A pointer to a TSQueue of NetMessage's for this
 		* connection to push back incoming messages to
 		* @param maxMessageSize: The maximum message body size which can be
@@ -256,7 +256,7 @@ namespace Milkweed {
 			unsigned int maxMessageSize = 1024);
 		/*
 		* Attach this connection to a remote server (for NetClient's only)
-		* 
+		*
 		* @param endpoints: The results of an ASIO resolver used to generate
 		* the IP of the remote server
 		*/
@@ -264,7 +264,7 @@ namespace Milkweed {
 			const asio::ip::tcp::resolver::results_type& endpoints);
 		/*
 		* Attach this connection to a remote client (for NetServer's only)
-		* 
+		*
 		* @param ID: The unique ID number for this connection for identification
 		* by the server
 		*/
@@ -286,7 +286,7 @@ namespace Milkweed {
 		}
 		/*
 		* Send a message over this connection to the remote machine
-		* 
+		*
 		* @param message: The message to send over this connection
 		*/
 		void send(const NetMessage& message);
@@ -349,7 +349,7 @@ namespace Milkweed {
 
 		/*
 		* Initialize this client's network connection
-		* 
+		*
 		* @param maxMessageSize: The maximum size in bytes of any message to be
 		* received by a server to this client (1024 by default)
 		*/
@@ -357,7 +357,7 @@ namespace Milkweed {
 		/*
 		* Connect this network client to a remote server at the given address
 		* and port
-		* 
+		*
 		* @param address: The IP address of the server to connect to
 		* @param port: The port number to attempt to connect to the server on
 		*/
@@ -374,7 +374,7 @@ namespace Milkweed {
 		}
 		/*
 		* Send a message to the server this network client is connected to
-		* 
+		*
 		* @param message: The NetMessage to send to the server
 		*/
 		void send(const NetMessage& message);
@@ -421,14 +421,14 @@ namespace Milkweed {
 	public:
 		/*
 		* Construct a new network server to manage many connections
-		* 
+		*
 		* @param port: The port number to listen for new network connections on
 		*/
-		NetServer(unsigned short port) : m_acceptor(m_context,
+		NetServer(unsigned int port) : m_acceptor(m_context,
 			asio::ip::tcp::endpoint(asio::ip::tcp::v4(), port)), m_port(port) {}
 		/*
 		* Start listening for new clients connecting to this server
-		* 
+		*
 		* @param maxMessageSize: The maximum message body size which can be
 		* received by a client in bytes (1024 by default)
 		* @return Whether the server could be started
@@ -440,7 +440,7 @@ namespace Milkweed {
 		bool isActive() const { return m_acceptor.is_open(); }
 		/*
 		* Send a message to the given client over its connection
-		* 
+		*
 		* @param client: A pointer to the client to send the message to
 		* @param message: A reference to the message to send
 		* @return Whether the message could be sent
@@ -449,7 +449,7 @@ namespace Milkweed {
 			const NetMessage& message);
 		/*
 		* Send a message to all clients except, optionally, for one client
-		* 
+		*
 		* @param message: The message to broadcast
 		* @param ignoredClient: A pointer to a client to ignore when sending
 		* the message (nullptr by default)
@@ -459,7 +459,7 @@ namespace Milkweed {
 		/*
 		* Update this server and call onMessage for all new messages since the
 		* last update
-		* 
+		*
 		* @param maxMessages: The maximum number of messages which can be passed
 		* to the onMessage function this update (-1 for +inf)
 		*/
@@ -473,7 +473,7 @@ namespace Milkweed {
 		* free this NetServer's memory
 		*/
 		void destroy();
-		
+
 	protected:
 		// The queue of messages in from the clients connected to this server
 		TSQueue<NetMessage> m_messagesIn;
@@ -482,7 +482,7 @@ namespace Milkweed {
 
 		/*
 		* A client has made a connection to this server
-		* 
+		*
 		* @param client: A pointer to the new connection made by this client
 		* @return Whether to accept the connection to the server
 		*/
@@ -491,14 +491,14 @@ namespace Milkweed {
 		}
 		/*
 		* A client has sent a NetMessage to this server
-		* 
+		*
 		* @param message: The message the client send, containing a pointer to
 		* the NetConnection which owns it
 		*/
-		virtual void onMessage(const NetMessage& message) {}
+		virtual void onMessage(NetMessage& message) {}
 		/*
 		* A client has been disconnected from the server
-		* 
+		*
 		* @param client: A pointer to the client which is disconnecting
 		*/
 		virtual void onDisconnect(std::shared_ptr<NetConnection> client) {}

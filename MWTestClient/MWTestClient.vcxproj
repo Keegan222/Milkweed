@@ -21,10 +21,9 @@
   <PropertyGroup Label="Globals">
     <VCProjectVersion>16.0</VCProjectVersion>
     <Keyword>Win32Proj</Keyword>
-    <ProjectGuid>{13e6f757-3462-4463-9a9a-45b20c91b391}</ProjectGuid>
-    <RootNamespace>MWTest</RootNamespace>
+    <ProjectGuid>{edf0855f-d4dd-4f5c-96c6-48460997bc7c}</ProjectGuid>
+    <RootNamespace>MWTestClient</RootNamespace>
     <WindowsTargetPlatformVersion>10.0</WindowsTargetPlatformVersion>
-    <ProjectName>MWTest</ProjectName>
   </PropertyGroup>
   <Import Project="$(VCTargetsPath)\Microsoft.Cpp.Default.props" />
   <PropertyGroup Condition="'$(Configuration)|$(Platform)'=='Debug|Win32'" Label="Configuration">
@@ -73,12 +72,12 @@
   <PropertyGroup Label="UserMacros" />
   <PropertyGroup Condition="'$(Configuration)|$(Platform)'=='Debug|Win32'">
     <LinkIncremental>true</LinkIncremental>
-    <IncludePath>$(SolutionDir);$(SolutionDir)Deps/include/;$(IncludePath)</IncludePath>
+    <IncludePath>$(SolutionDir)Deps/include/;$(SolutionDir);$(IncludePath)</IncludePath>
     <LibraryPath>$(SolutionDir)Deps/lib/;$(SolutionDir)Debug/;$(LibraryPath)</LibraryPath>
   </PropertyGroup>
   <PropertyGroup Condition="'$(Configuration)|$(Platform)'=='Release|Win32'">
     <LinkIncremental>false</LinkIncremental>
-    <IncludePath>$(SolutionDir);$(SolutionDir)Deps/include/;$(IncludePath)</IncludePath>
+    <IncludePath>$(SolutionDir)Deps/include/;$(SolutionDir);$(IncludePath)</IncludePath>
     <LibraryPath>$(SolutionDir)Deps/lib/;$(SolutionDir)Release/;$(LibraryPath)</LibraryPath>
   </PropertyGroup>
   <PropertyGroup Condition="'$(Configuration)|$(Platform)'=='Debug|x64'">
@@ -127,7 +126,6 @@
       <SDLCheck>true</SDLCheck>
       <PreprocessorDefinitions>_DEBUG;_CONSOLE;%(PreprocessorDefinitions)</PreprocessorDefinitions>
       <ConformanceMode>true</ConformanceMode>
-      <LanguageStandard>Default</LanguageStandard>
     </ClCompile>
     <Link>
       <SubSystem>Console</SubSystem>
@@ -142,7 +140,6 @@
       <SDLCheck>true</SDLCheck>
       <PreprocessorDefinitions>NDEBUG;_CONSOLE;%(PreprocessorDefinitions)</PreprocessorDefinitions>
       <ConformanceMode>true</ConformanceMode>
-      <LanguageStandard>Default</LanguageStandard>
     </ClCompile>
     <Link>
       <SubSystem>Console</SubSystem>
@@ -152,29 +149,10 @@
     </Link>
   </ItemDefinitionGroup>
   <ItemGroup>
-    <ClInclude Include="MWTest.h" />
+    <ClInclude Include="TestClient.h" />
   </ItemGroup>
   <ItemGroup>
-    <ClCompile Include="MWTest.cpp" />
-  </ItemGroup>
-  <ItemGroup>
-    <Media Include="Assets\audio\music.wav" />
-    <Media Include="Assets\audio\sound.wav" />
-  </ItemGroup>
-  <ItemGroup>
-    <None Include="Assets\shader\sprite_fragment_shader.glsl" />
-    <None Include="Assets\shader\sprite_vertex_shader.glsl" />
-    <None Include="Assets\shader\text_fragment_shader.glsl" />
-    <None Include="Assets\shader\text_vertex_shader.glsl" />
-  </ItemGroup>
-  <ItemGroup>
-    <Font Include="Assets\font\arial.ttf" />
-  </ItemGroup>
-  <ItemGroup>
-    <Image Include="Assets\texture\button.png" />
-    <Image Include="Assets\texture\cursor.png" />
-    <Image Include="Assets\texture\image.png" />
-    <Image Include="Assets\texture\text_box.png" />
+    <ClCompile Include="TestClient.cpp" />
   </ItemGroup>
   <Import Project="$(VCTargetsPath)\Microsoft.Cpp.targets" />
   <ImportGroup Label="ExtensionTargets">

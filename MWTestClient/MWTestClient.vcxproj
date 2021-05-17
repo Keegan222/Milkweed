@@ -154,6 +154,16 @@
   <ItemGroup>
     <ClCompile Include="TestClient.cpp" />
   </ItemGroup>
+  <ItemGroup>
+    <None Include="Assets\shader\sprite_fragment_shader.glsl" />
+    <None Include="Assets\shader\sprite_vertex_shader.glsl" />
+    <None Include="Assets\shader\text_fragment_shader.glsl" />
+    <None Include="Assets\shader\text_vertex_shader.glsl" />
+  </ItemGroup>
+  <ItemGroup>
+    <Image Include="..\Debug\Assets\texture\other.png" />
+    <Image Include="..\Debug\Assets\texture\self.png" />
+  </ItemGroup>
   <Import Project="$(VCTargetsPath)\Microsoft.Cpp.targets" />
   <ImportGroup Label="ExtensionTargets">
   </ImportGroup>

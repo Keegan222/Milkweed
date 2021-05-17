@@ -9,9 +9,15 @@
       <UniqueIdentifier>{93995380-89BD-4b04-88EB-625FBE52EBFB}</UniqueIdentifier>
       <Extensions>h;hh;hpp;hxx;h++;hm;inl;inc;ipp;xsd</Extensions>
     </Filter>
-    <Filter Include="Resource Files">
+    <Filter Include="Assets">
       <UniqueIdentifier>{67DA6AB6-F800-4c08-8B7A-83BB121AAD01}</UniqueIdentifier>
       <Extensions>rc;ico;cur;bmp;dlg;rc2;rct;bin;rgs;gif;jpg;jpeg;jpe;resx;tiff;tif;png;wav;mfcribbon-ms</Extensions>
+    </Filter>
+    <Filter Include="Assets\shader">
+      <UniqueIdentifier>{30646329-94e8-43dc-996f-eedc9b87b697}</UniqueIdentifier>
+    </Filter>
+    <Filter Include="Assets\texture">
+      <UniqueIdentifier>{aeb070d5-21af-4f2a-8a5a-ffab927ba32b}</UniqueIdentifier>
     </Filter>
   </ItemGroup>
   <ItemGroup>
@@ -23,5 +29,27 @@
     <ClCompile Include="TestClient.cpp">
       <Filter>Source Files</Filter>
     </ClCompile>
+  </ItemGroup>
+  <ItemGroup>
+    <None Include="Assets\shader\sprite_fragment_shader.glsl">
+      <Filter>Assets\shader</Filter>
+    </None>
+    <None Include="Assets\shader\sprite_vertex_shader.glsl">
+      <Filter>Assets\shader</Filter>
+    </None>
+    <None Include="Assets\shader\text_fragment_shader.glsl">
+      <Filter>Assets\shader</Filter>
+    </None>
+    <None Include="Assets\shader\text_vertex_shader.glsl">
+      <Filter>Assets\shader</Filter>
+    </None>
+  </ItemGroup>
+  <ItemGroup>
+    <Image Include="..\Debug\Assets\texture\other.png">
+      <Filter>Assets\texture</Filter>
+    </Image>
+    <Image Include="..\Debug\Assets\texture\self.png">
+      <Filter>Assets\texture</Filter>
+    </Image>
   </ItemGroup>
 </Project>

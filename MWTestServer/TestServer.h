@@ -12,6 +12,16 @@
 using namespace Milkweed;
 
 /*
+* Enumeration of the types of message for the Test Server/Client system
+*/
+enum MessageTypes : unsigned int {
+	ID_ASSIGNMENT = 0,
+	CONNECTION = 1,
+	MOVEMENT = 2,
+	DISCONNECTION = 3,
+};
+
+/*
 * The main class of the Milkweed framework's network testing server.
 */
 class TestServer : public NetServer {

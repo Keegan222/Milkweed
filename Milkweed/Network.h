@@ -65,7 +65,8 @@ namespace Milkweed {
 		* Override for the bitshift left operator to print header information
 		* to an output stream
 		*/
-		friend std::ostream& operator<<(std::ostream& os, NetMessage& message) {
+		friend std::ostream& operator<<(std::ostream& os,
+			const NetMessage& message) {
 			os << "NetMessage with ID: " << message.header.ID << " and size: "
 				<< message.header.size << " bytes";
 			return os;

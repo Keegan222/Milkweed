@@ -30,11 +30,30 @@ void TestScene::init() {
 		0.25f, glm::vec3(1.0f, 0.0f, 0.0f), Justification::CENTER,
 		Justification::CENTER, MW::RESOURCES.getTexture("Assets/texture/button.png"));
 	m_UIGroup.addComponent(&m_button);
-	m_textBox.init("", glm::vec3(400.0f, 0.0f, 0.0f), glm::vec2(300.0f, 40.0f),
-		0.3f, glm::vec3(1.0f, 1.0f, 1.0f), Justification::LEFT, Justification::CENTER,
+	m_switch.init("Switch", "On/off", glm::vec3(400.0f, 100.0f, 0.0f),
+		glm::vec2(300.0f, 40.0f), 0.3f, glm::vec3(1.0f, 1.0f, 0.0f),
+		Justification::LEFT, Justification::CENTER,
+		MW::RESOURCES.getTexture("Assets/texture/switch.png"));
+	m_UIGroup.addComponent(&m_switch);
+	m_textBox.init("This is a text box", "Boxtest", glm::vec3(400.0f, 0.0f, 0.0f),
+		glm::vec2(300.0f, 40.0f), 0.3f, glm::vec3(1.0f, 1.0f, 1.0f),
+		Justification::LEFT, Justification::CENTER,
 		MW::RESOURCES.getTexture("Assets/texture/text_box.png"),
 		MW::RESOURCES.getTexture("Assets/texture/cursor.png"), 100);
 	m_UIGroup.addComponent(&m_textBox);
+	m_slider.init("Slider", glm::vec3(400.0f, 300.0f, 0.0f),
+		glm::vec2(200.0f, 40.0f), 0.3f, glm::vec3(1.0f, 1.0f, 1.0f),
+		Justification::LEFT, Justification::CENTER,
+		MW::RESOURCES.getTexture("Assets/texture/slider.png"),
+		MW::RESOURCES.getTexture("Assets/texture/cursor.png"), 1, 4);
+	m_UIGroup.addComponent(&m_slider);
+	m_cycle.init({ "Option 1", "Option 2", "Option 3" },
+		glm::vec3(400.0f, 370.0f, 0.0f), glm::vec2(200.0f, 40.0f), 20.0f,
+		0.3f, glm::vec3(1.0f, 1.0f, 1.0f), Justification::CENTER,
+		Justification::CENTER, MW::RESOURCES.getTexture(
+			"Assets/texture/cycle.png"),
+		MW::RESOURCES.getTexture("Assets/texture/cycle_arrow.png"));
+	m_UIGroup.addComponent(&m_cycle);
 
 	m_ASprite.init(glm::vec3(100.0f, 100.0f, 0.0f), glm::vec2(100.0f, 100.0f),
 		MW::RESOURCES.getTexture("Assets/texture/image.png"),
@@ -54,7 +73,21 @@ void TestScene::draw() {
 }
 
 void TestScene::processInput() {
+	if (MW::INPUT.isKeyPressed(F_11)) {
+		MW::WINDOW.setFullScreen(!MW::WINDOW.isFullScreen());
+	}
+	if (MW::INPUT.isButtonPressed(B_LEFT)) {
+		m_textBox.setPosition(glm::vec3(400.0f, 200.0f, 0.0f));
+	}
 	m_UIGroup.processInput();
+}
+
+void TestScene::updateWindowSize() {
+	m_camera.destroy();
+	m_camera.init();
+	m_camera.position = glm::vec3(
+		MW::WINDOW.getDimensions().x / 2,
+		MW::WINDOW.getDimensions().y / 2, 0.0f);
 }
 
 void TestScene::textTyped(char text) {
@@ -76,6 +109,22 @@ void TestScene::componentEvent(unsigned int groupID, unsigned int componentID,
 				else {
 					MWLOG(Warning, MWTest, "Asset cunt.wav not found");
 				}
+			}
+		}
+		else if (componentID == m_switch.getID()) {
+			if (eventID == UI::Switch::ON_EVENT) {
+				MWLOG(Info, MWTest, "On event");
+			}
+			else if (eventID == UI::Switch::OFF_EVENT) {
+				MWLOG(Info, MWTest, "Off event");
+			}
+		}
+		else if (componentID == m_slider.getID()) {
+			if (eventID == UI::Slider::SELECTED_EVENT) {
+				MWLOG(Info, MWTest, "Slider selected");
+			}
+			else if (eventID == UI::Slider::VALUE_UPDATE_EVENT) {
+				MWLOG(Info, MWTest, "Slider value set");
 			}
 		}
 	}

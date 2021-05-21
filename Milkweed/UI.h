@@ -28,7 +28,7 @@ namespace Milkweed {
 			/*
 			* Test whether this component is enabled
 			*/
-			bool isEnabled() const { return m_enabled; }
+			virtual bool isEnabled() const { return m_enabled; }
 			/*
 			* Set whether this component is enabled
 			*/
@@ -36,7 +36,7 @@ namespace Milkweed {
 			/*
 			* Get the ID number of this component
 			*/
-			unsigned int getID() const { return m_ID; }
+			virtual unsigned int getID() const { return m_ID; }
 
 		protected:
 			// Allow groups to call the draw, processInput, update, and destroy
@@ -52,11 +52,16 @@ namespace Milkweed {
 			/*
 			* Test whether a 2D point falls in a rectangle
 			*
-			* @param rect: The rectangle's 2D position and dimensions (x, y, w, h)
+			* @param rect: The rectangle's 2D position and dimensions 
+			* (x, y, w, h)
 			* @param p: The point to test
 			* @return Whether the point p falls inside the given rectangle
 			*/
 			static bool rectContains(const glm::vec4& rect, const glm::vec2& p);
+			/*
+			* Callback function for registering component with UIGroup
+			*/
+			virtual void add() = 0;
 			/*
 			* Draw this component's graphics in the screen
 			*/
@@ -65,6 +70,10 @@ namespace Milkweed {
 			* Process input to this component
 			*/
 			virtual void processInput() = 0;
+			/*
+			* Scale the position and dimensions of this component
+			*/
+			virtual void updateWindowSize(const glm::vec2& resizeScale) = 0;
 			/*
 			* Update physics in this component
 			*/
@@ -105,6 +114,11 @@ namespace Milkweed {
 			* Process input to all components in this group which are enabled
 			*/
 			void processInput();
+			/*
+			* Update the positions and sizes of the components in this group
+			* when the window changes size
+			*/
+			void updateWindowSize();
 			/*
 			* Update physics in all components in this group
 			*/
@@ -203,7 +217,20 @@ namespace Milkweed {
 			std::vector<UIComponent*> m_components;
 			// The working component ID for adding new components to this group
 			unsigned int m_CID = 0;
+			// The last saved dimensions of the window for dynamic resizing
+			// of components
+			glm::vec2 m_previousWindowDims = glm::vec2();
 		};
+
+		/*
+		* Forward declare all the types of UIComponent so they can be friends
+		* to the TextLabel class.
+		*/
+		class Button;
+		class TextBox;
+		class Switch;
+		class Slider;
+		class Cycle;
 
 		/*
 		* A text label for drawing text onto the screen
@@ -224,38 +251,23 @@ namespace Milkweed {
 			* @param vJustification: The justification to draw this label's text with
 			* on the y-axis
 			*/
-			virtual void init(const std::string& text, const glm::vec3& position,
-				const glm::vec2& dimensions, const glm::vec3& textPosition,
-				float textScale, const glm::vec3& textColor,
-				Justification hJustification, Justification vJustification);
-			/*
-			* Draw this label's text to the screen
-			*/
-			virtual void draw() override;
-			/*
-			* Process input to this label (does nothing)
-			*/
-			virtual void processInput() override {}
-			/*
-			* Update physics in this label (does nothing by default)
-			*/
-			virtual void update(float deltaTime) override {}
-			/*
-			* Free this label's memory
-			*/
-			virtual void destroy() override;
+			virtual void init(const std::string& text,
+				const glm::vec3& position, const glm::vec2& dimensions,
+				const glm::vec3& textPosition, float textScale,
+				const glm::vec3& textColor, Justification hJustification,
+				Justification vJustification);
 			/*
 			* Get the text this label displays
 			*/
-			const std::string& getText() const { return m_text; }
+			virtual const std::string& getText() const { return m_text; }
 			/*
 			* Set the text this label displays
 			*/
-			void setText(const std::string& text) { m_text = text; }
+			virtual void setText(const std::string& text) { m_text = text; }
 			/*
 			* Get the position of this label on the screen
 			*/
-			const glm::vec3& getPosition() const { return m_position; }
+			virtual const glm::vec3& getPosition() const { return m_position; }
 			/*
 			* Set the position of this label on the screen
 			*/
@@ -263,13 +275,15 @@ namespace Milkweed {
 				m_position = position;
 			}
 			/*
-			* Get the dimensions of the rectangle this label's text appears in on
-			* the screen
+			* Get the dimensions of the rectangle this label's text appears
+			* in on the screen
 			*/
-			const glm::vec2& getDimensions() const { return m_dimensions; }
+			virtual const glm::vec2& getDimensions() const {
+				return m_dimensions;
+			}
 			/*
-			* Set the dimensions of the rectangle this label's text appears in on
-			* the screen
+			* Set the dimensions of the rectangle this label's text appears
+			* in on the screen
 			*/
 			virtual void setDimensions(const glm::vec2& dimensions) {
 				m_dimensions = dimensions;
@@ -277,51 +291,70 @@ namespace Milkweed {
 			/*
 			* Get the position to start this label's text at
 			*/
-			const glm::vec3& getTextPosition() const { return m_textPosition; }
+			virtual const glm::vec3& getTextPosition() const {
+				return m_textPosition;
+			}
 			/*
 			* Set the position to start this label's text at
 			*/
-			const glm::vec3& setTextPosition(const glm::vec3& textPosition) {
+			virtual void setTextPosition(const glm::vec3& textPosition) {
 				m_textPosition = textPosition;
 			}
 			/*
 			* Get the scale of the text in this label
 			*/
-			float getTextScale() const { return m_textScale; }
+			virtual float getTextScale() const { return m_textScale; }
 			/*
 			* Set the scale of the text in this label
 			*/
-			void setTextScale(float textScale) { m_textScale = textScale; }
+			virtual void setTextScale(float textScale) {
+				m_textScale = textScale;
+			}
 			/*
 			* Get the color of this label's text
 			*/
-			const glm::vec3& getTextColor() const { return m_textColor; }
+			virtual const glm::vec3& getTextColor() const {
+				return m_textColor;
+			}
 			/*
 			* Set the color of this label's text
 			*/
-			void setTextColor(const glm::vec3& textColor) { m_textColor = textColor; }
+			virtual void setTextColor(const glm::vec3& textColor) {
+				m_textColor = textColor;
+			}
 			/*
 			* Get the justification of this label's text on the x-axis
 			*/
-			Justification getHJustification() const { return m_hJustification; }
+			virtual Justification getHJustification() const {
+				return m_hJustification;
+			}
 			/*
 			* Set the justification of this label's text
 			*/
-			void setHJustification(Justification hJustification) {
+			virtual void setHJustification(Justification hJustification) {
 				m_hJustification = hJustification;
 			}
 			/*
 			* Get the justification of this label's text on the y-axis
 			*/
-			Justification getVJustification() const { return m_vJustification; }
+			virtual Justification getVJustification() const {
+				return m_vJustification;
+			}
 			/*
 			* Set the justification of this label's text on the y-axis
 			*/
-			void setVJustification(Justification vJustification) {
+			virtual void setVJustification(Justification vJustification) {
 				m_vJustification = vJustification;
 			}
 
 		protected:
+			// Allow the other UI component classes to access the TextLabel
+			// functions and members.
+			friend Button;
+			friend TextBox;
+			friend Switch;
+			friend Slider;
+			friend Cycle;
 			// The text for this label to display
 			std::string m_text = "";
 			// The position of this text label
@@ -338,6 +371,33 @@ namespace Milkweed {
 			Justification m_hJustification = Justification::LEFT;
 			// The justification to draw this label's text with on the y-axis
 			Justification m_vJustification = Justification::BOTTOM;
+
+			/*
+			* Add this text label to a UIGroup
+			*/
+			virtual void add() override {}
+			/*
+			* Draw this label's text to the screen
+			*/
+			virtual void draw() override;
+			/*
+			* Process input to this label (does nothing)
+			*/
+			virtual void processInput() override {}
+			/*
+			* Update the position and size of this label when the window size
+			* changes
+			*/
+			virtual void updateWindowSize(
+				const glm::vec2& resizeScale) override;
+			/*
+			* Update physics in this label (does nothing by default)
+			*/
+			virtual void update(float deltaTime) override {}
+			/*
+			* Free this label's memory
+			*/
+			virtual void destroy() override;
 		};
 
 		/*
@@ -346,11 +406,11 @@ namespace Milkweed {
 		class Button : public TextLabel {
 		public:
 			// The event ID number for a UIButton being unselected
-			static unsigned int UNSELECTED_EVENT;
+			const static unsigned int UNSELECTED_EVENT = 0;
 			// The event ID number for a UIButton being selected
-			static unsigned int SELECTED_EVENT;
+			const static unsigned int SELECTED_EVENT = 1;
 			// The event ID number for a click on a UIButton
-			static unsigned int CLICKED_EVENT;
+			const static unsigned int CLICKED_EVENT = 2;
 
 			/*
 			* Initialize this text label with some text to draw and data for it
@@ -373,18 +433,6 @@ namespace Milkweed {
 				const glm::vec3& textColor, Justification textHJustification,
 				Justification textVJustification, Texture* texture);
 			/*
-			* Draw this button
-			*/
-			void draw() override;
-			/*
-			* Process input to this button
-			*/
-			virtual void processInput() override;
-			/*
-			* Free this button's memory
-			*/
-			void destroy() override;
-			/*
 			* Set the position of this button
 			*/
 			void setPosition(const glm::vec3& position) override;
@@ -398,18 +446,34 @@ namespace Milkweed {
 			bool isSelected() const { return m_selected; }
 
 		protected:
-			// Whether the mouse cursor is over this button
-			bool m_selected = false;
-			// The sprite containing this button's textures
-			Sprite m_sprite;
-
-		private:
 			// The texture coordinates of this button's unselected texture
 			static glm::vec4 UNSELECTED_COORDS;
 			// The texture coordinates of this button's selected texture
 			static glm::vec4 SELECTED_COORDS;
 			// The texture coordinates of this button's clicked texture
 			static glm::vec4 CLICKED_COORDS;
+			// Whether the mouse cursor is over this button
+			bool m_selected = false;
+			// The sprite containing this button's textures
+			Sprite m_sprite;
+
+			/*
+			* Draw this button
+			*/
+			void draw() override;
+			/*
+			* Process input to this button
+			*/
+			void processInput() override;
+			/*
+			* Update the position and size of this button when the size of the
+			* window changes
+			*/
+			void updateWindowSize(const glm::vec2& resizeScale) override;
+			/*
+			* Free this button's memory
+			*/
+			void destroy() override;
 		};
 
 		/*
@@ -418,15 +482,16 @@ namespace Milkweed {
 		class TextBox : public TextLabel, InputListener {
 		public:
 			// The event ID number for a return key press on a text box
-			static unsigned int RETURN_EVENT;
+			const static unsigned int RETURN_EVENT = 0;
 			// The event ID number for a text box being selected
-			static unsigned int SELECTED_EVENT;
+			const static unsigned int SELECTED_EVENT = 1;
 			// The event ID number for a text box being unselected
-			static unsigned int UNSELECTED_EVENT;
+			const static unsigned int UNSELECTED_EVENT = 2;
 
 			/*
 			* Initialize this text label with some text to draw and data for it
 			*
+			* @param labelText: The label to appear above this text box
 			* @param text: The string of text this text box will draw
 			* @param position: The position of this text box
 			* @param dimensions: The width and height of the rectangle to render
@@ -443,27 +508,12 @@ namespace Milkweed {
 			* @param maxCharacters: The maximum number of characters which this
 			* text box can hold (0 or less for infinite)
 			*/
-			void init(const std::string& text, const glm::vec3& position,
+			void init(const std::string& labelText,
+				const std::string& text, const glm::vec3& position,
 				const glm::vec2& dimensions, float textScale,
 				const glm::vec3& textColor, Justification textHJustification,
 				Justification textVJustification, Texture* texture,
 				Texture* cursorTexture, int maxCharacters);
-			/*
-			* Draw this text box
-			*/
-			void draw() override;
-			/*
-			* Process input to this text box
-			*/
-			virtual void processInput() override;
-			/*
-			* Update this text box's timer for backspaces and cursor movement
-			*/
-			virtual void update(float deltaTime) override;
-			/*
-			* Free this text box's memory
-			*/
-			void destroy() override;
 			/*
 			* Set the position of this text box
 			*/
@@ -482,6 +532,12 @@ namespace Milkweed {
 			void textTyped(char text) override;
 
 		protected:
+			// The texture coordinates for this text box's unselected texture
+			static glm::vec4 UNSELECTED_COORDS;
+			// The texture coordinates for this text box's selected texture
+			static glm::vec4 SELECTED_COORDS;
+			// The text label to appear above this text box
+			TextLabel m_label;
 			// The sprite used to render this text box's texture
 			Sprite m_sprite;
 			// The sprite used to render this text box's cursor
@@ -496,16 +552,318 @@ namespace Milkweed {
 			float m_timer = 0.0f;
 
 			/*
+			* Add this text box to a UIGroup
+			*/
+			void add() override;
+			/*
+			* Draw this text box
+			*/
+			void draw() override;
+			/*
+			* Process input to this text box
+			*/
+			void processInput() override;
+			/*
+			* Update the position and size of this text box when the size of the
+			* window changes
+			*/
+			void updateWindowSize(const glm::vec2& resizeScale) override;
+			/*
+			* Update this text box's timer for backspaces and cursor movement
+			*/
+			void update(float deltaTime) override;
+			/*
+			* Free this text box's memory
+			*/
+			void destroy() override;
+
+		private:
+			/*
 			* Updates the position of the cursor when the position of this text
 			* box has been set
 			*/
 			void updateCursorPosition();
+		};
+	
+		/*
+		* A switch which can be toggled between two states
+		*/
+		class Switch : public TextLabel {
+		public:
+			// The event ID for toggling this switch on
+			const static unsigned int ON_EVENT = 0;
+			// The event ID for toggling this switch off
+			const static unsigned int OFF_EVENT = 1;
+
+			/*
+			* Initialize this switch.
+			* 
+			* @param labelText: The text to appear in the label above this
+			* switch.
+			* @param text: The text to appear on this switch.
+			* @param position: The position of this switch on the screen.
+			* @param dimensions: The dimensions of this switch on the screen.
+			* @param textScale: The factor to scale the text appearing in this
+			* switch by.
+			* @param textColor: The RGB color to display this switch's text in.
+			* @param textHJustification: The horizontal justification of the
+			* text in this switch.
+			* @param textVJustification: The vertical justification of the text
+			* in this switch.
+			* @param texture: The off and on textures of this switch.
+			*/
+			void init(const std::string& labelText, const std::string& text,
+				const glm::vec3& position, const glm::vec2& dimensions,
+				float textScale, const glm::vec3& textColor,
+				Justification textHJustification,
+				Justification textVJustification, Texture* texture);
+			/*
+			* Set the position of this switch on the screen.
+			*/
+			void setPosition(const glm::vec3& position) override;
+			/*
+			* Set the dimensions of this switch on the screen.
+			*/
+			void setDimensions(const glm::vec2& dimensions) override;
+			/*
+			* Test whether this switch is in its on state
+			*/
+			bool isOn() const { return m_on; }
+
+		protected:
+			// The texture coordinates of this switch's on texture
+			static glm::vec4 ON_COORDS;
+			// The texture coordinates of this switch's off texture
+			static glm::vec4 OFF_COORDS;
+			// Whether this switch is in its on state
+			bool m_on = false;
+			// The text label to appear above this switch
+			TextLabel m_label;
+			// The background sprite of this switch
+			Sprite m_sprite;
+
+			/*
+			* Add this switch to a UI group.
+			*/
+			void add() override;
+			/*
+			* Draw this switch on the screen.
+			*/
+			void draw() override;
+			/*
+			* Process input to this switch
+			*/
+			void processInput() override;
+			/*
+			* Update the position and size of this switch
+			*/
+			void updateWindowSize(const glm::vec2& resizeScale) override;
+			/*
+			* Free this switch's memory
+			*/
+			void destroy() override;
+		};
+
+		/*
+		* A slider component which can be dragged to different values with the
+		* mouse.
+		*/
+		class Slider : public TextLabel {
+		public:
+			// The event ID for this slider being selected
+			const static unsigned int SELECTED_EVENT = 0;
+			// The event ID for this slider's value being set
+			const static unsigned int VALUE_UPDATE_EVENT = 1;
+
+			/*
+			* Initialize this slider's memory.
+			* 
+			* @param labelText: The text to appear in the label above this
+			* slider.
+			* @param position: The position of this slider on the screen.
+			* @param dimensions: The dimensions of this slider on the screen.
+			* @param textScale: The factor to scale the text in this slider by.
+			* @param textColor: The color to display this slider's text in.
+			* @param textHJustification: The horizontal justification of the
+			* text in this slider.
+			* @param textVJustification: The vertical justification of the
+			* text in this slider.
+			* @param texture: The unselected and selected textures of this
+			* slider.
+			* @param cursorTexture: The texture of this slider's cursor.
+			* @param min: The minimum value of this slider.
+			* @param max: The maximum value of this slider.
+			*/
+			void init(const std::string& labelText, const glm::vec3& position,
+				const glm::vec2& dimensions, float textScale,
+				const glm::vec3& textColor, Justification textHJustification,
+				Justification textVJustification, Texture* texture,
+				Texture* cursorTexture, int min, int max);
+			/*
+			* Set the position of this slider on the screen.
+			*/
+			void setPosition(const glm::vec3& position) override;
+			/*
+			* Set the dimensions of this slider on the screen.
+			*/
+			void setDimensions(const glm::vec2& dimensions) override;
+			/*
+			* Get the current value of this slider.
+			*/
+			int getValue() const { return m_value; }
+			/*
+			* Set the value of this slider.
+			*/
+			void setValue(int value);
+
+		protected:
+			// The unselected texture coords of this slider.
+			static glm::vec4 UNSELECTED_COORDS;
+			// The selected texture coords of this slider.
+			static glm::vec4 SELECTED_COORDS;
+			// The text to appear in the label above this slider.
+			std::string m_labelText = "";
+			// The background sprite of this slider.
+			Sprite m_sprite;
+			// The cursor sprite of this slider.
+			Sprite m_cursor;
+			// Whether this slider is selected.
+			bool m_selected = false;
+			// The minimum value of this slider.
+			int m_min = 0;
+			// The current value of this slider.
+			int m_value = 0;
+			// The maxmimum value of this slider.
+			int m_max = 0;
+
+			/*
+			* Draw this slider on the screen.
+			*/
+			void draw() override;
+			/*
+			* Process input to this slider.
+			*/
+			void processInput() override;
+			/*
+			* Update this slider's position and dimensions when the size
+			* of the window changes.
+			*/
+			void updateWindowSize(const glm::vec2& resizeScale) override;
+			/*
+			* Free this slider's memory.
+			*/
+			void destroy() override;
 
 		private:
-			// The texture coordinates for this text box's unselected texture
-			static glm::vec4 UNSELECTED_COORDS;
-			// The texture coordinates for this text box's selected texture
-			static glm::vec4 SELECTED_COORDS;
+			/*
+			* Update the position of this slider's cursor sprite based on its
+			* current value.
+			*/
+			void updateCursorPosition();
+		};
+
+		/*
+		* A text label which can be cycled between a set of values.
+		*/
+		class Cycle : public TextLabel {
+		public:
+			// The event ID for the selection of this cycle being updated
+			const static unsigned int VALUE_UPDATE_EVENT = 0;
+
+			/*
+			* Initialize this cycle UI component
+			* 
+			* @param options: The options to cycle through.
+			* @param position: The position of this cycle on the screen.
+			* @param dimensions: The dimensions of this cycle on the screen.
+			* @param arrowWidth: The width of the left and right arrows of
+			* this cycle on the screen.
+			* @param textScale: The factor to scale the text size by in this
+			* cycle.
+			* @param textColor: The RGB color to render this cycle's text in.
+			* @param textHJustification: The horizontal justification of the
+			* text in this cycle.
+			* @param textVJustification: The vertical justification of the text
+			* in this cycle.
+			* @param texture: The texture of the background of this cycle.
+			* @param arrowTexture: The unselected, selected, and clicked left
+			* facing arrow textures of this cycle.
+			*/
+			void init(const std::vector<std::string>& options,
+				const glm::vec3& position, const glm::vec2& dimensions,
+				float arrowWidth, float textScale, const glm::vec3& textColor,
+				Justification textHJustification,
+				Justification textVJustification, Texture* texture,
+				Texture* arrowTexture);
+			/*
+			* Set the position of this cycle on the screen.
+			*/
+			void setPosition(const glm::vec3& position) override;
+			/*
+			* Set the dimensions of this cycle on the screen.
+			*/
+			void setDimensions(const glm::vec2& dimensions) override;
+			/*
+			* Get the selected index of this cycle.
+			*/
+			unsigned int getSelection() const { return m_selection; }
+			/*
+			* Set the selected index of this cycle.
+			*/
+			void setSelection(unsigned int selection);
+			/*
+			* Set the width of the arrows on either side of this cycle, should
+			* be followed by calling setDimensions() to take effect
+			*/
+			void setArrowWidth(float arrowWidth) { m_arrowWidth = arrowWidth; }
+
+		protected:
+			// The texture coordinates of the unselected left arrow
+			static glm::vec4 UNSELECTED_LEFT_COORDS;
+			// The texture coordinates of the selected left arrow
+			static glm::vec4 SELECTED_LEFT_COORDS;
+			// The texture coordinates of the clicked left arrow
+			static glm::vec4 CLICKED_LEFT_COORDS;
+			// The texture coordinates of the unselected right arrow
+			static glm::vec4 UNSELECTED_RIGHT_COORDS;
+			// The texture coordinates of the selected right arrow
+			static glm::vec4 SELECTED_RIGHT_COORDS;
+			// The texture coordinates of the clicked right arrow
+			static glm::vec4 CLICKED_RIGHT_COORDS;
+			// The background sprite of this cycle
+			Sprite m_sprite;
+			// The width in pixels of the left and right arrows
+			float m_arrowWidth = 0.0f;
+			// Whether this cycle's left arrow is selected
+			bool m_leftArrowSelected = false;
+			// Whether this cycle's right arrow is selected
+			bool m_rightArrowSelected = false;
+			// The left arrow sprite of this cycle
+			Sprite m_leftArrow;
+			// The right arrow sprite of this cycle
+			Sprite m_rightArrow;
+			// The current index of this cycle in its options
+			unsigned int m_selection = 0;
+			// The options this cycle goes through
+			std::vector<std::string> m_options;
+
+			/*
+			* Draw this cycle on the screen
+			*/
+			void draw() override;
+			/*
+			* Process input to this cycle.
+			*/
+			void processInput() override;
+			/*
+			* Update the position and size of this cycle when the size of the
+			* window changes.
+			*/
+			void updateWindowSize(const glm::vec2& resizeScale) override;
+			/*
+			* Free this cycle's memory.
+			*/
+			void destroy() override;
 		};
 	}
 }

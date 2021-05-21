@@ -1,15 +1,15 @@
 /*
-* File:		TestClient.cpp
+* File:		GameScene.cpp
 * Author:	Keegan MacDonald (keeganm742@gmail.com)
 * Created:	2021.05.16
 */
 
-#include "TestClient.h"
+#include "GameScene.h"
 
 using namespace Milkweed;
 
-void TestClient::init() {
-	MWLOG(Info, TestClient, "Initialized scene");
+void GameScene::init() {
+	MWLOG(Info, GameScene, "Initialized scene");
 
 	// Initialize the camera used to display sprites
 	m_spriteCamera.init();
@@ -21,28 +21,14 @@ void TestClient::init() {
 		"cameraMatrix", &m_spriteCamera);
 }
 
-void TestClient::enter() {
-	MWLOG(Info, TestClient, "entered scene");
-	std::string address = "127.0.0.1";
-	unsigned int port = 2773;
-	double timeout = 10.0;
-
-	MW::NETWORK.connect(address, port);
-	double startTime = glfwGetTime();
-	while (glfwGetTime() - startTime < timeout && !m_connected) {
-		m_connected = MW::NETWORK.isConnected();
-	}
-
-	if (m_connected) {
-		MWLOG(Info, TestClient, "Connected");
-	}
-	else {
-		MWLOG(Error, TestClient, "Failed to connect");
-	}
+void GameScene::enter() {
+	MWLOG(Info, GameScene, "entered scene");
+	// Attempt to connect to the server
+	MW::NETWORK.connect(m_address, m_port);
 }
 
-void TestClient::draw() {
-	if (!m_authorized) {
+void GameScene::draw() {
+	if (!(m_connected && m_authorized)) {
 		return;
 	}
 
@@ -58,7 +44,7 @@ void TestClient::draw() {
 
 #define PLAYER_SPEED 3.0f
 
-void TestClient::processInput() {
+void GameScene::processInput() {
 	// Process network input here
 	unsigned int messageCount = 0;
 	while (messageCount < 10 && !MW::NETWORK.getMessagesIn().empty()) {
@@ -69,7 +55,6 @@ void TestClient::processInput() {
 	}
 
 	// Check the connection and authorization before proceeding
-	m_connected = MW::NETWORK.isConnected();
 	if (!(m_connected && m_authorized)) {
 		return;
 	}
@@ -116,16 +101,37 @@ void TestClient::processInput() {
 	// Send a message if the velocity of the player changed
 	if (velocityChange) {
 		NetMessage message;
-		message.header.ID = MOVEMENT;
+		message.header.ID = PLAYER_MOVEMENT;
 		message << m_playerID << m_players[m_playerID].position
 			<< m_players[m_playerID].velocity;
 		MW::NETWORK.send(message);
 	}
 }
 
-void TestClient::processNetMessage(NetMessage& message) {
+void GameScene::processNetMessage(NetMessage& message) {
+	std::cout << "Received message " << message << std::endl;
 	switch (message.header.ID) {
-	case MessageTypes::ID_ASSIGNMENT: {
+	case NetMessageTypes::CONNECTED: {
+		MWLOG(Info, GameScene, "CONNECTED message received");
+		m_connected = true;
+		break;
+	}
+	case NetMessageTypes::DISCONNECTED: {
+		MWLOG(Info, GameScene, "DISCONNECTED message received");
+		m_connected = false;
+		m_authorized = false;
+		m_playerID = 0;
+		m_players.clear();
+		for (unsigned int i = 0; i < m_playerPointers.size(); i++) {
+			m_playerPointers[i] = nullptr;
+		}
+		m_playerPointers.clear();
+		// Repeated attempt to reconnect
+		// TODO: Remove this later
+		MW::NETWORK.disconnect();
+		break;
+	}
+	case MessageTypes::PLAYER_ID_ASSIGNMENT: {
 		// Read the message out
 		unsigned int playerID;
 		glm::vec3 spawnPosition;
@@ -144,7 +150,7 @@ void TestClient::processNetMessage(NetMessage& message) {
 		m_authorized = true;
 		break;
 	}
-	case MessageTypes::CONNECTION: {
+	case MessageTypes::PLAYER_CONNECTED: {
 		// Read the message out
 		unsigned int playerID;
 		glm::vec3 spawnPosition;
@@ -166,14 +172,14 @@ void TestClient::processNetMessage(NetMessage& message) {
 
 		// Send a connection message back to the new player
 		NetMessage message;
-		message.header.ID = MessageTypes::CONNECTION;
+		message.header.ID = MessageTypes::PLAYER_CONNECTED;
 		message << m_playerID << m_players[m_playerID].position
 			<< m_players[m_playerID].velocity;
 		MW::NETWORK.send(message);
 
 		break;
 	}
-	case MessageTypes::MOVEMENT: {
+	case MessageTypes::PLAYER_MOVEMENT: {
 		// Read out the message
 		unsigned int playerID;
 		glm::vec3 position;
@@ -191,7 +197,7 @@ void TestClient::processNetMessage(NetMessage& message) {
 
 		break;
 	}
-	case MessageTypes::DISCONNECTION: {
+	case MessageTypes::PLAYER_DISCONNECTED: {
 		// Read the message out
 		unsigned int playerID;
 		message >> playerID;
@@ -208,18 +214,18 @@ void TestClient::processNetMessage(NetMessage& message) {
 	}
 }
 
-void TestClient::componentEvent(unsigned int groupID, unsigned int componentID,
+void GameScene::componentEvent(unsigned int groupID, unsigned int componentID,
 	unsigned int eventID) {
 
 }
 
-void TestClient::updateWindowSize() {
+void GameScene::updateWindowSize() {
 	// Refresh the camera
 	m_spriteCamera.destroy();
 	m_spriteCamera.init();
 }
 
-void TestClient::update(float deltaTime) {
+void GameScene::update(float deltaTime) {
 	m_spriteCamera.position = m_players[m_playerID].position
 		- glm::vec3(m_players[m_playerID].dimensions.x / 2.0f,
 			m_players[m_playerID].dimensions.y / 2.0f, 0.0f);
@@ -230,18 +236,10 @@ void TestClient::update(float deltaTime) {
 	}
 }
 
-void TestClient::exit() {
-	MWLOG(Info, TestClient, "Exited scene");
+void GameScene::exit() {
+	MWLOG(Info, GameScene, "Exited scene");
 }
 
-void TestClient::destroy() {
-	MWLOG(Info, TestClient, "Destroyed scene");
-}
-
-int main(int argc, char** argv) {
-	TestClient testClient;
-	MW::Init("Test Client", glm::ivec2(800, 600), false, 60.0f, { &testClient },
-		&testClient);
-	testClient.destroy();
-	return 0;
+void GameScene::destroy() {
+	MWLOG(Info, GameScene, "Destroyed scene");
 }

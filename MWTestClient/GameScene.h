@@ -1,11 +1,11 @@
 /*
-* File:		TestClient.h
+* File:		GameScene.h
 * Author:	Keegan MacDonald (keeganm742@gmail.com)
 * Created:	2021.05.16
 */
 
-#ifndef TEST_CLIENT_H
-#define TEST_CLIENT_H
+#ifndef GAME_SCENE_H
+#define GAME_SCENE_H
 
 #include <Milkweed/MW.h>
 
@@ -15,16 +15,16 @@ using namespace Milkweed;
 * Enumeration of the types of message for the Test Server/Client system
 */
 enum MessageTypes : unsigned int {
-	ID_ASSIGNMENT = 0,
-	CONNECTION = 1,
-	MOVEMENT = 2,
-	DISCONNECTION = 3,
+	PLAYER_ID_ASSIGNMENT = 2,
+	PLAYER_CONNECTED = 3,
+	PLAYER_MOVEMENT = 4,
+	PLAYER_DISCONNECTED = 5,
 };
 
 /*
 * The main scene of the Milkweed framework's network testing client.
 */
-class TestClient : public Scene {
+class GameScene : public Scene {
 public:
 	/*
 	* Initialize the scene.
@@ -69,6 +69,10 @@ public:
 	void destroy() override;
 
 private:
+	// The address to connect to
+	std::string m_address = "127.0.0.1";
+	// The port to connect on
+	unsigned int m_port = 2773;
 	// Whether the client is connect to the server
 	bool m_connected = false;
 	// Whether the server has authorized this client

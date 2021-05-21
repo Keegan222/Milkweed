@@ -76,10 +76,11 @@ void MW::Init(const std::string& windowTitle,
 	// TODO: Remove hardcoded message size
 	NETWORK.init();
 
-	// Initialize the application's scenes and set the initial scene
+	// Populate the App's list of scenes
 	for (Scene* s : scenes) {
 		SCENES.push_back(s);
 	}
+	// Enter the starting scene
 	SetScene(scene);
 
 	MWLOG(Info, App, "Initialized Milkweed framework application");

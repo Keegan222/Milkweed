@@ -66,6 +66,9 @@ namespace Milkweed {
 
 		// Add the sprites to their shader
 		for (Sprite* sprite : sprites) {
+			if (sprite == nullptr) {
+				continue;
+			}
 			// Make sure the sprite has a texture, not nullptr
 			if (sprite->texture == nullptr) {
 				continue;
@@ -80,7 +83,7 @@ namespace Milkweed {
 		const glm::vec4& bounds, float scale, Font* font, Shader* shader,
 		Justification hJustification, Justification vJustification) {
 		// Make sure text has been submitted
-		if (text.empty()) {
+		if (text.empty() || font == nullptr || shader == nullptr) {
 			return;
 		}
 
@@ -169,6 +172,9 @@ namespace Milkweed {
 	}
 	
 	bool compareSpriteDepth(const Sprite* a, const Sprite* b) {
+		if (a == nullptr || b == nullptr) {
+			return false;
+		}
 		return a->position.z < b->position.z;
 	}
 

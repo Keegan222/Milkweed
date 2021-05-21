@@ -16,7 +16,7 @@ bool TestServer::onConnect(std::shared_ptr<NetConnection> client) {
 	std::cout << "Connected client " << client->getID() << std::endl;
 	// Send this client their ID number
 	NetMessage assignMessage;
-	assignMessage.header.ID = MessageTypes::ID_ASSIGNMENT;
+	assignMessage.header.ID = MessageTypes::PLAYER_ID_ASSIGNMENT;
 	unsigned int clientID = client->getID();
 	glm::vec3 spawnPosition = glm::vec3(0.0f, 0.0f, 0.0f);
 	glm::vec2 spawnVelocity = glm::vec2(0.0f, 0.0f);
@@ -25,7 +25,7 @@ bool TestServer::onConnect(std::shared_ptr<NetConnection> client) {
 
 	// Send a new client message to all other clients
 	NetMessage connectMessage;
-	connectMessage.header.ID = MessageTypes::CONNECTION;
+	connectMessage.header.ID = MessageTypes::PLAYER_CONNECTED;
 	connectMessage << clientID << spawnPosition << spawnVelocity;
 	messageAllClients(connectMessage, client);
 
@@ -37,11 +37,11 @@ void TestServer::onMessage(NetMessage& message) {
 		<< message << std::endl;
 
 	switch (message.header.ID) {
-	case MessageTypes::CONNECTION: {
+	case MessageTypes::PLAYER_CONNECTED: {
 		messageAllClients(message, message.owner);
 		break;
 	}
-	case MessageTypes::MOVEMENT: {
+	case MessageTypes::PLAYER_MOVEMENT: {
 		messageAllClients(message, message.owner);
 		break;
 	}
@@ -51,16 +51,14 @@ void TestServer::onMessage(NetMessage& message) {
 void TestServer::onDisconnect(std::shared_ptr<NetConnection> client) {
 	std::cout << "Disconnected client " << client->getID() << std::endl;
 	NetMessage disconnectMessage;
-	disconnectMessage.header.ID = MessageTypes::DISCONNECTION;
+	disconnectMessage.header.ID = MessageTypes::PLAYER_DISCONNECTED;
 	unsigned int clientID = client->getID();
 	disconnectMessage << clientID;
 	messageAllClients(disconnectMessage, client);
 }
 
 int main(int argc, char** argv) {
-	unsigned int port = 2773;
-
-	TestServer testServer(port);
+	TestServer testServer(2773);
 	testServer.init();
 	while (true) {
 		testServer.update(-1);

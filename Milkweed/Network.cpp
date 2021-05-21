@@ -26,15 +26,24 @@ namespace Milkweed {
 		const asio::ip::tcp::resolver::results_type& endpoints) {
 		// Attempt to asynchronously connect to the socket to the server at the
 		// given endpoint
+		std::cout << "Attempting to connect to server" << std::endl;
 		asio::async_connect(m_socket, endpoints,
 			[this](std::error_code error,
 				asio::ip::tcp::endpoint endpoint) {
 					if (!error) {
+						std::cout << "Connected to server" << std::endl;
 						// The connection was successful, begin reading messages
 						m_connected = true;
+						// Push a connected message to the client
+						NetMessage message(NetMessageTypes::CONNECTED,
+							this->shared_from_this());
+						m_messagesIn->pushBack(message);
+
+						// Begin receiving messages from the network
 						readHeader();
 					}
 					else {
+						std::cout << "Didn't connect to server" << std::endl;
 						disconnect();
 					}
 			}
@@ -42,10 +51,13 @@ namespace Milkweed {
 	}
 
 	void NetConnection::connectToClient(unsigned int ID) {
-		// If the connection is open set the ID number and read a header
+		// If the connection is open set the ID number
 		if (m_socket.is_open()) {
 			m_ID = ID;
 			m_connected = true;
+			m_serverOwned = true;
+
+			// Begin receiving messages from the network
 			readHeader();
 		}
 	}
@@ -76,8 +88,22 @@ namespace Milkweed {
 		// If the socket is connected, then tell the ASIO context to close it
 		// TODO: May need to fix the dereference here
 		if (isConnected()) {
+			std::cout << "Disconnecting" << std::endl;
+			// Notify the host of the disconnect
 			m_connected = false;
+
+			// Post the disconnect
 			asio::post(m_context, [this]() { m_socket.close(); });
+		}
+
+		// Send the disconnected message if the NetConnection isn't owned
+		// by a server
+		std::cout << "Disconnecting netconnection" << std::endl;
+		if (!m_serverOwned) {
+			std::cout << "Not server owned" << std::endl;
+			NetMessage message(NetMessageTypes::DISCONNECTED,
+				this->shared_from_this());
+			m_messagesIn->pushBack(message);
 		}
 	}
 
@@ -87,6 +113,10 @@ namespace Milkweed {
 
 		// Reset the context, the messages in TSQ, the ID of this connection,
 		// and the max message size
+		for (unsigned int i = 0; i < m_messagesIn->size(); i++) {
+			m_messagesIn->at(i).owner.reset();
+		}
+		m_messagesIn->clear();
 		m_messagesIn = nullptr;
 		m_ID = 0;
 		m_maxMessageSize = 0;

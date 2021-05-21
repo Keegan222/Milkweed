@@ -21,12 +21,27 @@
     </Filter>
   </ItemGroup>
   <ItemGroup>
-    <ClInclude Include="TestClient.h">
+    <ClInclude Include="GameScene.h">
+      <Filter>Header Files</Filter>
+    </ClInclude>
+    <ClInclude Include="TitleScene.h">
+      <Filter>Header Files</Filter>
+    </ClInclude>
+    <ClInclude Include="OptionsScene.h">
       <Filter>Header Files</Filter>
     </ClInclude>
   </ItemGroup>
   <ItemGroup>
-    <ClCompile Include="TestClient.cpp">
+    <ClCompile Include="GameScene.cpp">
+      <Filter>Source Files</Filter>
+    </ClCompile>
+    <ClCompile Include="TitleScene.cpp">
+      <Filter>Source Files</Filter>
+    </ClCompile>
+    <ClCompile Include="main.cpp">
+      <Filter>Source Files</Filter>
+    </ClCompile>
+    <ClCompile Include="OptionsScene.cpp">
       <Filter>Source Files</Filter>
     </ClCompile>
   </ItemGroup>
@@ -45,10 +60,34 @@
     </None>
   </ItemGroup>
   <ItemGroup>
-    <Image Include="..\Debug\Assets\texture\other.png">
+    <Image Include="..\MWTest\Assets\texture\button.png">
       <Filter>Assets\texture</Filter>
     </Image>
-    <Image Include="..\Debug\Assets\texture\self.png">
+    <Image Include="..\MWTest\Assets\texture\cursor.png">
+      <Filter>Assets\texture</Filter>
+    </Image>
+    <Image Include="..\MWTest\Assets\texture\image.png">
+      <Filter>Assets\texture</Filter>
+    </Image>
+    <Image Include="..\MWTest\Assets\texture\other.png">
+      <Filter>Assets\texture</Filter>
+    </Image>
+    <Image Include="..\MWTest\Assets\texture\self.png">
+      <Filter>Assets\texture</Filter>
+    </Image>
+    <Image Include="..\MWTest\Assets\texture\switch.png">
+      <Filter>Assets\texture</Filter>
+    </Image>
+    <Image Include="..\MWTest\Assets\texture\text_box.png">
+      <Filter>Assets\texture</Filter>
+    </Image>
+    <Image Include="..\MWTest\Assets\texture\slider.png">
+      <Filter>Assets\texture</Filter>
+    </Image>
+    <Image Include="..\MWTest\Assets\texture\cycle.png">
+      <Filter>Assets\texture</Filter>
+    </Image>
+    <Image Include="..\MWTest\Assets\texture\cycle_arrow.png">
       <Filter>Assets\texture</Filter>
     </Image>
   </ItemGroup>

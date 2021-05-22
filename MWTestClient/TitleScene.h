@@ -29,7 +29,6 @@ private:
 	Camera m_UICamera;
 	Shader m_spriteShader, m_textShader;
 	UI::UIGroup m_mainUIGroup;
-	glm::vec2 m_defaultButtonDims = glm::vec2(200.0f, 40.0f);
 	UI::Button m_connectButton, m_optionsButton, m_quitButton;
 };
 

@@ -9,21 +9,6 @@
       <UniqueIdentifier>{93995380-89BD-4b04-88EB-625FBE52EBFB}</UniqueIdentifier>
       <Extensions>h;hh;hpp;hxx;h++;hm;inl;inc;ipp;xsd</Extensions>
     </Filter>
-    <Filter Include="Assets">
-      <UniqueIdentifier>{699a4b7a-1ac9-4628-b8fa-fd808201a3c9}</UniqueIdentifier>
-    </Filter>
-    <Filter Include="Assets\audio">
-      <UniqueIdentifier>{10be3440-9535-4419-9f01-c70c7de33bfe}</UniqueIdentifier>
-    </Filter>
-    <Filter Include="Assets\shader">
-      <UniqueIdentifier>{0ca10aeb-6538-4801-9da1-18ba1918404b}</UniqueIdentifier>
-    </Filter>
-    <Filter Include="Assets\font">
-      <UniqueIdentifier>{0e32820a-342a-4510-a745-6657d3cdfb62}</UniqueIdentifier>
-    </Filter>
-    <Filter Include="Assets\texture">
-      <UniqueIdentifier>{bbaa26f0-9939-43af-91a5-7503f71669c7}</UniqueIdentifier>
-    </Filter>
   </ItemGroup>
   <ItemGroup>
     <ClInclude Include="MWTest.h">
@@ -34,46 +19,5 @@
     <ClCompile Include="MWTest.cpp">
       <Filter>Source Files</Filter>
     </ClCompile>
-  </ItemGroup>
-  <ItemGroup>
-    <Media Include="Assets\audio\music.wav">
-      <Filter>Assets\audio</Filter>
-    </Media>
-    <Media Include="Assets\audio\sound.wav">
-      <Filter>Assets\audio</Filter>
-    </Media>
-  </ItemGroup>
-  <ItemGroup>
-    <None Include="Assets\shader\text_fragment_shader.glsl">
-      <Filter>Assets\shader</Filter>
-    </None>
-    <None Include="Assets\shader\text_vertex_shader.glsl">
-      <Filter>Assets\shader</Filter>
-    </None>
-    <None Include="Assets\shader\sprite_fragment_shader.glsl">
-      <Filter>Assets\shader</Filter>
-    </None>
-    <None Include="Assets\shader\sprite_vertex_shader.glsl">
-      <Filter>Assets\shader</Filter>
-    </None>
-  </ItemGroup>
-  <ItemGroup>
-    <Font Include="Assets\font\arial.ttf">
-      <Filter>Assets\font</Filter>
-    </Font>
-  </ItemGroup>
-  <ItemGroup>
-    <Image Include="Assets\texture\button.png">
-      <Filter>Assets\texture</Filter>
-    </Image>
-    <Image Include="Assets\texture\image.png">
-      <Filter>Assets\texture</Filter>
-    </Image>
-    <Image Include="Assets\texture\text_box.png">
-      <Filter>Assets\texture</Filter>
-    </Image>
-    <Image Include="Assets\texture\cursor.png">
-      <Filter>Assets\texture</Filter>
-    </Image>
   </ItemGroup>
 </Project>

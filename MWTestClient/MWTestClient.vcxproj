@@ -151,31 +151,14 @@
   <ItemGroup>
     <ClInclude Include="GameScene.h" />
     <ClInclude Include="OptionsScene.h" />
+    <ClInclude Include="TestClient.h" />
     <ClInclude Include="TitleScene.h" />
   </ItemGroup>
   <ItemGroup>
-    <ClCompile Include="main.cpp" />
     <ClCompile Include="GameScene.cpp" />
     <ClCompile Include="OptionsScene.cpp" />
+    <ClCompile Include="TestClient.cpp" />
     <ClCompile Include="TitleScene.cpp" />
-  </ItemGroup>
-  <ItemGroup>
-    <None Include="Assets\shader\sprite_fragment_shader.glsl" />
-    <None Include="Assets\shader\sprite_vertex_shader.glsl" />
-    <None Include="Assets\shader\text_fragment_shader.glsl" />
-    <None Include="Assets\shader\text_vertex_shader.glsl" />
-  </ItemGroup>
-  <ItemGroup>
-    <Image Include="..\MWTest\Assets\texture\button.png" />
-    <Image Include="..\MWTest\Assets\texture\cursor.png" />
-    <Image Include="..\MWTest\Assets\texture\cycle.png" />
-    <Image Include="..\MWTest\Assets\texture\cycle_arrow.png" />
-    <Image Include="..\MWTest\Assets\texture\image.png" />
-    <Image Include="..\MWTest\Assets\texture\other.png" />
-    <Image Include="..\MWTest\Assets\texture\self.png" />
-    <Image Include="..\MWTest\Assets\texture\slider.png" />
-    <Image Include="..\MWTest\Assets\texture\switch.png" />
-    <Image Include="..\MWTest\Assets\texture\text_box.png" />
   </ItemGroup>
   <Import Project="$(VCTargetsPath)\Microsoft.Cpp.targets" />
   <ImportGroup Label="ExtensionTargets">

@@ -9,6 +9,7 @@
 
 #include <fstream>
 #include <iostream>
+#include <vector>
 
 namespace Milkweed {
 	/*
@@ -92,6 +93,44 @@ namespace Milkweed {
 		std::ofstream m_logFile;
 		// The format to print the date in
 		std::string m_dateFormat = "%Y.%m.%d.%H%M.%S";
+	};
+
+	/*
+	* Class for utility functions used to parse strings
+	*/
+	class StringUtils {
+	public:
+		/*
+		* Test whether a string contains a regular expression.
+		* 
+		* @param str: The string to test.
+		* @param reg: The regular expression to look for in str.
+		* @return The number of times the regular expression appears in str.
+		*/
+		static unsigned int Contains(const std::string& str,
+			const std::string& reg);
+		/*
+		* Populate a string with part of another.
+		* 
+		* @param str: The string to take a substring of.
+		* @param part: The string to populate.
+		* @param a: The starting index of the substring.
+		* @param b: The ending index of the substring.
+		* @return Whether a substring was found.
+		*/
+		static bool Part(const std::string& str, std::string& part,
+			unsigned int a, unsigned int b);
+		/*
+		* Split a string around a regular expression.
+		* 
+		* @param str: The string to split.
+		* @param reg: The regular expression to split str on.
+		* @param parts: A reference to the vector to populate with the portions
+		* of the string resulting from the split.
+		* @return Whether the regular expression appeared at least once in str.
+		*/
+		static bool Split(const std::string& str, const std::string& reg,
+			std::vector<std::string>& parts);
 	};
 }
 

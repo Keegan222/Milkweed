@@ -9,16 +9,6 @@
       <UniqueIdentifier>{93995380-89BD-4b04-88EB-625FBE52EBFB}</UniqueIdentifier>
       <Extensions>h;hh;hpp;hxx;h++;hm;inl;inc;ipp;xsd</Extensions>
     </Filter>
-    <Filter Include="Assets">
-      <UniqueIdentifier>{67DA6AB6-F800-4c08-8B7A-83BB121AAD01}</UniqueIdentifier>
-      <Extensions>rc;ico;cur;bmp;dlg;rc2;rct;bin;rgs;gif;jpg;jpeg;jpe;resx;tiff;tif;png;wav;mfcribbon-ms</Extensions>
-    </Filter>
-    <Filter Include="Assets\shader">
-      <UniqueIdentifier>{30646329-94e8-43dc-996f-eedc9b87b697}</UniqueIdentifier>
-    </Filter>
-    <Filter Include="Assets\texture">
-      <UniqueIdentifier>{aeb070d5-21af-4f2a-8a5a-ffab927ba32b}</UniqueIdentifier>
-    </Filter>
   </ItemGroup>
   <ItemGroup>
     <ClInclude Include="GameScene.h">
@@ -30,6 +20,9 @@
     <ClInclude Include="OptionsScene.h">
       <Filter>Header Files</Filter>
     </ClInclude>
+    <ClInclude Include="TestClient.h">
+      <Filter>Header Files</Filter>
+    </ClInclude>
   </ItemGroup>
   <ItemGroup>
     <ClCompile Include="GameScene.cpp">
@@ -38,57 +31,11 @@
     <ClCompile Include="TitleScene.cpp">
       <Filter>Source Files</Filter>
     </ClCompile>
-    <ClCompile Include="main.cpp">
-      <Filter>Source Files</Filter>
-    </ClCompile>
     <ClCompile Include="OptionsScene.cpp">
       <Filter>Source Files</Filter>
     </ClCompile>
-  </ItemGroup>
-  <ItemGroup>
-    <None Include="Assets\shader\sprite_fragment_shader.glsl">
-      <Filter>Assets\shader</Filter>
-    </None>
-    <None Include="Assets\shader\sprite_vertex_shader.glsl">
-      <Filter>Assets\shader</Filter>
-    </None>
-    <None Include="Assets\shader\text_fragment_shader.glsl">
-      <Filter>Assets\shader</Filter>
-    </None>
-    <None Include="Assets\shader\text_vertex_shader.glsl">
-      <Filter>Assets\shader</Filter>
-    </None>
-  </ItemGroup>
-  <ItemGroup>
-    <Image Include="..\MWTest\Assets\texture\button.png">
-      <Filter>Assets\texture</Filter>
-    </Image>
-    <Image Include="..\MWTest\Assets\texture\cursor.png">
-      <Filter>Assets\texture</Filter>
-    </Image>
-    <Image Include="..\MWTest\Assets\texture\image.png">
-      <Filter>Assets\texture</Filter>
-    </Image>
-    <Image Include="..\MWTest\Assets\texture\other.png">
-      <Filter>Assets\texture</Filter>
-    </Image>
-    <Image Include="..\MWTest\Assets\texture\self.png">
-      <Filter>Assets\texture</Filter>
-    </Image>
-    <Image Include="..\MWTest\Assets\texture\switch.png">
-      <Filter>Assets\texture</Filter>
-    </Image>
-    <Image Include="..\MWTest\Assets\texture\text_box.png">
-      <Filter>Assets\texture</Filter>
-    </Image>
-    <Image Include="..\MWTest\Assets\texture\slider.png">
-      <Filter>Assets\texture</Filter>
-    </Image>
-    <Image Include="..\MWTest\Assets\texture\cycle.png">
-      <Filter>Assets\texture</Filter>
-    </Image>
-    <Image Include="..\MWTest\Assets\texture\cycle_arrow.png">
-      <Filter>Assets\texture</Filter>
-    </Image>
+    <ClCompile Include="TestClient.cpp">
+      <Filter>Source Files</Filter>
+    </ClCompile>
   </ItemGroup>
 </Project>

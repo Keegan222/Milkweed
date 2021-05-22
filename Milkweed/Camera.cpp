@@ -10,6 +10,7 @@
 
 namespace Milkweed {
 	void Camera::init() {
+		m_prevWindowDimensions = glm::ivec2();
 		// Set the window dimensions and initialize the orthographic matrix for
 		// those dimensions
 		updateMatrix();

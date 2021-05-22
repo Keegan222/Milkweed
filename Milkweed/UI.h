@@ -26,6 +26,30 @@ namespace Milkweed {
 		class UIComponent {
 		public:
 			/*
+			* Get the position of this component.
+			*/
+			virtual const glm::vec3& getPosition() const = 0;
+			/*
+			* Set the position of this component
+			*/
+			virtual void setPosition(const glm::vec3& position) = 0;
+			/*
+			* Get the dimensions of this component.
+			*/
+			virtual const glm::vec2& getDimensions() const = 0;
+			/*
+			* Set the dimensions of this component.
+			*/
+			virtual void setDimensions(const glm::vec2& dimensions) = 0;
+			/*
+			* Get the text scale of this component
+			*/
+			virtual float getTextScale() const = 0;
+			/*
+			* Set the text scale of this component
+			*/
+			virtual void setTextScale(float textScale) = 0;
+			/*
 			* Test whether this component is enabled
 			*/
 			virtual bool isEnabled() const { return m_enabled; }
@@ -37,6 +61,16 @@ namespace Milkweed {
 			* Get the ID number of this component
 			*/
 			virtual unsigned int getID() const { return m_ID; }
+			/*
+			* Test whether this component's size and position are controlled by
+			* another component.
+			*/
+			bool isOwned() const { return m_owned; }
+			/*
+			* Set whether this component's size and position are controlled by
+			* another component.
+			*/
+			void setOwned(bool owned) { m_owned = owned; }
 
 		protected:
 			// Allow groups to call the draw, processInput, update, and destroy
@@ -48,16 +82,19 @@ namespace Milkweed {
 			bool m_enabled = true;
 			// The ID number of this component within its group
 			unsigned int m_ID = 0;
+			// Whether this component's size and position are controlled by
+			// another component
+			bool m_owned = false;
 
 			/*
 			* Test whether a 2D point falls in a rectangle
 			*
-			* @param rect: The rectangle's 2D position and dimensions 
+			* @param rect: The rectangle's 2D position and dimensions
 			* (x, y, w, h)
 			* @param p: The point to test
 			* @return Whether the point p falls inside the given rectangle
 			*/
-			static bool rectContains(const glm::vec4& rect, const glm::vec2& p);
+			static bool RectContains(const glm::vec4& rect, const glm::vec2& p);
 			/*
 			* Callback function for registering component with UIGroup
 			*/
@@ -70,10 +107,6 @@ namespace Milkweed {
 			* Process input to this component
 			*/
 			virtual void processInput() = 0;
-			/*
-			* Scale the position and dimensions of this component
-			*/
-			virtual void updateWindowSize(const glm::vec2& resizeScale) = 0;
 			/*
 			* Update physics in this component
 			*/
@@ -241,9 +274,11 @@ namespace Milkweed {
 			* Initialize this text label with some text to draw and data for it
 			*
 			* @param text: The string of text this label will render
-			* @param position: The position of this label
-			* @param dimensions: The width and height of the rectangle to render
-			* this label's text in
+			* @param normalPosition: The position of this label
+			* @param normalDimensions: The normalized width and height of the
+			* rectangle to render this label's text in
+			* @param normalTextPosition: The normalized position of the text
+			* in this label.
 			* @param scale: The scale to draw this label's text at
 			* @param color: The color to draw this label's text in
 			* @param hJustification: The justification to draw this label's text with
@@ -252,8 +287,9 @@ namespace Milkweed {
 			* on the y-axis
 			*/
 			virtual void init(const std::string& text,
-				const glm::vec3& position, const glm::vec2& dimensions,
-				const glm::vec3& textPosition, float textScale,
+				const glm::vec3& normalPosition,
+				const glm::vec2& normalDimensions,
+				const glm::vec3& normalTextPosition, float textScale,
 				const glm::vec3& textColor, Justification hJustification,
 				Justification vJustification);
 			/*
@@ -267,25 +303,27 @@ namespace Milkweed {
 			/*
 			* Get the position of this label on the screen
 			*/
-			virtual const glm::vec3& getPosition() const { return m_position; }
+			virtual const glm::vec3& getPosition() const override {
+				return m_position;
+			}
 			/*
 			* Set the position of this label on the screen
 			*/
-			virtual void setPosition(const glm::vec3& position) {
+			virtual void setPosition(const glm::vec3& position) override {
 				m_position = position;
 			}
 			/*
 			* Get the dimensions of the rectangle this label's text appears
 			* in on the screen
 			*/
-			virtual const glm::vec2& getDimensions() const {
+			virtual const glm::vec2& getDimensions() const override {
 				return m_dimensions;
 			}
 			/*
 			* Set the dimensions of the rectangle this label's text appears
 			* in on the screen
 			*/
-			virtual void setDimensions(const glm::vec2& dimensions) {
+			virtual void setDimensions(const glm::vec2& dimensions) override {
 				m_dimensions = dimensions;
 			}
 			/*
@@ -303,11 +341,11 @@ namespace Milkweed {
 			/*
 			* Get the scale of the text in this label
 			*/
-			virtual float getTextScale() const { return m_textScale; }
+			float getTextScale() const override { return m_textScale; }
 			/*
 			* Set the scale of the text in this label
 			*/
-			virtual void setTextScale(float textScale) {
+			void setTextScale(float textScale) override {
 				m_textScale = textScale;
 			}
 			/*
@@ -385,12 +423,6 @@ namespace Milkweed {
 			*/
 			virtual void processInput() override {}
 			/*
-			* Update the position and size of this label when the window size
-			* changes
-			*/
-			virtual void updateWindowSize(
-				const glm::vec2& resizeScale) override;
-			/*
 			* Update physics in this label (does nothing by default)
 			*/
 			virtual void update(float deltaTime) override {}
@@ -416,9 +448,9 @@ namespace Milkweed {
 			* Initialize this text label with some text to draw and data for it
 			*
 			* @param text: The string of text this button will draw
-			* @param position: The position of this button
-			* @param dimensions: The width and height of the rectangle to render
-			* this button's text in
+			* @param normalPosition: The normalized position of this button
+			* @param normalDimensions: The normalized width and height of the
+			* rectangle to render this button's text in
 			* @param scale: The scale to draw this button's text at
 			* @param color: The color to draw this button's text in
 			* @param textHJustification: The justification to draw this button's
@@ -428,8 +460,8 @@ namespace Milkweed {
 			* @param texture: The texture containing the unselected, selected, and
 			* clicked textures for this button from left to right
 			*/
-			void init(const std::string& text, const glm::vec3& position,
-				const glm::vec2& dimensions, float textScale,
+			void init(const std::string& text, const glm::vec3& normalPosition,
+				const glm::vec2& normalDimensions, float textScale,
 				const glm::vec3& textColor, Justification textHJustification,
 				Justification textVJustification, Texture* texture);
 			/*
@@ -466,11 +498,6 @@ namespace Milkweed {
 			*/
 			void processInput() override;
 			/*
-			* Update the position and size of this button when the size of the
-			* window changes
-			*/
-			void updateWindowSize(const glm::vec2& resizeScale) override;
-			/*
 			* Free this button's memory
 			*/
 			void destroy() override;
@@ -493,9 +520,9 @@ namespace Milkweed {
 			*
 			* @param labelText: The label to appear above this text box
 			* @param text: The string of text this text box will draw
-			* @param position: The position of this text box
-			* @param dimensions: The width and height of the rectangle to render
-			* this text box's text in
+			* @param normalPosition: The normalized position of this text box
+			* @param normalDimensions: The normalized width and height of the
+			* rectangle to render this text box's text in
 			* @param scale: The scale to draw this text box's text at
 			* @param color: The color to draw this text box's text in
 			* @param textHJustification: The justification to draw this text box's
@@ -509,8 +536,8 @@ namespace Milkweed {
 			* text box can hold (0 or less for infinite)
 			*/
 			void init(const std::string& labelText,
-				const std::string& text, const glm::vec3& position,
-				const glm::vec2& dimensions, float textScale,
+				const std::string& text, const glm::vec3& normalPosition,
+				const glm::vec2& normalDimensions, float textScale,
 				const glm::vec3& textColor, Justification textHJustification,
 				Justification textVJustification, Texture* texture,
 				Texture* cursorTexture, int maxCharacters);
@@ -564,11 +591,6 @@ namespace Milkweed {
 			*/
 			void processInput() override;
 			/*
-			* Update the position and size of this text box when the size of the
-			* window changes
-			*/
-			void updateWindowSize(const glm::vec2& resizeScale) override;
-			/*
 			* Update this text box's timer for backspaces and cursor movement
 			*/
 			void update(float deltaTime) override;
@@ -584,7 +606,7 @@ namespace Milkweed {
 			*/
 			void updateCursorPosition();
 		};
-	
+
 		/*
 		* A switch which can be toggled between two states
 		*/
@@ -597,12 +619,14 @@ namespace Milkweed {
 
 			/*
 			* Initialize this switch.
-			* 
+			*
 			* @param labelText: The text to appear in the label above this
 			* switch.
 			* @param text: The text to appear on this switch.
-			* @param position: The position of this switch on the screen.
-			* @param dimensions: The dimensions of this switch on the screen.
+			* @param normalPosition: The normalized position of this switch
+			* on the screen.
+			* @param normalDimensions: The normalized dimensions of this
+			* switch on the screen.
 			* @param textScale: The factor to scale the text appearing in this
 			* switch by.
 			* @param textColor: The RGB color to display this switch's text in.
@@ -611,12 +635,15 @@ namespace Milkweed {
 			* @param textVJustification: The vertical justification of the text
 			* in this switch.
 			* @param texture: The off and on textures of this switch.
+			* @param on: Whether this switch is in its on state by default.
 			*/
 			void init(const std::string& labelText, const std::string& text,
-				const glm::vec3& position, const glm::vec2& dimensions,
+				const glm::vec3& normalPosition,
+				const glm::vec2& normalDimensions,
 				float textScale, const glm::vec3& textColor,
 				Justification textHJustification,
-				Justification textVJustification, Texture* texture);
+				Justification textVJustification, Texture* texture,
+				bool on);
 			/*
 			* Set the position of this switch on the screen.
 			*/
@@ -629,6 +656,10 @@ namespace Milkweed {
 			* Test whether this switch is in its on state
 			*/
 			bool isOn() const { return m_on; }
+			/*
+			* Set whether this swith is in its on state
+			*/
+			void setOn(bool on);
 
 		protected:
 			// The texture coordinates of this switch's on texture
@@ -655,10 +686,6 @@ namespace Milkweed {
 			*/
 			void processInput() override;
 			/*
-			* Update the position and size of this switch
-			*/
-			void updateWindowSize(const glm::vec2& resizeScale) override;
-			/*
 			* Free this switch's memory
 			*/
 			void destroy() override;
@@ -677,11 +704,13 @@ namespace Milkweed {
 
 			/*
 			* Initialize this slider's memory.
-			* 
+			*
 			* @param labelText: The text to appear in the label above this
 			* slider.
-			* @param position: The position of this slider on the screen.
-			* @param dimensions: The dimensions of this slider on the screen.
+			* @param normalPosition: The normalized position of this slider
+			* on the screen.
+			* @param normalPimensions: The normalized dimensions of this
+			* slider on the screen.
 			* @param textScale: The factor to scale the text in this slider by.
 			* @param textColor: The color to display this slider's text in.
 			* @param textHJustification: The horizontal justification of the
@@ -692,13 +721,21 @@ namespace Milkweed {
 			* slider.
 			* @param cursorTexture: The texture of this slider's cursor.
 			* @param min: The minimum value of this slider.
+			* @param value: The initial value of this slider.
 			* @param max: The maximum value of this slider.
 			*/
-			void init(const std::string& labelText, const glm::vec3& position,
-				const glm::vec2& dimensions, float textScale,
+			void init(const std::string& labelText,
+				const glm::vec3& normalPosition,
+				const glm::vec2& normalDimensions, float textScale,
 				const glm::vec3& textColor, Justification textHJustification,
 				Justification textVJustification, Texture* texture,
-				Texture* cursorTexture, int min, int max);
+				Texture* cursorTexture, int min, int value, int max);
+			/*
+			* Get the position of this slider's background sprite.
+			*/
+			const glm::vec3& getPosition() const override {
+				return m_sprite.position;
+			}
 			/*
 			* Set the position of this slider on the screen.
 			*/
@@ -745,11 +782,6 @@ namespace Milkweed {
 			*/
 			void processInput() override;
 			/*
-			* Update this slider's position and dimensions when the size
-			* of the window changes.
-			*/
-			void updateWindowSize(const glm::vec2& resizeScale) override;
-			/*
 			* Free this slider's memory.
 			*/
 			void destroy() override;
@@ -772,10 +804,13 @@ namespace Milkweed {
 
 			/*
 			* Initialize this cycle UI component
-			* 
+			*
+			* @param labelText: The text to appear above this cycle.
 			* @param options: The options to cycle through.
-			* @param position: The position of this cycle on the screen.
-			* @param dimensions: The dimensions of this cycle on the screen.
+			* @param normalPosition: The normalized position of this cycle on
+			* the screen.
+			* @param normalDimensions: The normalized dimensions of this
+			* cycle on the screen.
 			* @param arrowWidth: The width of the left and right arrows of
 			* this cycle on the screen.
 			* @param textScale: The factor to scale the text size by in this
@@ -788,13 +823,16 @@ namespace Milkweed {
 			* @param texture: The texture of the background of this cycle.
 			* @param arrowTexture: The unselected, selected, and clicked left
 			* facing arrow textures of this cycle.
+			* @param selection: The initial selected index of this cycle.
 			*/
-			void init(const std::vector<std::string>& options,
-				const glm::vec3& position, const glm::vec2& dimensions,
-				float arrowWidth, float textScale, const glm::vec3& textColor,
+			void init(const std::string& labelText,
+				const std::vector<std::string>& options,
+				const glm::vec3& normalPosition,
+				const glm::vec2& normalDimensions, float arrowWidth,
+				float textScale, const glm::vec3& textColor,
 				Justification textHJustification,
 				Justification textVJustification, Texture* texture,
-				Texture* arrowTexture);
+				Texture* arrowTexture, unsigned int selection);
 			/*
 			* Set the position of this cycle on the screen.
 			*/
@@ -830,6 +868,8 @@ namespace Milkweed {
 			static glm::vec4 SELECTED_RIGHT_COORDS;
 			// The texture coordinates of the clicked right arrow
 			static glm::vec4 CLICKED_RIGHT_COORDS;
+			// The label to appear above this cycle
+			TextLabel m_label;
 			// The background sprite of this cycle
 			Sprite m_sprite;
 			// The width in pixels of the left and right arrows
@@ -848,6 +888,10 @@ namespace Milkweed {
 			std::vector<std::string> m_options;
 
 			/*
+			* Add this cycle to a UI group
+			*/
+			void add() override;
+			/*
 			* Draw this cycle on the screen
 			*/
 			void draw() override;
@@ -855,11 +899,6 @@ namespace Milkweed {
 			* Process input to this cycle.
 			*/
 			void processInput() override;
-			/*
-			* Update the position and size of this cycle when the size of the
-			* window changes.
-			*/
-			void updateWindowSize(const glm::vec2& resizeScale) override;
 			/*
 			* Free this cycle's memory.
 			*/

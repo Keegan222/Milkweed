@@ -33,7 +33,7 @@ void TestScene::init() {
 	m_switch.init("Switch", "On/off", glm::vec3(400.0f, 100.0f, 0.0f),
 		glm::vec2(300.0f, 40.0f), 0.3f, glm::vec3(1.0f, 1.0f, 0.0f),
 		Justification::LEFT, Justification::CENTER,
-		MW::RESOURCES.getTexture("Assets/texture/switch.png"));
+		MW::RESOURCES.getTexture("Assets/texture/switch.png"), false);
 	m_UIGroup.addComponent(&m_switch);
 	m_textBox.init("This is a text box", "Boxtest", glm::vec3(400.0f, 0.0f, 0.0f),
 		glm::vec2(300.0f, 40.0f), 0.3f, glm::vec3(1.0f, 1.0f, 1.0f),
@@ -47,12 +47,12 @@ void TestScene::init() {
 		MW::RESOURCES.getTexture("Assets/texture/slider.png"),
 		MW::RESOURCES.getTexture("Assets/texture/cursor.png"), 1, 4);
 	m_UIGroup.addComponent(&m_slider);
-	m_cycle.init({ "Option 1", "Option 2", "Option 3" },
+	m_cycle.init("Test", { "Option 1", "Option 2", "Option 3" },
 		glm::vec3(400.0f, 370.0f, 0.0f), glm::vec2(200.0f, 40.0f), 20.0f,
 		0.3f, glm::vec3(1.0f, 1.0f, 1.0f), Justification::CENTER,
 		Justification::CENTER, MW::RESOURCES.getTexture(
 			"Assets/texture/cycle.png"),
-		MW::RESOURCES.getTexture("Assets/texture/cycle_arrow.png"));
+		MW::RESOURCES.getTexture("Assets/texture/cycle_arrow.png"), 0);
 	m_UIGroup.addComponent(&m_cycle);
 
 	m_ASprite.init(glm::vec3(100.0f, 100.0f, 0.0f), glm::vec2(100.0f, 100.0f),
@@ -155,7 +155,7 @@ void TestScene::destroy() {
 TestScene MWTest::TEST_SCENE;
 
 int main(int argc, char** argv) {
-	MW::Init("MWTest", glm::ivec2(800, 600), false, 60.0f,
+	MW::Init("MWTest", glm::ivec2(800, 600), false, 60.0f, 1.0f,
 		{ &MWTest::TEST_SCENE }, &MWTest::TEST_SCENE);
 	return 0;
 }

@@ -11,6 +11,18 @@
 
 using namespace Milkweed;
 
+class Options {
+public:
+	static std::string DEFAULT_ADDRESS;
+	static unsigned int DEFAULT_PORT;
+	static bool FULL_SCREEN;
+	static glm::ivec2 WINDOW_RESOLUTION;
+	static int VOLUME;
+
+	static bool LoadOptions();
+	static bool SaveOptions();
+};
+
 class OptionsScene : public Scene {
 public:
 	void init() override;
@@ -23,19 +35,19 @@ public:
 	void update(float deltaTime) override;
 	void exit() override;
 	void destroy() override;
+	void setReturnScene(Scene* returnScene) { m_returnScene = returnScene; }
 
 private:
 	const static unsigned int OPTIONS_UI_GROUP = 0;
 	const static unsigned int MAIN_UI_GROUP = 1;
+	Scene* m_returnScene = nullptr;
 	Camera m_UICamera;
 	Shader m_spriteShader, m_textShader;
 	UI::UIGroup m_optionsUIGroup, m_mainUIGroup;
-	UI::TextLabel m_addressLabel, m_portLabel, m_fullScreenLabel,
-		m_resolutionLabel, m_volumeLabel;
 	UI::TextBox m_addressBox, m_portBox;
-	/*UI::Switch m_fullScreenSwitch;
+	UI::Switch m_fullScreenSwitch;
 	UI::Cycle m_resolutionCycle;
-	UI::Slider m_volumeSlider;*/
+	UI::Slider m_volumeSlider;
 	UI::Button m_backButton, m_defaultsButton, m_saveButton;
 };
 

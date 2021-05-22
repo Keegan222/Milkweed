@@ -35,7 +35,8 @@ void Scene::destroy() {
 
 void MW::Init(const std::string& windowTitle,
 	const glm::ivec2& windowDimensions, bool windowFullScreen,
-	float physicsUPS, const std::vector<Scene*>& scenes, Scene* scene) {
+	float physicsUPS, float audioGain, const std::vector<Scene*>& scenes,
+	Scene* scene) {
 	// Initialize the logging system
 #ifdef _DEBUG
 	LOG.init("mwlog/", true);
@@ -50,7 +51,7 @@ void MW::Init(const std::string& windowTitle,
 	PHYSICS_SPU = 1.0f / physicsUPS;
 
 	// Initialize the window
-	if (!WINDOW.init(windowTitle, windowDimensions, windowFullScreen)) {
+	if (!WINDOW.init(windowTitle, windowDimensions)) {
 		// Could not open the window
 		MWLOG(Error, App, "Fatal window error");
 		return;
@@ -71,6 +72,7 @@ void MW::Init(const std::string& windowTitle,
 	if (!AUDIO.init()) {
 		MWLOG(Error, App, "Fatal audio error");
 	}
+	AUDIO.setGain(audioGain);
 
 	// Initialize the networking system
 	// TODO: Remove hardcoded message size
@@ -82,6 +84,8 @@ void MW::Init(const std::string& windowTitle,
 	}
 	// Enter the starting scene
 	SetScene(scene);
+
+	WINDOW.setFullScreen(windowFullScreen);
 
 	MWLOG(Info, App, "Initialized Milkweed framework application");
 	RUNNING = true;
@@ -164,7 +168,9 @@ void MW::Draw() {
 
 void MW::ProcessInput() {
 	INPUT.update();
-	SCENE->processInput();
+	if (glfwGetWindowAttrib(WINDOW.getWindowHandle(), GLFW_FOCUSED)) {
+		SCENE->processInput();
+	}
 }
 
 void MW::Update(float deltaTime) {

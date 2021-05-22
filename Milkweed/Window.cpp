@@ -9,8 +9,7 @@
 namespace Milkweed {
 	Window Window::m_instance;
 
-	bool Window::init(const std::string& title, const glm::ivec2& dimensions,
-		bool fullScreen) {
+	bool Window::init(const std::string& title, const glm::ivec2& dimensions) {
 		MWLOG(Info, Window, "Initializing GLFW and opening window");
 
 		// Initialize GLFW
@@ -23,7 +22,6 @@ namespace Milkweed {
 		m_title = title;
 		m_dimensions = dimensions;
 		m_windowedDimensions = dimensions;
-		m_fullScreen = fullScreen;
 
 		// Get the video mode (description of the monitor displaying this
 		// application)
@@ -41,7 +39,20 @@ namespace Milkweed {
 			return false;
 		}
 
-		setFullScreen(fullScreen);
+		MWLOG(Info, Window, "Setting window to windowed mode, dimensions (",
+			m_dimensions.x, ", ", m_dimensions.y, ")");
+		// Set the window to its windowed dimensions and reset its position
+		// to the center of the monitor
+		glfwSetWindowMonitor(m_window, nullptr, 0, 0,
+			m_windowedDimensions.x, m_windowedDimensions.y,
+			GLFW_DONT_CARE);
+		glfwSetWindowSize(m_window, m_windowedDimensions.x,
+			m_windowedDimensions.y);
+		glfwSetWindowPos(m_window,
+			(videoMode->width - m_windowedDimensions.x) / 2,
+			(videoMode->height - m_windowedDimensions.y) / 2);
+		m_dimensions = m_windowedDimensions;
+		glViewport(0, 0, m_dimensions.x, m_dimensions.y);
 
 		// Give the window the OpenGL context
 		glfwMakeContextCurrent(MW::WINDOW.getWindowHandle());
@@ -57,6 +68,9 @@ namespace Milkweed {
 			MWLOG(Info, Window, "Setting window dimensions for windowed mode (",
 				dimensions.x, ", ", dimensions.y, "), no change now");
 			m_windowedDimensions = dimensions;
+			return;
+		}
+		else if (m_windowedDimensions == dimensions) {
 			return;
 		}
 

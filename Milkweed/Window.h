@@ -34,12 +34,9 @@ namespace Milkweed {
 		*
 		* @param title: The title to appear at the top of this window
 		* @param dimensions: The desired dimensions of this window in pixels
-		* @param fullScreen: Whether this window should ignore the title and
-		*	dimensions and appear in full screen mode
 		* @return Whether the window could be successfully opened
 		*/
-		bool init(const std::string& title, const glm::ivec2& dimensions,
-			bool fullScreen);
+		bool init(const std::string& title, const glm::ivec2& dimensions);
 		/*
 		* Get the GLFW handle for this window
 		*/

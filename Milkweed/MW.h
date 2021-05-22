@@ -120,6 +120,7 @@ namespace Milkweed {
 		* in fullscreen mode
 		* @param physicsUPS: The desired number of physics updates to perform
 		* per second
+		* @param audioGain: The gain of the audio for this application (0 - 1)
 		* @param scenes: A vector of pointers to all scenes this application
 		* will use while running
 		* @param scene: A pointer to the initial scene to be active in the
@@ -127,8 +128,8 @@ namespace Milkweed {
 		*/
 		static void Init(const std::string& windowTitle,
 			const glm::ivec2& windowDimensions, bool windowFullScreen,
-			float physicsUPS, const std::vector<Scene*>& scenes,
-			Scene* scene);
+			float physicsUPS, float audioGain,
+			const std::vector<Scene*>& scenes, Scene* scene);
 		/*
 		* Change the active scene of this application
 		*

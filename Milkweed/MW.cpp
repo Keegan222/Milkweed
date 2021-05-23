@@ -40,8 +40,6 @@ void MW::Init(const std::string& windowTitle,
 	// Initialize the logging system
 #ifdef _DEBUG
 	LOG.init("mwlog/", true);
-#else
-	LOG.init("mwlog/", false);
 #endif
 
 	MWLOG(Info, App, "Initializing Milkweed framework with physics UPS ",

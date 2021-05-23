@@ -37,11 +37,13 @@ void GameScene::init() {
 		"cameraMatrix", &m_UICamera);
 
 	// Initialize UI component variables
+	float buffer = 0.015f;
 	glm::vec2 cWinDims = MW::WINDOW.getDimensions();
 	glm::vec2 winDims = glm::vec2(800, 600);
-	glm::vec2 backgroundDims = glm::vec2(cWinDims.x / 4.0f, cWinDims.y / 5.0f);
-	glm::vec2 buttonDims = glm::vec2(200.0f / winDims.x, 30.0f / winDims.y);
-	float buffer = 0.015f;
+	glm::vec2 buttonDims = glm::vec2(200.0f / winDims.x - 2 * buffer,
+		30.0f / winDims.y);
+	glm::vec2 backgroundDims = glm::vec2(200.0f / winDims.x,
+		buttonDims.y + 2 * buffer);
 	Texture* backgroundTexture = MW::RESOURCES.getTexture(
 		"Assets/texture/pause_background.png");
 	Texture* buttonTexture
@@ -56,11 +58,11 @@ void GameScene::init() {
 	m_pauseBackground.init(glm::vec3((cWinDims.x - backgroundDims.x) / 2.0f,
 		cWinDims.y / 2.0f, 1.0f), backgroundDims, backgroundTexture);
 	m_optionsButton.init("Options", glm::vec3(0.5f - buttonDims.x / 2.0f,
-		0.5f - (buttonDims.y + buffer), 2.0f), buttonDims, textScale,
+		0.5f + (buffer + buttonDims.y + buffer), 2.0f), buttonDims, textScale,
 		textColor, Justification::CENTER, Justification::CENTER,
 		buttonTexture);
 	m_disconnectButton.init("Disconnect", glm::vec3(0.5f - buttonDims.x / 2.0f,
-		0.5f - 2 * (buttonDims.y + buffer), 2.0f), buttonDims, textScale,
+		0.5f + buffer, 2.0f), buttonDims, textScale,
 		textColor, Justification::CENTER, Justification::CENTER, buttonTexture);
 	m_pauseUIGroup.addComponents({ &m_optionsButton, &m_disconnectButton });
 }
@@ -68,7 +70,9 @@ void GameScene::init() {
 void GameScene::enter() {
 	MWLOG(Info, GameScene, "entered scene");
 	// Attempt to connect to the server
-	MW::NETWORK.connect(m_address, m_port);
+	if (!MW::NETWORK.isConnected()) {
+		MW::NETWORK.connect(m_address, m_port);
+	}
 }
 
 void GameScene::draw() {
@@ -115,6 +119,8 @@ void GameScene::processInput() {
 			m_pauseUIGroup.setVisible(false);
 		}
 	}
+
+	m_pauseUIGroup.processInput();
 
 	if (MW::INPUT.isKeyPressed(F_11)) {
 		MW::WINDOW.setFullScreen(!MW::WINDOW.isFullScreen());
@@ -195,6 +201,8 @@ void GameScene::processNetMessage(NetMessage& message) {
 
 		// Go back to the connecting scene
 		MW::NETWORK.disconnect();
+		MW::NETWORK.destroy();
+		MW::NETWORK.init();
 		MW::SetScene(&TestClient::CONNECT_SCENE);
 		break;
 	}
@@ -292,6 +300,17 @@ void GameScene::componentEvent(unsigned int groupID, unsigned int componentID,
 		}
 		else if (componentID == m_disconnectButton.getID()) {
 			if (eventID == UI::Button::CLICKED_EVENT) {
+				m_connected = false;
+				m_authorized = false;
+				m_playerID = 0;
+				m_players.clear();
+				m_playerPointers.clear();
+				m_pauseMenuUp = false;
+				m_pauseUIGroup.setEnabled(false);
+				m_pauseUIGroup.setVisible(false);
+				MW::NETWORK.disconnect();
+				MW::NETWORK.destroy();
+				MW::NETWORK.init();
 				MW::SetScene(&TestClient::CONNECT_SCENE);
 			}
 		}
@@ -328,12 +347,6 @@ void GameScene::update(float deltaTime) {
 
 void GameScene::exit() {
 	MWLOG(Info, GameScene, "Exited scene");
-	MW::NETWORK.disconnect();
-	m_connected = false;
-	m_authorized = false;
-	m_playerID = 0;
-	m_players.clear();
-	m_playerPointers.clear();
 	m_pauseMenuUp = false;
 	m_pauseUIGroup.setEnabled(false);
 	m_pauseUIGroup.setVisible(false);

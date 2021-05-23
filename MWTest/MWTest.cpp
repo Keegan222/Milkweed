@@ -5,10 +5,6 @@
 using namespace Milkweed;
 
 void TestScene::init() {
-	m_music = MW::RESOURCES.getSound("Assets/audio/music.wav");
-
-	m_sound = MW::RESOURCES.getSound("Assets/audio/sound.wav");
-
 	m_camera.init();
 	m_camera.position = glm::vec3(
 		MW::WINDOW.getDimensions().x / 2,
@@ -101,15 +97,7 @@ void TestScene::componentEvent(unsigned int groupID, unsigned int componentID,
 
 	if (groupID == m_UIGroup.getID()) {
 		if (componentID == m_button.getID()) {
-			if (eventID == UI::Button::CLICKED_EVENT) {
-				Sound* s = MW::RESOURCES.getSound("Assets/audio/cunt.wav");
-				if (s != nullptr) {
-					MW::AUDIO.playSound(s);
-				}
-				else {
-					MWLOG(Warning, MWTest, "Asset cunt.wav not found");
-				}
-			}
+
 		}
 		else if (componentID == m_switch.getID()) {
 			if (eventID == UI::Switch::ON_EVENT) {

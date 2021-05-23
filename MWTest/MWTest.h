@@ -19,8 +19,6 @@ public:
 	void destroy() override;
 
 private:
-	Sound* m_music = nullptr;
-	Sound* m_sound = nullptr;
 	Camera m_camera;
 	Shader m_spriteShader;
 

@@ -279,6 +279,7 @@ namespace Milkweed {
 			// ASIO could not resolve the host
 			const char* error = e.what();
 			MWLOG(Warning, NetClient, "Network connection error: ", error);
+			disconnect();
 		}
 	}
 
@@ -296,9 +297,7 @@ namespace Milkweed {
 	void NetClient::disconnect() {
 		MWLOG(Info, NetClient, "Disconnecting from server");
 		// Disconnect the connection if it is connected
-		if (isConnected()) {
-			m_connection->disconnect();
-		}
+		m_connection->disconnect();
 
 		// Stop the ASIO thread
 		m_context.stop();

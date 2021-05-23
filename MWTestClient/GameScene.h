@@ -67,8 +67,17 @@ public:
 	* Free the scene's memory.
 	*/
 	void destroy() override;
+	/*
+	* Set the address for the game scene to connect to
+	*/
+	void setAddress(const std::string& address) { m_address = address; }
+	/*
+	* Set the port for the game scene to connect on
+	*/
+	void setPort(unsigned int port) { m_port = port; }
 
 private:
+	const static unsigned int PAUSE_UI_GROUP = 0;
 	// The address to connect to
 	std::string m_address = "127.0.0.1";
 	// The port to connect on
@@ -81,6 +90,12 @@ private:
 	Camera m_spriteCamera;
 	// The shader used to draw sprites
 	Shader m_spriteShader;
+	// The camera used to draw the pause UI
+	Camera m_UICamera;
+	// The shader used to draw UI sprites
+	Shader m_UISpriteShader;
+	// The shader used to draw text
+	Shader m_UITextShader;
 	// The ID of this player on the server
 	unsigned int m_playerID = 0;
 	// The other players' sprites with their ID's on the server, including this
@@ -88,6 +103,11 @@ private:
 	std::map<unsigned int, Sprite> m_players;
 	// Pointers to the other players' sprites
 	std::vector<Sprite*> m_playerPointers;
+	// The UI group for the pause menu
+	bool m_pauseMenuUp = false;
+	UI::UIGroup m_pauseUIGroup;
+	Sprite m_pauseBackground;
+	UI::Button m_optionsButton, m_disconnectButton;
 };
 
 #endif

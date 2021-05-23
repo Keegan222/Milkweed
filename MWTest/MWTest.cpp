@@ -45,7 +45,7 @@ void TestScene::init() {
 		glm::vec2(200.0f, 40.0f), 0.3f, glm::vec3(1.0f, 1.0f, 1.0f),
 		Justification::LEFT, Justification::CENTER,
 		MW::RESOURCES.getTexture("Assets/texture/slider.png"),
-		MW::RESOURCES.getTexture("Assets/texture/cursor.png"), 1, 4);
+		MW::RESOURCES.getTexture("Assets/texture/cursor.png"), 1, 3, 4);
 	m_UIGroup.addComponent(&m_slider);
 	m_cycle.init("Test", { "Option 1", "Option 2", "Option 3" },
 		glm::vec3(400.0f, 370.0f, 0.0f), glm::vec2(200.0f, 40.0f), 20.0f,

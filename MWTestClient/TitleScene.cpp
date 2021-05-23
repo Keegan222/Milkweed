@@ -56,7 +56,7 @@ void TitleScene::init() {
 }
 
 void TitleScene::enter() {
-	m_mainUIGroup.enable();
+	m_mainUIGroup.setEnabled(true);
 }
 
 void TitleScene::draw() {
@@ -81,7 +81,7 @@ void TitleScene::componentEvent(unsigned int groupID, unsigned int componentID,
 		switch (eventID) {
 		case UI::Button::CLICKED_EVENT: {
 			if (componentID == m_connectButton.getID()) {
-				MWLOG(Info, TitleScene, "Swapping to connect scene");
+				MW::SetScene(&TestClient::CONNECT_SCENE);
 			}
 			else if (componentID == m_optionsButton.getID()) {
 				TestClient::OPTIONS_SCENE.setReturnScene(this);
@@ -115,7 +115,7 @@ void TitleScene::update(float deltaTime) {
 }
 
 void TitleScene::exit() {
-	m_mainUIGroup.disable();
+	m_mainUIGroup.setEnabled(false);
 }
 
 void TitleScene::destroy() {

@@ -194,8 +194,8 @@ void OptionsScene::enter() {
 	}
 	m_volumeSlider.setValue(Options::VOLUME);
 
-	m_optionsUIGroup.enable();
-	m_mainUIGroup.enable();
+	m_optionsUIGroup.setEnabled(true);
+	m_mainUIGroup.setEnabled(true);
 }
 
 void OptionsScene::draw() {
@@ -282,8 +282,8 @@ void OptionsScene::update(float deltaTime) {
 }
 
 void OptionsScene::exit() {
-	m_optionsUIGroup.disable();
-	m_mainUIGroup.disable();
+	m_optionsUIGroup.setEnabled(false);
+	m_mainUIGroup.setEnabled(false);
 }
 
 void OptionsScene::destroy() {

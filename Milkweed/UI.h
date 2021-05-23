@@ -58,6 +58,14 @@ namespace Milkweed {
 			*/
 			virtual void setEnabled(bool enabled) { m_enabled = enabled; }
 			/*
+			* Test whether this component is visible
+			*/
+			virtual bool isVisible() const { return m_visible; }
+			/*
+			* Set whether this component is visible
+			*/
+			virtual void setVisible(bool visible) { m_visible = visible; }
+			/*
 			* Get the ID number of this component
 			*/
 			virtual unsigned int getID() const { return m_ID; }
@@ -80,6 +88,8 @@ namespace Milkweed {
 			UIGroup* m_parent = nullptr;
 			// Whether this component is currently enabled
 			bool m_enabled = true;
+			// Whether this component is currently visible
+			bool m_visible = true;
 			// The ID number of this component within its group
 			unsigned int m_ID = 0;
 			// Whether this component's size and position are controlled by
@@ -150,8 +160,10 @@ namespace Milkweed {
 			/*
 			* Update the positions and sizes of the components in this group
 			* when the window changes size
+			* 
+			* @return The factor by which the size of the window was scaled
 			*/
-			void updateWindowSize();
+			glm::vec2 updateWindowSize();
 			/*
 			* Update physics in all components in this group
 			*/
@@ -161,19 +173,24 @@ namespace Milkweed {
 			*/
 			void destroy();
 			/*
-			* Enable all components in this group if not already enabled
+			* Set whether the components in this group are enabled
 			*/
-			void enable();
+			void setEnabled(bool enabled);
 			/*
-			* Disable all components in this group if not already disabled
+			* Set whether the components in this group are visible
 			*/
-			void disable();
+			void setVisible(bool visible);
 			/*
 			* Add a component to this group if it is not already in the group
 			*
 			* @return Whether this component could be added
 			*/
 			bool addComponent(UIComponent* c);
+			/*
+			* Add a set of components to this group if not already in the
+			* group.
+			*/
+			void addComponents(const std::vector<UIComponent*>& c);
 			/*
 			* An event has occurred in one of the components of this UI group and
 			* the parent scene must be notified

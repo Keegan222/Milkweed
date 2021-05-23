@@ -38,7 +38,9 @@ namespace Milkweed {
 		void UIGroup::draw() {
 			// Draw all components
 			for (UIComponent* c : m_components) {
-				c->draw();
+				if (c->isVisible()) {
+					c->draw();
+				}
 			}
 		}
 
@@ -51,7 +53,7 @@ namespace Milkweed {
 			}
 		}
 
-		void UIGroup::updateWindowSize() {
+		glm::vec2 UIGroup::updateWindowSize() {
 			// Get the scale of the window resizing
 			glm::vec2 windowDims = MW::WINDOW.getDimensions();
 			glm::vec2 resizeScale = glm::vec2(
@@ -80,6 +82,7 @@ namespace Milkweed {
 			}
 
 			m_previousWindowDims = windowDims;
+			return resizeScale;
 		}
 
 		void UIGroup::update(float deltaTime) {
@@ -103,46 +106,39 @@ namespace Milkweed {
 			m_CID = 0;
 		}
 
-		void UIGroup::enable() {
-			// Enable all disabled components
+		void UIGroup::setEnabled(bool enabled) {
 			for (UIComponent* c : m_components) {
-				if (!c->isEnabled()) {
-					c->setEnabled(true);
-				}
+				c->setEnabled(enabled);
 			}
 		}
 
-		void UIGroup::disable() {
-			// Disable all enabled components
+		void UIGroup::setVisible(bool visible) {
 			for (UIComponent* c : m_components) {
-				if (c->isEnabled()) {
-					c->setEnabled(false);
-				}
+				c->setVisible(visible);
 			}
 		}
 
 		bool UIGroup::addComponent(UIComponent* c) {
-			std::cout << "Adding component" << std::endl;
 			// Attempt to find the component already in the group
 			std::vector<UIComponent*>::iterator it = std::find(
 				m_components.begin(), m_components.end(), c);
-			std::cout << "Looked for it" << std::endl;
 			if (it == m_components.end()) {
-				std::cout << "It wasn't found" << std::endl;
 				// The component is not already in this group, set its ID
 				// and add it
 				c->m_ID = m_CID++;
-				std::cout << "Incremented ID" << std::endl;
 				c->m_parent = this;
-				std::cout << "Set parent" << std::endl;
 				m_components.push_back(c);
 				c->add();
-				std::cout << "Pushed it back" << std::endl;
 				return true;
 			}
-			std::cout << "It was found" << std::endl;
 
 			return false;
+		}
+
+		void UIGroup::addComponents(const std::vector<UIComponent*>& c) {
+			for (unsigned int i = 0; i < c.size(); i++) {
+				addComponent(c.at(i));
+			}
 		}
 
 		void UIGroup::componentEvent(unsigned int componentID,
@@ -418,10 +414,10 @@ namespace Milkweed {
 
 			// Take mouse input for selection
 			if (MW::INPUT.isButtonPressed(B_LEFT)) {
+				glm::vec2 mousePos = MW::INPUT.getCursorPosition(
+					m_parent->getSpriteShader()->getCamera());
 				if (RectContains(glm::vec4(m_position.x, m_position.y,
-					m_dimensions.x, m_dimensions.y),
-					MW::INPUT.getCursorPosition(m_parent->getSpriteShader()
-						->getCamera()))) {
+					m_dimensions.x, m_dimensions.y), mousePos)) {
 					// Selected
 					m_selected = true;
 					m_sprite.textureCoords = SELECTED_COORDS;
@@ -435,6 +431,28 @@ namespace Milkweed {
 
 			if (!m_selected) {
 				return;
+			}
+
+			if (MW::INPUT.isButtonDown(B_LEFT)) {
+				glm::vec2 mousePos = MW::INPUT.getCursorPosition(
+					m_parent->getSpriteShader()->getCamera());
+				if (RectContains(glm::vec4(m_sprite.position.x,
+					m_sprite.position.y, m_sprite.dimensions.x,
+					m_sprite.dimensions.y), mousePos)) {
+					// Set the cursor position
+					for (m_cursorPosition = 0;
+						m_cursorPosition < m_text.length();
+						m_cursorPosition++) {
+						updateCursorPosition();
+						if (mousePos.x < m_cursor.position.x) {
+							if (m_cursorPosition > 0) {
+								m_cursorPosition--;
+							}
+							break;
+						}
+					}
+					updateCursorPosition();
+				}
 			}
 
 			// Set the cursor position

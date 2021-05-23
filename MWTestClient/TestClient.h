@@ -8,12 +8,14 @@
 #define TEST_CLIENT_H
 
 #include "TitleScene.h"
+#include "ConnectScene.h"
 #include "OptionsScene.h"
 #include "GameScene.h"
 
 class TestClient {
 public:
 	static TitleScene TITLE_SCENE;
+	static ConnectScene CONNECT_SCENE;
 	static OptionsScene OPTIONS_SCENE;
 	static GameScene GAME_SCENE;
 };

@@ -4,6 +4,7 @@
 * Created:	2021.05.16
 */
 
+#include "TestClient.h"
 #include "GameScene.h"
 
 using namespace Milkweed;
@@ -19,6 +20,49 @@ void GameScene::init() {
 		"Assets/shader/sprite_fragment_shader.glsl",
 		Shader::getDefaultVertexAttributes("inPosition", "inTextureCoords"),
 		"cameraMatrix", &m_spriteCamera);
+
+	// Initialize the UI camera
+	m_UICamera.init();
+	m_UICamera.position = glm::vec3(MW::WINDOW.getDimensions().x / 2.0f,
+		MW::WINDOW.getDimensions().y / 2.0f, 0.0f);
+
+	// Initialize the text shader
+	m_UISpriteShader.init("Assets/shader/sprite_vertex_shader.glsl",
+		"Assets/shader/sprite_fragment_shader.glsl",
+		Shader::getDefaultVertexAttributes("inPosition", "inTextureCoords"),
+		"cameraMatrix", &m_UICamera);
+	m_UITextShader.init("Assets/shader/text_vertex_shader.glsl",
+		"Assets/shader/text_fragment_shader.glsl",
+		Shader::getDefaultVertexAttributes("inPosition", "inTextureCoords"),
+		"cameraMatrix", &m_UICamera);
+
+	// Initialize UI component variables
+	glm::vec2 cWinDims = MW::WINDOW.getDimensions();
+	glm::vec2 winDims = glm::vec2(800, 600);
+	glm::vec2 backgroundDims = glm::vec2(cWinDims.x / 4.0f, cWinDims.y / 5.0f);
+	glm::vec2 buttonDims = glm::vec2(200.0f / winDims.x, 30.0f / winDims.y);
+	float buffer = 0.015f;
+	Texture* backgroundTexture = MW::RESOURCES.getTexture(
+		"Assets/texture/pause_background.png");
+	Texture* buttonTexture
+		= MW::RESOURCES.getTexture("Assets/texture/button.png");
+	float textScale = 0.25f * ((float)MW::WINDOW.getDimensions().y / winDims.y);
+	glm::vec3 textColor = glm::vec3(1.0f, 1.0f, 1.0f);
+
+	// Initialize UI components
+	m_pauseUIGroup.init(this, PAUSE_UI_GROUP, MW::RESOURCES.getFont(
+		"Assets/font/arial.ttf"), &m_UISpriteShader, &m_UITextShader,
+		"textColor");
+	m_pauseBackground.init(glm::vec3((cWinDims.x - backgroundDims.x) / 2.0f,
+		cWinDims.y / 2.0f, 1.0f), backgroundDims, backgroundTexture);
+	m_optionsButton.init("Options", glm::vec3(0.5f - buttonDims.x / 2.0f,
+		0.5f - (buttonDims.y + buffer), 2.0f), buttonDims, textScale,
+		textColor, Justification::CENTER, Justification::CENTER,
+		buttonTexture);
+	m_disconnectButton.init("Disconnect", glm::vec3(0.5f - buttonDims.x / 2.0f,
+		0.5f - 2 * (buttonDims.y + buffer), 2.0f), buttonDims, textScale,
+		textColor, Justification::CENTER, Justification::CENTER, buttonTexture);
+	m_pauseUIGroup.addComponents({ &m_optionsButton, &m_disconnectButton });
 }
 
 void GameScene::enter() {
@@ -28,6 +72,11 @@ void GameScene::enter() {
 }
 
 void GameScene::draw() {
+	if (m_pauseMenuUp) {
+		MW::RENDERER.submit({ &m_pauseBackground }, &m_UISpriteShader);
+		m_pauseUIGroup.draw();
+	}
+
 	if (!(m_connected && m_authorized)) {
 		return;
 	}
@@ -54,8 +103,25 @@ void GameScene::processInput() {
 		messageCount++;
 	}
 
+	// Check for the escape menu
+	if (MW::INPUT.isKeyPressed(F_ESCAPE)) {
+		m_pauseMenuUp = !m_pauseMenuUp;
+		if (m_pauseMenuUp) {
+			m_pauseUIGroup.setEnabled(true);
+			m_pauseUIGroup.setVisible(true);
+		}
+		else {
+			m_pauseUIGroup.setEnabled(false);
+			m_pauseUIGroup.setVisible(false);
+		}
+	}
+
+	if (MW::INPUT.isKeyPressed(F_11)) {
+		MW::WINDOW.setFullScreen(!MW::WINDOW.isFullScreen());
+	}
+
 	// Check the connection and authorization before proceeding
-	if (!(m_connected && m_authorized)) {
+	if (!(m_connected && m_authorized) && !m_pauseMenuUp) {
 		return;
 	}
 
@@ -126,9 +192,10 @@ void GameScene::processNetMessage(NetMessage& message) {
 			m_playerPointers[i] = nullptr;
 		}
 		m_playerPointers.clear();
-		// Repeated attempt to reconnect
-		// TODO: Remove this later
+
+		// Go back to the connecting scene
 		MW::NETWORK.disconnect();
+		MW::SetScene(&TestClient::CONNECT_SCENE);
 		break;
 	}
 	case MessageTypes::PLAYER_ID_ASSIGNMENT: {
@@ -216,11 +283,32 @@ void GameScene::processNetMessage(NetMessage& message) {
 
 void GameScene::componentEvent(unsigned int groupID, unsigned int componentID,
 	unsigned int eventID) {
-
+	if (groupID == PAUSE_UI_GROUP) {
+		if (componentID == m_optionsButton.getID()) {
+			if (eventID == UI::Button::CLICKED_EVENT) {
+				TestClient::OPTIONS_SCENE.setReturnScene(this);
+				MW::SetScene(&TestClient::OPTIONS_SCENE);
+			}
+		}
+		else if (componentID == m_disconnectButton.getID()) {
+			if (eventID == UI::Button::CLICKED_EVENT) {
+				MW::SetScene(&TestClient::CONNECT_SCENE);
+			}
+		}
+	}
 }
 
 void GameScene::updateWindowSize() {
-	// Refresh the camera
+	glm::vec2 resizeScale = m_pauseUIGroup.updateWindowSize();
+	MWLOG(Info, GameScene, "Update window size scaling ", resizeScale.x,
+		", ", resizeScale.y);
+	m_pauseBackground.dimensions *= resizeScale;
+	m_pauseBackground.position.x *= resizeScale.x;
+	m_pauseBackground.position.y *= resizeScale.y;
+
+	m_UICamera.position = glm::vec3(MW::WINDOW.getDimensions().x / 2.0f,
+		MW::WINDOW.getDimensions().y / 2.0f, 0.0f);
+
 	m_spriteCamera.destroy();
 	m_spriteCamera.init();
 }
@@ -231,6 +319,8 @@ void GameScene::update(float deltaTime) {
 			m_players[m_playerID].dimensions.y / 2.0f, 0.0f);
 	m_spriteCamera.update(deltaTime);
 
+	m_UICamera.update(deltaTime);
+
 	for (const std::pair<unsigned int, Sprite>& player : m_players) {
 		m_players[player.first].update(deltaTime);
 	}
@@ -238,8 +328,29 @@ void GameScene::update(float deltaTime) {
 
 void GameScene::exit() {
 	MWLOG(Info, GameScene, "Exited scene");
+	MW::NETWORK.disconnect();
+	m_connected = false;
+	m_authorized = false;
+	m_playerID = 0;
+	m_players.clear();
+	m_playerPointers.clear();
+	m_pauseMenuUp = false;
+	m_pauseUIGroup.setEnabled(false);
+	m_pauseUIGroup.setVisible(false);
 }
 
 void GameScene::destroy() {
 	MWLOG(Info, GameScene, "Destroyed scene");
+	m_spriteShader.destroy();
+	m_UITextShader.destroy();
+	m_UISpriteShader.destroy();
+	m_connected = false;
+	m_authorized = false;
+	m_playerID = 0;
+	m_players.clear();
+	m_playerPointers.clear();
+	m_UICamera.destroy();
+	m_spriteCamera.destroy();
+	m_pauseUIGroup.destroy();
+	m_pauseBackground.destroy();
 }

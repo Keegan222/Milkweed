@@ -305,6 +305,7 @@ namespace Milkweed {
 		if (m_ASIOThread.joinable()) {
 			m_ASIOThread.join();
 		}
+		m_context.reset();
 	}
 
 	void NetClient::destroy() {

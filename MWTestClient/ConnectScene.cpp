@@ -81,6 +81,9 @@ void ConnectScene::componentEvent(unsigned int groupID,
 	unsigned int componentID, unsigned int eventID) {
 	switch (groupID) {
 	case MAIN_UI_GROUP: {
+		// Clear old networking messages
+		MW::NETWORK.getMessagesIn().clear();
+		// Process button clicks on the main group
 		if (componentID == m_backButton.getID()) {
 			if (eventID == UI::Button::CLICKED_EVENT) {
 				MW::SetScene(&TestClient::TITLE_SCENE);

@@ -309,8 +309,6 @@ void GameScene::componentEvent(unsigned int groupID, unsigned int componentID,
 				m_pauseUIGroup.setEnabled(false);
 				m_pauseUIGroup.setVisible(false);
 				MW::NETWORK.disconnect();
-				MW::NETWORK.destroy();
-				MW::NETWORK.init();
 				MW::SetScene(&TestClient::CONNECT_SCENE);
 			}
 		}

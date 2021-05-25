@@ -92,18 +92,18 @@ namespace Milkweed {
 			// Notify the host of the disconnect
 			m_connected = false;
 
+			// Send the disconnected message if the NetConnection isn't owned
+			// by a server
+			std::cout << "Disconnecting netconnection" << std::endl;
+			if (!m_serverOwned && m_messagesIn != nullptr) {
+				std::cout << "Not server owned" << std::endl;
+				NetMessage message(NetMessageTypes::DISCONNECTED,
+					this->shared_from_this());
+				m_messagesIn->pushBack(message);
+			}
+
 			// Post the disconnect
 			asio::post(m_context, [this]() { m_socket.close(); });
-		}
-
-		// Send the disconnected message if the NetConnection isn't owned
-		// by a server
-		std::cout << "Disconnecting netconnection" << std::endl;
-		if (!m_serverOwned) {
-			std::cout << "Not server owned" << std::endl;
-			NetMessage message(NetMessageTypes::DISCONNECTED,
-				this->shared_from_this());
-			m_messagesIn->pushBack(message);
 		}
 	}
 

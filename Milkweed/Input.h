@@ -163,6 +163,13 @@ namespace Milkweed {
 		* The mouse cursor has been moved on the window
 		*/
 		virtual void cursorMoved() {};
+		/*
+		* The mouse scroll wheel has been moved on the window
+		* 
+		* @param distance: The distance in the x and y dimensions the scroll
+		* wheel moved.
+		*/
+		virtual void scrolled(const glm::vec2& distance) {};
 	};
 
 	/*
@@ -287,6 +294,11 @@ namespace Milkweed {
 		* GLFW callback function for mouse cursor input events
 		*/
 		static void cursor_callback(GLFWwindow* window, double x, double y);
+		/*
+		* GLFW callback function for mouse scroll wheel events
+		*/
+		static void scroll_callback(GLFWwindow* window, double xOffset,
+			double yOffset);
 	};
 }
 

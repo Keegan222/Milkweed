@@ -17,6 +17,8 @@ namespace Milkweed {
 			button_callback);
 		glfwSetCursorPosCallback(MW::WINDOW.getWindowHandle(),
 			cursor_callback);
+		glfwSetScrollCallback(MW::WINDOW.getWindowHandle(),
+			scroll_callback);
 
 		MWLOG(Info, InputManager, "Set GLFW input callback functions for ",
 			"keyboard, text, mouse buttons and mouse movement");
@@ -79,6 +81,13 @@ namespace Milkweed {
 		// y-axis)
 		for (InputListener* l : MW::INPUT.m_listeners) {
 			l->cursorMoved();
+		}
+	}
+
+	void InputManager::scroll_callback(GLFWwindow* window, double xOffset,
+		double yOffset) {
+		for (InputListener* l : MW::INPUT.m_listeners) {
+			l->scrolled(glm::vec2(xOffset, yOffset));
 		}
 	}
 

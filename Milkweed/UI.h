@@ -281,6 +281,7 @@ namespace Milkweed {
 		class Switch;
 		class Slider;
 		class Cycle;
+		class TextArea;
 
 		/*
 		* A text label for drawing text onto the screen
@@ -410,6 +411,7 @@ namespace Milkweed {
 			friend Switch;
 			friend Slider;
 			friend Cycle;
+			friend TextArea;
 			// The text for this label to display
 			std::string m_text = "";
 			// The position of this text label
@@ -920,6 +922,215 @@ namespace Milkweed {
 			* Free this cycle's memory.
 			*/
 			void destroy() override;
+		};
+	
+		/*
+		* A handle for a group of text labels which can be used to draw multi-
+		* line strings. Acts as a simple text editor when enabled.
+		*/
+		class TextArea : public UIComponent, InputListener {
+		public:
+			// The event ID for this text area being unselected
+			const static unsigned int UNSELECTED_EVENT = 0;
+			// The event ID for this text area being selected
+			const static unsigned int SELECTED_EVENT = 1;
+
+			/*
+			* Initialize this text area
+			* 
+			* @param text: The multi-line string of text to appear in this
+			* text area.
+			* @param lineCount: The number of labels to draw the text with.
+			* @param normalPosition: The normalized position of this text area
+			* on the screen.
+			* @param normalDimensions: The normalized dimensions of this text
+			* area on the screen.
+			* @param textScale: The scale of the text to appear in the labels.
+			* @parma textColor: The color of the text to appear in the labels.
+			* @param hJustification: The horizontal justification of the text
+			* in the labels.
+			* @param vJustification: The vertical justification of the text in
+			* the labels.
+			* @param texture: The texture of the background sprite of this text
+			* area.
+			*/
+			void init(const std::string& text, unsigned int lineCount,
+				const glm::vec3& normalPosition,
+				const glm::vec2& normalDimensions, float textScale,
+				const glm::vec3& textColor, Justification hJustification,
+				Justification vJustification, Texture* texture,
+				Texture* cursorTexture);
+			/*
+			* Get the text displayed by this text area
+			*/
+			const std::string& getText() const { return m_text; }
+			/*
+			* Set the text displayed by this text area
+			*/
+			void setText(const std::string& text);
+			/*
+			* Get the position of this text area
+			*/
+			const glm::vec3& getPosition() const override;
+			/*
+			* Set the position of this text area
+			*/
+			void setPosition(const glm::vec3& position) override;
+			/*
+			* Get the dimensions of this text area
+			*/
+			const glm::vec2& getDimensions() const override;
+			/*
+			* Set the dimensions of this text area
+			*/
+			void setDimensions(const glm::vec2& dimensions) override;
+			/*
+			* Get the text scale of this text area
+			*/
+			float getTextScale() const override;
+			/*
+			* Set the text scale of this text area
+			*/
+			void setTextScale(float textScale) override;
+			/*
+			* Test whether this text area is enabled
+			*/
+			bool isEnabled() const override { return m_enabled; }
+			/*
+			* Set whether this text area is enabled
+			*/
+			void setEnabled(bool enabled) override;
+			/*
+			* Test whether this text area is visible
+			*/
+			bool isVisible() const override { return m_visible; }
+			/*
+			* Set whether this text area is visible
+			*/
+			void setVisible(bool visible) override;
+			/*
+			* Test whether scrolling is enabled on this text area.
+			*/
+			bool isScrollEnabled() const { return m_scrollEnabled; }
+			/*
+			* Set whether scrolling is enabled on this text area.
+			*/
+			void setScrollEnabled(bool scrollEnabled) {
+				m_scrollEnabled = scrollEnabled;
+			}
+			/*
+			* Test whether line wrapping is enabled for the text in this text
+			* area
+			*/
+			bool isLineWrapEnabled() const { return m_lineWrapEnabled; }
+			/*
+			* Test whether line wrapping is enabled for the text in this text
+			* area
+			*/
+			void setLineWrapEnabled(bool lineWrapEnabled);
+			/*
+			* Test whether this text area is selected
+			*/
+			bool isSelected() const { return m_selected; }
+			/*
+			* Set whether this text area is selected
+			*/
+			void setSelected(bool selected);
+			/*
+			* Get the x-position of the text in this text area
+			*/
+			float getTextPosition() const { return m_textPosition; }
+			/*
+			* Set the x-position of the text in this text area
+			*/
+			void setTextPosition(float textPosition);
+			/*
+			* Test whether this text area is editable
+			*/
+			bool isEditable() const { return m_editable; }
+			/*
+			* Set whether this text area is editable
+			*/
+			void setEditable(bool editable) { m_editable = editable; }
+
+		protected:
+			// The texture coords of the unselected texture for this text area
+			static glm::vec4 UNSELECTED_COORDS;
+			// The texture coords of the selected texture for this text area
+			static glm::vec4 SELECTED_COORDS;
+
+			/*
+			* Add this text area to a UI group
+			*/
+			void add() override;
+			/*
+			* Draw this text area to the screen
+			*/
+			void draw() override;
+			/*
+			* Process input to this text area
+			*/
+			void processInput() override;
+			/*
+			* Process text typed into this text area
+			*/
+			void textTyped(char text) override;
+			/*
+			* Process the scroll wheel moving on this text area
+			*/
+			void scrolled(const glm::vec2& distance) override;
+			/*
+			* Update this text area
+			*/
+			void update(float deltaTime) override {};
+			/*
+			* Free this text area's memory
+			*/
+			void destroy() override;
+
+		private:
+			// The text in this text area
+			std::string m_text = "";
+			// The number of lines in the text string for this area to display
+			std::vector<std::string> m_lines;
+			// The set of text labels
+			std::vector<TextLabel> m_labels;
+			// Whether scrolling is enabled in this text area
+			bool m_scrollEnabled = false;
+			// The index of the line which appears in the first text label
+			int m_scroll = 0;
+			// Whether line wrapping is enabled for the text in this text area
+			bool m_lineWrapEnabled = false;
+			// Whether this text area is currently selected
+			bool m_selected = false;
+			// The background sprite of this text area.
+			Sprite m_sprite;
+			// The dimensions of this text area on the screen
+			glm::vec2 m_dimensions = glm::vec2(0.0f);
+			// The x-value of the text position of all labels in this text area
+			float m_textPosition = 0.0f;
+			// Whether this text area is editable
+			bool m_editable = false;
+			// The position of the cursor in the text in this text area
+			unsigned int m_cursorPosition = 0;
+			// The sprite representing the cursor in this text area
+			Sprite m_cursor;
+
+			/*
+			* Fill the text labels with the text from m_text based on the
+			* scroll and line wrap values.
+			*/
+			void populateLabels();
+			/*
+			* Find the width of a string of text in pixels based on the font
+			* and text scale
+			*/
+			float getStringWidth(const std::string& str);
+			/*
+			* Update the position of the cursor based on the dimensions of the
+			* text area and its position in the text
+			*/
+			void updateCursorPosition();
 		};
 	}
 }

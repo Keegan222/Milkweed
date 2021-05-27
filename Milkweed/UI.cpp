@@ -965,5 +965,370 @@ namespace Milkweed {
 			m_selection = 0;
 			m_options.clear();
 		}
+
+		glm::vec4 TextArea::UNSELECTED_COORDS = glm::vec4(0.0f, 0.0f,
+			1.0f / 2.0f, 1.0f);
+		glm::vec4 TextArea::SELECTED_COORDS = glm::vec4(1.0f / 2.0f, 0.0f,
+			1.0f / 2.0f, 1.0f);
+
+		void TextArea::init(const std::string& text, unsigned int lineCount,
+			const glm::vec3& normalPosition, const glm::vec2& normalDimensions,
+			float textScale, const glm::vec3& textColor,
+			Justification hJustification, Justification vJustification,
+			Texture* texture, Texture* cursorTexture) {
+			// Initialize the text labels to use to display lines
+			m_labels.resize(lineCount);
+			float dy = normalDimensions.y / (float)lineCount;
+			for (unsigned int i = 0; i < lineCount; i++) {
+				m_labels[i].init("", glm::vec3(normalPosition.x,
+					normalPosition.y + dy * (float)(lineCount - 1 - i),
+					normalPosition.z), glm::vec2(normalDimensions.x, dy),
+					glm::vec3(normalPosition.x,
+						normalPosition.y + dy * (float)(lineCount - 1 - i),
+						normalPosition.z), textScale, textColor, hJustification,
+					vJustification);
+			}
+			m_text = text;
+
+			// Initialize the background and cursor sprites based on the window
+			// size and the normalized position and dimensions
+			glm::vec2 winDims = MW::WINDOW.getDimensions();
+			m_sprite.init(glm::vec3(normalPosition.x * winDims.x,
+				normalPosition.y * winDims.y, normalPosition.z),
+				normalDimensions * winDims, texture);
+			setTextPosition(normalPosition.x * winDims.x);
+			m_sprite.textureCoords = UNSELECTED_COORDS;
+			m_cursor.init(glm::vec3(), glm::vec2(), cursorTexture);
+
+			setPosition(m_sprite.position);
+			setDimensions(m_sprite.dimensions);
+
+			updateCursorPosition();
+			MW::INPUT.addInputListener(this);
+		}
+
+		void TextArea::setText(const std::string& text) {
+			m_text = text;
+			populateLabels();
+		}
+
+		const glm::vec3& TextArea::getPosition() const {
+			return m_labels[m_labels.size() - 1].getPosition();
+		}
+
+		void TextArea::setPosition(const glm::vec3& position) {
+			for (unsigned int i = 0; i < m_labels.size(); i++) {
+				m_labels[i].setPosition(glm::vec3(position.x,
+					position.y + m_labels[i].getDimensions().y
+					* (m_labels.size() - 1 - i), position.z));
+			}
+		}
+
+		const glm::vec2& TextArea::getDimensions() const {
+			return m_dimensions;
+		}
+
+		void TextArea::setDimensions(const glm::vec2& dimensions) {
+			m_dimensions = dimensions;
+			float dy = dimensions.y / (float)m_labels.size();
+			for (unsigned int i = 0; i < m_labels.size(); i++) {
+				m_labels[i].setDimensions(glm::vec2(dimensions.x, dy));
+			}
+		}
+
+		float TextArea::getTextScale() const {
+			return m_labels[0].getTextScale();
+		}
+
+		void TextArea::setTextScale(float textScale) {
+			for (unsigned int i = 0; i < m_labels.size(); i++) {
+				m_labels[i].setTextScale(textScale);
+			}
+		}
+
+		void TextArea::setEnabled(bool enabled) {
+			for (unsigned int i = 0; i < m_labels.size(); i++) {
+				m_labels[i].setEnabled(enabled);
+			}
+		}
+
+		void TextArea::setVisible(bool visible) {
+			for (unsigned int i = 0; i < m_labels.size(); i++) {
+				m_labels[i].setVisible(visible);
+			}
+		}
+
+		void TextArea::setLineWrapEnabled(bool lineWrapEnabled) {
+			m_lineWrapEnabled = lineWrapEnabled;
+			populateLabels();
+		}
+
+		void TextArea::setSelected(bool selected) {
+			m_selected = selected;
+			if (m_selected) {
+				m_sprite.textureCoords = SELECTED_COORDS;
+			}
+			else {
+				m_sprite.textureCoords = UNSELECTED_COORDS;
+			}
+		}
+
+		void TextArea::setTextPosition(float textPosition) {
+			m_textPosition = textPosition;
+			for (unsigned int i = 0; i < m_labels.size(); i++) {
+				glm::vec3 temp = m_labels[i].getTextPosition();
+				temp.x = textPosition;
+				m_labels[i].setTextPosition(temp);
+			}
+		}
+
+		void TextArea::add() {
+			for (unsigned int i = 0; i < m_labels.size(); i++) {
+				m_labels[i].setOwned(true);
+m_parent->addComponent(&m_labels[i]);
+			}
+			populateLabels();
+		}
+
+		void TextArea::draw() {
+			MW::RENDERER.submit({ &m_sprite }, m_parent->getSpriteShader());
+			for (unsigned int i = 0; i < m_labels.size(); i++) {
+				m_labels[i].draw();
+			}
+			if (m_enabled && m_selected && m_editable
+				&& RectContains(glm::vec4(m_sprite.position.x,
+					m_sprite.position.y, m_sprite.dimensions.x,
+					m_sprite.dimensions.y), m_cursor.position)
+				&& RectContains(glm::vec4(m_sprite.position.x,
+					m_sprite.position.y, m_sprite.dimensions.x,
+					m_sprite.dimensions.y), glm::vec2(m_cursor.position.x,
+						m_cursor.position.y + m_cursor.dimensions.y))) {
+				MW::RENDERER.submit({ &m_cursor }, m_parent->getSpriteShader());
+			}
+		}
+
+		void TextArea::processInput() {
+			if (!m_enabled) {
+				return;
+			}
+
+			// Determine if this text area should be selected
+			if (MW::INPUT.isButtonPressed(B_LEFT)) {
+				glm::vec2 mousePos = MW::INPUT.getCursorPosition(
+					m_parent->getSpriteShader()->getCamera());
+				if (RectContains(glm::vec4(m_sprite.position.x,
+					m_sprite.position.y, m_sprite.dimensions.x,
+					m_sprite.dimensions.y), mousePos)) {
+					if (!m_selected) {
+						m_selected = true;
+						m_sprite.textureCoords = SELECTED_COORDS;
+						m_parent->componentEvent(m_ID, SELECTED_EVENT);
+					}
+				}
+				else {
+					if (m_selected) {
+						m_selected = false;
+						m_sprite.textureCoords = UNSELECTED_COORDS;
+						m_parent->componentEvent(m_ID, UNSELECTED_EVENT);
+					}
+				}
+			}
+
+			if (m_selected && m_editable) {
+				if (MW::INPUT.isKeyPressed(F_LEFT)) {
+					if (m_cursorPosition > 0) {
+						m_cursorPosition--;
+						updateCursorPosition();
+					}
+				}
+				else if (MW::INPUT.isKeyPressed(F_RIGHT)) {
+					if (m_cursorPosition < m_text.length()) {
+						m_cursorPosition++;
+						updateCursorPosition();
+					}
+				}
+
+				if (MW::INPUT.isKeyPressed(F_ENTER)) {
+					textTyped('\n');
+				}
+				
+				if (MW::INPUT.isKeyPressed(F_BACKSPACE)) {
+					if (!m_text.empty() && m_cursorPosition > 0) {
+						if (m_cursorPosition >= m_text.length() - 1) {
+							m_text = m_text.substr(0, m_cursorPosition - 1);
+						}
+						else {
+							m_text = m_text.substr(0, m_cursorPosition - 1)
+								+ m_text.substr(m_cursorPosition);
+						}
+						m_cursorPosition--;
+					}
+					populateLabels();
+					updateCursorPosition();
+				}
+			}
+		}
+
+		void TextArea::textTyped(char text) {
+			if (m_enabled && m_selected && m_editable) {
+				if (m_cursorPosition >= m_text.length()) {
+					m_text += text;
+					m_cursorPosition = m_text.length();
+				}
+				else {
+					m_text = m_text.substr(0, m_cursorPosition)
+						+ std::string(1, text)
+						+ m_text.substr(m_cursorPosition);
+				}
+				m_cursorPosition++;
+				if (m_text.length() > m_cursorPosition) {
+					if (m_text[m_cursorPosition] == '\n') {
+						m_cursorPosition++;
+					}
+				}
+				populateLabels();
+				updateCursorPosition();
+			}
+		}
+
+		void TextArea::scrolled(const glm::vec2& distance) {
+			if (m_enabled && m_selected && m_scrollEnabled) {
+				int pScroll = (int)m_scroll;
+				pScroll -= (int)distance.y;
+				if (pScroll <= 0) {
+					m_scroll = 0;
+				}
+				else {
+					int top = (int)m_lines.size() - (int)m_labels.size();
+					if (top >= 0) {
+						if (pScroll >= top) {
+							m_scroll = top;
+						}
+						else {
+							m_scroll = pScroll;
+						}
+					}
+				}
+				populateLabels();
+				updateCursorPosition();
+			}
+		}
+
+		void TextArea::destroy() {
+			m_text = "";
+			for (unsigned int i = 0; i < m_labels.size(); i++) {
+				m_labels[i].destroy();
+			}
+			m_labels.clear();
+			m_lines.clear();
+			m_scrollEnabled = false;
+			m_scroll = 0;
+			m_lineWrapEnabled = false;
+			m_sprite.destroy();
+			m_cursor.destroy();
+			m_cursorPosition = 0;
+			m_editable = false;
+			MW::INPUT.removeInputListener(this);
+		}
+
+		void TextArea::populateLabels() {
+			// Break the text up into lines
+			m_lines.clear();
+			std::string tempLine = "";
+			unsigned int spaceIndex = 0;
+			unsigned int tSpaceIndex = 0;
+			unsigned int lineIndex = 0;
+			for (unsigned int i = 0; i < m_text.length(); i++) {
+				if (m_text[i] == '\n') {
+					m_lines.push_back(tempLine);
+					tempLine.clear();
+					spaceIndex = 0;
+					lineIndex = i;
+				}
+				else {
+					if (m_text[i] == ' ') {
+						spaceIndex = i - lineIndex;
+						tSpaceIndex = i;
+					}
+				}
+				tempLine += m_text[i];
+				if (getStringWidth(tempLine) > m_sprite.dimensions.x
+					&& m_lineWrapEnabled && spaceIndex > 0
+					&& spaceIndex < m_text.length() - 1) {
+					lineIndex = tSpaceIndex;
+					tempLine = tempLine.substr(0, spaceIndex);
+					i = tSpaceIndex - 1;
+					m_lines.push_back(tempLine);
+					tempLine.clear();
+					spaceIndex = 0;
+				}
+			}
+			if (!tempLine.empty()) {
+				m_lines.push_back(tempLine);
+			}
+
+			// Push the lines of text into the text labels
+			for (unsigned int i = 0; i < m_labels.size(); i++) {
+				unsigned int lineIndex = i + m_scroll;
+				if (lineIndex >= m_lines.size()) {
+					m_labels[i].setText("");
+				}
+				else {
+					m_labels[i].setText(m_lines[lineIndex]);
+				}
+			}
+		}
+
+		float TextArea::getStringWidth(const std::string& str) {
+			float w = 0.0f;
+			for (char c : str) {
+				if (c == '\n') {
+					continue;
+				}
+				w += (float)m_parent->getFont()->characters[c].offset
+					* m_labels[0].getTextScale();
+			}
+			return w;
+		}
+
+		void TextArea::updateCursorPosition() {
+			unsigned int count = 0;
+			bool b = false;
+			for (int l = 0; l < m_lines.size(); l++) {
+				b = false;
+				for (unsigned int c = 0; c <= m_lines[l].length() + 1; c++) {
+					std::cout << "Count: " << count << ", cursorpos: "
+						<< m_cursorPosition << "!" << std::endl;
+					if (count++ == m_cursorPosition) {
+						b = true;
+						MWLOG(Info, UI TextArea, "Cursor posotion: (",
+							c, ", ", l, ")");
+						if (c == m_lines[l].length()) {
+							m_cursor.position.x = m_textPosition
+								+ getStringWidth(m_lines[l]);
+						}
+						else {
+							m_cursor.position.x = m_textPosition
+								+ getStringWidth(m_lines[l].substr(0, c + l));
+						}
+						int index = l - m_scroll;
+						if (index < m_labels.size()) {
+							m_cursor.position.y
+								= m_labels[index].getPosition().y;
+						}
+						else {
+							m_cursor.position.y = m_sprite.position.y
+								+ m_sprite.dimensions.y;
+						}
+					}
+				}
+				if (b) {
+					break;
+				}
+			}
+
+			m_cursor.dimensions = glm::vec2(1.0f, m_sprite.dimensions.y
+				/ (float)m_labels.size());
+		}
 	}
 }

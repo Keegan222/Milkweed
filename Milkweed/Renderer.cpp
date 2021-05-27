@@ -100,6 +100,9 @@ namespace Milkweed {
 		float labelWidth = 0.0f, max = font->maxCharacterHeight * scale,
 			min = font->minCharacterHeight * scale, labelHeight = 0.0f;
 		for (char c : text) {
+			if (c == '\n') {
+				continue;
+			}
 			labelWidth += font->characters[c].offset * scale;
 		}
 		labelHeight = max - min;
@@ -149,6 +152,9 @@ namespace Milkweed {
 		// character
 		int count = 0;
 		for (char c : text) {
+			if (c == '\n') {
+				continue;
+			}
 			const Character& fc = font->characters[c];
 			Sprite ch;
 

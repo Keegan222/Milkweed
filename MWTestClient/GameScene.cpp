@@ -37,6 +37,7 @@ void GameScene::init() {
 		"cameraMatrix", &m_UICamera);
 
 	// Initialize UI component variables
+	Font* font = MW::RESOURCES.getFont("Assets/font/arial.ttf");
 	float buffer = 0.015f;
 	glm::vec2 cWinDims = MW::WINDOW.getDimensions();
 	glm::vec2 winDims = glm::vec2(800, 600);
@@ -48,13 +49,16 @@ void GameScene::init() {
 		"Assets/texture/pause_background.png");
 	Texture* buttonTexture
 		= MW::RESOURCES.getTexture("Assets/texture/button.png");
+	Texture* textAreaTexture = MW::RESOURCES.getTexture(
+		"Assets/texture/text_area.png");
+	Texture* cursorTexture = MW::RESOURCES.getTexture(
+		"Assets/texture/cursor.png");
 	float textScale = 0.25f * ((float)MW::WINDOW.getDimensions().y / winDims.y);
 	glm::vec3 textColor = glm::vec3(1.0f, 1.0f, 1.0f);
 
-	// Initialize UI components
-	m_pauseUIGroup.init(this, PAUSE_UI_GROUP, MW::RESOURCES.getFont(
-		"Assets/font/arial.ttf"), &m_UISpriteShader, &m_UITextShader,
-		"textColor");
+	// Initialize pause UI components
+	m_pauseUIGroup.init(this, PAUSE_UI_GROUP, font, &m_UISpriteShader,
+		&m_UITextShader, "textColor");
 	m_pauseBackground.init(glm::vec3((cWinDims.x - backgroundDims.x) / 2.0f,
 		cWinDims.y / 2.0f, 1.0f), backgroundDims, backgroundTexture);
 	m_optionsButton.init("Options", glm::vec3(0.5f - buttonDims.x / 2.0f,
@@ -65,6 +69,16 @@ void GameScene::init() {
 		0.5f + buffer, 2.0f), buttonDims, textScale,
 		textColor, Justification::CENTER, Justification::CENTER, buttonTexture);
 	m_pauseUIGroup.addComponents({ &m_optionsButton, &m_disconnectButton });
+
+	// Initialize HUD UI components
+	m_HUDUIGroup.init(this, HUD_UI_GROUP, font, &m_UISpriteShader,
+		&m_UITextShader, "textColor");
+	m_statsArea.init("", 10, glm::vec3(0.75f, 0.75f, 0.0f),
+		glm::vec2(0.25f, 0.25f), textScale, textColor, Justification::LEFT,
+		Justification::CENTER, nullptr, cursorTexture);
+	m_HUDUIGroup.addComponent(&m_statsArea);
+	updateStatsArea();
+	m_statsArea.setEnabled(false);
 }
 
 void GameScene::enter() {
@@ -73,6 +87,9 @@ void GameScene::enter() {
 	if (!MW::NETWORK.isConnected()) {
 		MW::NETWORK.connect(m_address, m_port);
 	}
+	m_pauseUIGroup.setEnabled(false);
+	m_pauseUIGroup.setVisible(false);
+	m_statsArea.setEnabled(false);
 }
 
 void GameScene::draw() {
@@ -84,6 +101,8 @@ void GameScene::draw() {
 	if (!(m_connected && m_authorized)) {
 		return;
 	}
+
+	m_HUDUIGroup.draw();
 
 	// Get pointers to all the sprites
 	m_playerPointers.clear();
@@ -121,6 +140,7 @@ void GameScene::processInput() {
 	}
 
 	m_pauseUIGroup.processInput();
+	m_HUDUIGroup.processInput();
 
 	if (MW::INPUT.isKeyPressed(F_11)) {
 		MW::WINDOW.setFullScreen(!MW::WINDOW.isFullScreen());
@@ -316,6 +336,7 @@ void GameScene::componentEvent(unsigned int groupID, unsigned int componentID,
 }
 
 void GameScene::updateWindowSize() {
+	m_HUDUIGroup.updateWindowSize();
 	glm::vec2 resizeScale = m_pauseUIGroup.updateWindowSize();
 	MWLOG(Info, GameScene, "Update window size scaling ", resizeScale.x,
 		", ", resizeScale.y);
@@ -331,6 +352,10 @@ void GameScene::updateWindowSize() {
 }
 
 void GameScene::update(float deltaTime) {
+	updateStatsArea();
+	m_HUDUIGroup.update(deltaTime);
+	m_pauseUIGroup.update(deltaTime);
+
 	m_spriteCamera.position = m_players[m_playerID].position
 		- glm::vec3(m_players[m_playerID].dimensions.x / 2.0f,
 			m_players[m_playerID].dimensions.y / 2.0f, 0.0f);
@@ -348,6 +373,7 @@ void GameScene::exit() {
 	m_pauseMenuUp = false;
 	m_pauseUIGroup.setEnabled(false);
 	m_pauseUIGroup.setVisible(false);
+	m_HUDUIGroup.setEnabled(false);
 }
 
 void GameScene::destroy() {
@@ -364,4 +390,13 @@ void GameScene::destroy() {
 	m_spriteCamera.destroy();
 	m_pauseUIGroup.destroy();
 	m_pauseBackground.destroy();
+	m_HUDUIGroup.destroy();
+}
+
+void GameScene::updateStatsArea() {
+	std::ostringstream stream;
+	stream << "Connected users: " << m_players.size() << std::endl;
+	stream << "Position: (" << m_players[m_playerID].position.x << ", "
+		<< m_players[m_playerID].position.y << ")" << std::endl;
+	m_statsArea.setText(stream.str());
 }

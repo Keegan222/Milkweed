@@ -1127,6 +1127,10 @@ namespace Milkweed {
 			*/
 			float getStringWidth(const std::string& str);
 			/*
+			* Helper function for updateCursorPosition()
+			*/
+			void pushCursor(unsigned int& count, bool& found, int l, int c);
+			/*
 			* Update the position of the cursor based on the dimensions of the
 			* text area and its position in the text
 			*/

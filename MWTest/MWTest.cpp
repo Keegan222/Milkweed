@@ -58,6 +58,7 @@ void TestScene::processInput() {
 }
 
 void TestScene::updateWindowSize() {
+	m_UIGroup.updateWindowSize();
 	m_camera.position = glm::vec3(
 		MW::WINDOW.getDimensions().x / 2,
 		MW::WINDOW.getDimensions().y / 2, 0.0f);

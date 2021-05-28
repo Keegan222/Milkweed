@@ -998,11 +998,14 @@ namespace Milkweed {
 				normalDimensions * winDims, texture);
 			setTextPosition(normalPosition.x * winDims.x);
 			m_sprite.textureCoords = UNSELECTED_COORDS;
-			m_cursor.init(glm::vec3(), glm::vec2(), cursorTexture);
 
 			setPosition(m_sprite.position);
 			setDimensions(m_sprite.dimensions);
+			
+			m_cursor.init(m_labels[0].getPosition(), glm::vec2(1.0f,
+				m_labels[0].getDimensions().y), cursorTexture);
 
+			populateLabels();
 			updateCursorPosition();
 			MW::INPUT.addInputListener(this);
 		}
@@ -1017,11 +1020,18 @@ namespace Milkweed {
 		}
 
 		void TextArea::setPosition(const glm::vec3& position) {
+			if (m_labels.empty()) {
+				return;
+			}
 			for (unsigned int i = 0; i < m_labels.size(); i++) {
 				m_labels[i].setPosition(glm::vec3(position.x,
 					position.y + m_labels[i].getDimensions().y
 					* (m_labels.size() - 1 - i), position.z));
+				m_labels[i].setTextPosition(m_labels[i].getPosition());
 			}
+			m_sprite.position = position;
+			m_textPosition = position.x;
+			updateCursorPosition();
 		}
 
 		const glm::vec2& TextArea::getDimensions() const {
@@ -1029,11 +1039,17 @@ namespace Milkweed {
 		}
 
 		void TextArea::setDimensions(const glm::vec2& dimensions) {
+			if (m_labels.empty()) {
+				return;
+			}
+			MWLOG(Info, UI TextArea, "Setting dimensions");
 			m_dimensions = dimensions;
 			float dy = dimensions.y / (float)m_labels.size();
 			for (unsigned int i = 0; i < m_labels.size(); i++) {
 				m_labels[i].setDimensions(glm::vec2(dimensions.x, dy));
 			}
+			m_sprite.dimensions = dimensions;
+			updateCursorPosition();
 		}
 
 		float TextArea::getTextScale() const {
@@ -1050,12 +1066,14 @@ namespace Milkweed {
 			for (unsigned int i = 0; i < m_labels.size(); i++) {
 				m_labels[i].setEnabled(enabled);
 			}
+			m_enabled = enabled;
 		}
 
 		void TextArea::setVisible(bool visible) {
 			for (unsigned int i = 0; i < m_labels.size(); i++) {
 				m_labels[i].setVisible(visible);
 			}
+			m_visible = visible;
 		}
 
 		void TextArea::setLineWrapEnabled(bool lineWrapEnabled) {
@@ -1161,9 +1179,22 @@ m_parent->addComponent(&m_labels[i]);
 							m_text = m_text.substr(0, m_cursorPosition - 1)
 								+ m_text.substr(m_cursorPosition);
 						}
+						populateLabels();
 						m_cursorPosition--;
 					}
-					populateLabels();
+					updateCursorPosition();
+				}
+				else if (MW::INPUT.isKeyPressed(F_DELETE)) {
+					if (!m_text.empty()) {
+						if (m_cursorPosition == m_text.length() - 1) {
+							m_text = m_text.substr(0, m_cursorPosition);
+						}
+						else if (m_cursorPosition < m_text.length() - 1) {
+							m_text = m_text.substr(0, m_cursorPosition)
+								+ m_text.substr(m_cursorPosition + 1);
+						}
+						populateLabels();
+					}
 					updateCursorPosition();
 				}
 			}
@@ -1173,20 +1204,17 @@ m_parent->addComponent(&m_labels[i]);
 			if (m_enabled && m_selected && m_editable) {
 				if (m_cursorPosition >= m_text.length()) {
 					m_text += text;
+					populateLabels();
 					m_cursorPosition = m_text.length();
 				}
 				else {
 					m_text = m_text.substr(0, m_cursorPosition)
 						+ std::string(1, text)
 						+ m_text.substr(m_cursorPosition);
+					populateLabels();
+					m_cursorPosition++;
 				}
-				m_cursorPosition++;
-				if (m_text.length() > m_cursorPosition) {
-					if (m_text[m_cursorPosition] == '\n') {
-						m_cursorPosition++;
-					}
-				}
-				populateLabels();
+
 				updateCursorPosition();
 			}
 		}
@@ -1283,6 +1311,7 @@ m_parent->addComponent(&m_labels[i]);
 			float w = 0.0f;
 			for (char c : str) {
 				if (c == '\n') {
+					w = 0.0f;
 					continue;
 				}
 				w += (float)m_parent->getFont()->characters[c].offset
@@ -1291,44 +1320,62 @@ m_parent->addComponent(&m_labels[i]);
 			return w;
 		}
 
+		void TextArea::pushCursor(unsigned int& count, bool& found, int l,
+			int c) {
+			if (count++ == m_cursorPosition) {
+				found = true;
+				return;
+			}
+
+			int index = l - m_scroll;
+			if (index >= 0 && index < m_labels.size()) {
+				m_cursor.position.x = m_textPosition
+					+ getStringWidth(m_lines[l].substr(0, c + 1));
+				m_cursor.position.y = m_labels[index].getPosition().y;
+			}
+		}
+
 		void TextArea::updateCursorPosition() {
+			if (m_labels.empty()) {
+				return;
+			}
+			// Make sure that the text area isn't empty
+			if (m_text.empty()) {
+				m_cursor.position = glm::vec3(m_textPosition,
+					m_labels[0].getPosition().y, m_labels[0].getPosition().z);
+				m_cursor.dimensions = glm::vec2(1.0f,
+					m_labels[0].getDimensions().y);
+				return;
+			}
+
+			m_cursor.position.x = m_textPosition;
+			m_cursor.position.y = m_sprite.position.y + m_sprite.dimensions.y;
+			m_cursor.dimensions = glm::vec2(1.0f,
+				m_sprite.dimensions.y / (float)m_labels.size());
+
+			// The number of characters traversed
 			unsigned int count = 0;
-			bool b = false;
+			// Whether the cursor position has been found
+			bool found = false;
 			for (int l = 0; l < m_lines.size(); l++) {
-				b = false;
-				for (unsigned int c = 0; c <= m_lines[l].length() + 1; c++) {
-					std::cout << "Count: " << count << ", cursorpos: "
-						<< m_cursorPosition << "!" << std::endl;
-					if (count++ == m_cursorPosition) {
-						b = true;
-						MWLOG(Info, UI TextArea, "Cursor posotion: (",
-							c, ", ", l, ")");
-						if (c == m_lines[l].length()) {
-							m_cursor.position.x = m_textPosition
-								+ getStringWidth(m_lines[l]);
-						}
-						else {
-							m_cursor.position.x = m_textPosition
-								+ getStringWidth(m_lines[l].substr(0, c + l));
-						}
-						int index = l - m_scroll;
-						if (index < m_labels.size()) {
-							m_cursor.position.y
-								= m_labels[index].getPosition().y;
-						}
-						else {
-							m_cursor.position.y = m_sprite.position.y
-								+ m_sprite.dimensions.y;
-						}
+				// Iterate through line l
+				found = false;
+				for (int c = 0; c < m_lines[l].length(); c++) {
+					// Push the cursor through the text one character
+					pushCursor(count, found, l, c);
+					if (found) {
+						break;
 					}
 				}
-				if (b) {
+				// Stop if the cursor was found
+				if (found) {
 					break;
 				}
 			}
-
-			m_cursor.dimensions = glm::vec2(1.0f, m_sprite.dimensions.y
-				/ (float)m_labels.size());
+			if (!found) {
+				pushCursor(count, found, m_lines.size() - 1,
+					m_lines[m_lines.size() - 1].length());
+			}
 		}
 	}
 }

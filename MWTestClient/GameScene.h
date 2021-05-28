@@ -78,6 +78,7 @@ public:
 
 private:
 	const static unsigned int PAUSE_UI_GROUP = 0;
+	const static unsigned int HUD_UI_GROUP = 1;
 	// The address to connect to
 	std::string m_address = "127.0.0.1";
 	// The port to connect on
@@ -108,6 +109,14 @@ private:
 	UI::UIGroup m_pauseUIGroup;
 	Sprite m_pauseBackground;
 	UI::Button m_optionsButton, m_disconnectButton;
+	// The UI group for the game HUD
+	UI::UIGroup m_HUDUIGroup;
+	UI::TextArea m_statsArea;
+
+	/*
+	* Update the stats text area
+	*/
+	void updateStatsArea();
 };
 
 #endif

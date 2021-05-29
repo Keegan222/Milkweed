@@ -1172,7 +1172,7 @@ m_parent->addComponent(&m_labels[i]);
 				
 				if (MW::INPUT.isKeyPressed(F_BACKSPACE)) {
 					if (!m_text.empty() && m_cursorPosition > 0) {
-						if (m_cursorPosition >= m_text.length() - 1) {
+						if (m_cursorPosition >= m_text.length()) {
 							m_text = m_text.substr(0, m_cursorPosition - 1);
 						}
 						else {
@@ -1280,9 +1280,10 @@ m_parent->addComponent(&m_labels[i]);
 					}
 				}
 				tempLine += m_text[i];
-				if (getStringWidth(tempLine) > m_sprite.dimensions.x
-					&& m_lineWrapEnabled && spaceIndex > 0
-					&& spaceIndex < m_text.length() - 1) {
+				if (getStringWidth(tempLine)
+					> m_sprite.dimensions.x
+					&& m_lineWrapEnabled && spaceIndex > 0) {
+					//&& spaceIndex < m_text.length() - 1) {
 					lineIndex = tSpaceIndex;
 					tempLine = tempLine.substr(0, spaceIndex);
 					i = tSpaceIndex - 1;
@@ -1322,7 +1323,7 @@ m_parent->addComponent(&m_labels[i]);
 
 		void TextArea::pushCursor(unsigned int& count, bool& found, int l,
 			int c) {
-			if (count++ == m_cursorPosition) {
+			if (count == m_cursorPosition) {
 				found = true;
 				return;
 			}
@@ -1333,6 +1334,13 @@ m_parent->addComponent(&m_labels[i]);
 					+ getStringWidth(m_lines[l].substr(0, c + 1));
 				m_cursor.position.y = m_labels[index].getPosition().y;
 			}
+			else {
+				m_cursor.position.x = m_textPosition;
+				m_cursor.position.y = m_sprite.position.y
+					+ m_sprite.dimensions.y;
+			}
+
+			count++;
 		}
 
 		void TextArea::updateCursorPosition() {

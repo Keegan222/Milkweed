@@ -44,6 +44,9 @@ namespace Milkweed {
 					}
 					else {
 						std::cout << "Didn't connect to server" << std::endl;
+						NetMessage msg;
+						msg.header.ID = NetMessageTypes::FAILED;
+						m_messagesIn->pushBack(msg);
 						disconnect();
 					}
 			}

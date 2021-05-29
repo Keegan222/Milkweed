@@ -31,7 +31,8 @@ namespace Milkweed {
 	*/
 	enum NetMessageTypes : unsigned int {
 		CONNECTED = 0,
-		DISCONNECTED = 1,
+		FAILED = 1,
+		DISCONNECTED = 2,
 	};
 
 	// Forward declare NetConnection

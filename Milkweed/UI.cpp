@@ -1221,20 +1221,17 @@ m_parent->addComponent(&m_labels[i]);
 
 		void TextArea::scrolled(const glm::vec2& distance) {
 			if (m_enabled && m_selected && m_scrollEnabled) {
-				int pScroll = (int)m_scroll;
-				pScroll -= (int)distance.y;
-				if (pScroll <= 0) {
+				m_scroll -= (int)distance.y;
+				int back = (int)m_lines.size() - (int)m_labels.size();
+				if (m_scroll < 0) {
 					m_scroll = 0;
 				}
-				else {
-					int top = (int)m_lines.size() - (int)m_labels.size();
-					if (top >= 0) {
-						if (pScroll >= top) {
-							m_scroll = top;
-						}
-						else {
-							m_scroll = pScroll;
-						}
+				else if (m_scroll >= back) {
+					if (back < 0) {
+						m_scroll = 0;
+					}
+					else {
+						m_scroll = back;
 					}
 				}
 				populateLabels();
@@ -1329,7 +1326,7 @@ m_parent->addComponent(&m_labels[i]);
 			}
 
 			int index = l - m_scroll;
-			if (index >= 0 && index < m_labels.size()) {
+			if (index >= 0 && index < (int)m_labels.size()) {
 				m_cursor.position.x = m_textPosition
 					+ getStringWidth(m_lines[l].substr(0, c + 1));
 				m_cursor.position.y = m_labels[index].getPosition().y;
@@ -1365,10 +1362,10 @@ m_parent->addComponent(&m_labels[i]);
 			unsigned int count = 0;
 			// Whether the cursor position has been found
 			bool found = false;
-			for (int l = 0; l < m_lines.size(); l++) {
+			for (int l = 0; l < (int)m_lines.size(); l++) {
 				// Iterate through line l
 				found = false;
-				for (int c = 0; c < m_lines[l].length(); c++) {
+				for (int c = 0; c < (int)m_lines[l].length(); c++) {
 					// Push the cursor through the text one character
 					pushCursor(count, found, l, c);
 					if (found) {

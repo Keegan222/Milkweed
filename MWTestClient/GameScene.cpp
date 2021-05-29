@@ -208,22 +208,14 @@ void GameScene::processNetMessage(NetMessage& message) {
 		m_connected = true;
 		break;
 	}
+	case NetMessageTypes::FAILED: {
+		MWLOG(Info, GameScene, "FAILED message received");
+		disconnect();
+		break;
+	}
 	case NetMessageTypes::DISCONNECTED: {
 		MWLOG(Info, GameScene, "DISCONNECTED message received");
-		m_connected = false;
-		m_authorized = false;
-		m_playerID = 0;
-		m_players.clear();
-		for (unsigned int i = 0; i < m_playerPointers.size(); i++) {
-			m_playerPointers[i] = nullptr;
-		}
-		m_playerPointers.clear();
-
-		// Go back to the connecting scene
-		MW::NETWORK.disconnect();
-		MW::NETWORK.destroy();
-		MW::NETWORK.init();
-		MW::SetScene(&TestClient::CONNECT_SCENE);
+		disconnect();
 		break;
 	}
 	case MessageTypes::PLAYER_ID_ASSIGNMENT: {
@@ -399,4 +391,21 @@ void GameScene::updateStatsArea() {
 	stream << "Position: (" << m_players[m_playerID].position.x << ", "
 		<< m_players[m_playerID].position.y << ")" << std::endl;
 	m_statsArea.setText(stream.str());
+}
+
+void GameScene::disconnect() {
+	m_connected = false;
+	m_authorized = false;
+	m_playerID = 0;
+	m_players.clear();
+	for (unsigned int i = 0; i < m_playerPointers.size(); i++) {
+		m_playerPointers[i] = nullptr;
+	}
+	m_playerPointers.clear();
+
+	// Go back to the connecting scene
+	MW::NETWORK.disconnect();
+	MW::NETWORK.destroy();
+	MW::NETWORK.init();
+	MW::SetScene(&TestClient::CONNECT_SCENE);
 }

@@ -15,10 +15,10 @@ using namespace Milkweed;
 * Enumeration of the types of message for the Test Server/Client system
 */
 enum MessageTypes : unsigned int {
-	PLAYER_ID_ASSIGNMENT = 2,
-	PLAYER_CONNECTED = 3,
-	PLAYER_MOVEMENT = 4,
-	PLAYER_DISCONNECTED = 5,
+	PLAYER_ID_ASSIGNMENT = 3,
+	PLAYER_CONNECTED = 4,
+	PLAYER_MOVEMENT = 5,
+	PLAYER_DISCONNECTED = 6,
 };
 
 /*

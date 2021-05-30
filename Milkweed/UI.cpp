@@ -977,6 +977,7 @@ namespace Milkweed {
 			Justification hJustification, Justification vJustification,
 			Texture* texture, Texture* cursorTexture) {
 			// Initialize the text labels to use to display lines
+			MWLOG(Info, UI TextArea, "Initializing text area");
 			m_labels.resize(lineCount);
 			float dy = normalDimensions.y / (float)lineCount;
 			for (unsigned int i = 0; i < lineCount; i++) {
@@ -989,6 +990,7 @@ namespace Milkweed {
 					vJustification);
 			}
 			m_text = text;
+			MWLOG(Info, UI TextArea, "Initialized labels");
 
 			// Initialize the background and cursor sprites based on the window
 			// size and the normalized position and dimensions
@@ -999,14 +1001,15 @@ namespace Milkweed {
 			setTextPosition(normalPosition.x * winDims.x);
 			m_sprite.textureCoords = UNSELECTED_COORDS;
 
-			setPosition(m_sprite.position);
-			setDimensions(m_sprite.dimensions);
+			MWLOG(Info, UI TextArea, "Initialzed the sprite");
+
+			MWLOG(Info, UI TextArea, "Initializing cursor");
 			
 			m_cursor.init(m_labels[0].getPosition(), glm::vec2(1.0f,
 				m_labels[0].getDimensions().y), cursorTexture);
 
-			populateLabels();
-			updateCursorPosition();
+			MWLOG(Info, UI TextArea, "All the stuff if set");
+
 			MW::INPUT.addInputListener(this);
 		}
 
@@ -1023,15 +1026,19 @@ namespace Milkweed {
 			if (m_labels.empty()) {
 				return;
 			}
+			MWLOG(Info, UI TextArea, "Labels is not empty");
 			for (unsigned int i = 0; i < m_labels.size(); i++) {
 				m_labels[i].setPosition(glm::vec3(position.x,
 					position.y + m_labels[i].getDimensions().y
 					* (m_labels.size() - 1 - i), position.z));
 				m_labels[i].setTextPosition(m_labels[i].getPosition());
 			}
+			MWLOG(Info, UI TextArea, "Set labels");
 			m_sprite.position = position;
 			m_textPosition = position.x;
+			MWLOG(Info, UI TextArea, "Set the sprite and text position");
 			updateCursorPosition();
+			MWLOG(Info, UI TextArea, "Called updateCursorPosition()");
 		}
 
 		const glm::vec2& TextArea::getDimensions() const {
@@ -1103,7 +1110,7 @@ namespace Milkweed {
 		void TextArea::add() {
 			for (unsigned int i = 0; i < m_labels.size(); i++) {
 				m_labels[i].setOwned(true);
-m_parent->addComponent(&m_labels[i]);
+				m_parent->addComponent(&m_labels[i]);
 			}
 			populateLabels();
 		}
@@ -1157,11 +1164,136 @@ m_parent->addComponent(&m_labels[i]);
 					if (m_cursorPosition > 0) {
 						m_cursorPosition--;
 						updateCursorPosition();
+						while (m_cursor.position.x < m_sprite.position.x) {
+							setTextPosition(getTextPosition()
+								+ m_sprite.dimensions.x / 4.0f);
+							updateCursorPosition();
+						}
+						while (m_cursor.position.x
+							> m_sprite.position.x + m_sprite.dimensions.x) {
+							setTextPosition(getTextPosition()
+								- m_sprite.dimensions.x / 4.0f);
+							updateCursorPosition();
+						}
+						if ((int)m_cursorLine - 1 < m_scroll && m_scroll > 0
+							&& m_scrollEnabled) {
+							m_scroll = m_cursorLine - 1;
+							populateLabels();
+							updateCursorPosition();
+						}
 					}
 				}
 				else if (MW::INPUT.isKeyPressed(F_RIGHT)) {
 					if (m_cursorPosition < m_text.length()) {
 						m_cursorPosition++;
+						updateCursorPosition();
+						while (m_cursor.position.x < m_sprite.position.x) {
+							setTextPosition(m_sprite.position.x);
+							updateCursorPosition();
+						}
+						while (m_cursor.position.x
+							> m_sprite.position.x + m_sprite.dimensions.x) {
+							setTextPosition(getTextPosition()
+								- m_sprite.dimensions.x / 4.0f);
+							updateCursorPosition();
+						}
+						while (m_cursorLine >= m_scroll + m_labels.size()
+							&& m_scrollEnabled) {
+							m_scroll++;
+							populateLabels();
+							updateCursorPosition();
+						}
+					}
+				}
+
+				if (MW::INPUT.isKeyPressed(F_UP)) {
+					if (m_cursorLine > 0) {
+						m_cursorPosition = 0;
+						bool found = false;
+						for (int l = 0; l < m_cursorLine; l++) {
+							found = false;
+							for (int c = 0; c < m_lines[l].length(); c++) {
+								if (l == m_cursorLine - 1) {
+									if (m_cursor.position.x < m_textPosition
+										+ getStringWidth(m_lines[l].substr(0,
+											c))) {
+										found = true;
+										break;
+									}
+								}
+
+								m_cursorPosition++;
+							}
+							if (found) {
+								break;
+							}
+						}
+						updateCursorPosition();
+					}
+				}
+				else if (MW::INPUT.isKeyPressed(F_DOWN)) {
+					if (!m_lines.empty() && m_cursorLine < m_lines.size() - 1) {
+						m_cursorPosition = 0;
+						bool found = false;
+						for (int l = 0; l < m_cursorLine + 2; l++) {
+							found = false;
+							for (int c = 0; c < m_lines[l].length(); c++) {
+								if (l == m_cursorLine + 1) {
+									if (m_cursor.position.x < m_textPosition
+										+ getStringWidth(m_lines[l].substr(0,
+											c))) {
+										found = true;
+										break;
+									}
+								}
+
+								m_cursorPosition++;
+							}
+							if (found) {
+								break;
+							}
+						}
+						updateCursorPosition();
+					}
+				}
+
+				if (MW::INPUT.isButtonPressed(B_LEFT)) {
+					glm::vec2 mousePos = MW::INPUT.getCursorPosition(
+						m_parent->getSpriteShader()->getCamera());
+					unsigned int line = 0;
+					for (unsigned int i = 0; i < m_labels.size(); i++) {
+						if (RectContains(glm::vec4(m_labels[i].getPosition().x,
+							m_labels[i].getPosition().y,
+							m_labels[i].getDimensions().x,
+							m_labels[i].getDimensions().y), mousePos)) {
+							line = i + m_scroll;
+							break;
+						}
+					}
+
+					MWLOG(Info, UI TextArea, "Clicked on line ", line);
+					if (line >= m_lines.size()) {
+						m_cursorPosition = m_text.length();
+						updateCursorPosition();
+					}
+					else {
+						m_cursorPosition = 0;
+						bool found = false;
+						for (int l = 0; l <= (int)line; l++) {
+							found = false;
+							for (int c = 0; c < (int)m_lines[l].length(); c++) {
+								m_cursorPosition++;
+								if (l == line && mousePos.x < m_textPosition
+									+ getStringWidth(m_lines[l].substr(0, c))) {
+									found = true;
+									m_cursorPosition--;
+									break;
+								}
+							}
+							if (found) {
+								break;
+							}
+						}
 						updateCursorPosition();
 					}
 				}
@@ -1183,6 +1315,23 @@ m_parent->addComponent(&m_labels[i]);
 						m_cursorPosition--;
 					}
 					updateCursorPosition();
+					while (m_cursor.position.x < m_sprite.position.x) {
+						setTextPosition(getTextPosition()
+							+ m_sprite.dimensions.x / 4.0f);
+						updateCursorPosition();
+					}
+					while (m_cursor.position.x
+						> m_sprite.position.x + m_sprite.dimensions.x) {
+						setTextPosition(getTextPosition()
+							- m_sprite.dimensions.x / 4.0f);
+						updateCursorPosition();
+					}
+					if ((int)m_cursorLine - 1 < m_scroll && m_scroll > 0
+						&& m_scrollEnabled) {
+						m_scroll = m_cursorLine - 1;
+						populateLabels();
+						updateCursorPosition();
+					}
 				}
 				else if (MW::INPUT.isKeyPressed(F_DELETE)) {
 					if (!m_text.empty()) {
@@ -1216,6 +1365,33 @@ m_parent->addComponent(&m_labels[i]);
 				}
 
 				updateCursorPosition();
+				if (text == '\n' && !m_lineWrapEnabled) {
+					setTextPosition(m_sprite.position.x);
+					updateCursorPosition();
+					while (m_cursorLine >= m_scroll + m_labels.size()) {
+						m_scroll++;
+						populateLabels();
+						updateCursorPosition();
+					}
+				}
+				else {
+					while (m_cursor.position.x < m_sprite.position.x) {
+						setTextPosition(m_sprite.position.x);
+						updateCursorPosition();
+					}
+					while (m_cursor.position.x
+						> m_sprite.position.x + m_sprite.dimensions.x) {
+						setTextPosition(getTextPosition()
+							- m_sprite.dimensions.x / 4.0f);
+						updateCursorPosition();
+					}
+					while (m_cursorLine >= m_scroll + m_labels.size()
+						&& m_scrollEnabled) {
+						m_scroll++;
+						populateLabels();
+						updateCursorPosition();
+					}
+				}
 			}
 		}
 
@@ -1371,6 +1547,7 @@ m_parent->addComponent(&m_labels[i]);
 					if (found) {
 						break;
 					}
+					m_cursorLine = l;
 				}
 				// Stop if the cursor was found
 				if (found) {

@@ -1113,6 +1113,8 @@ namespace Milkweed {
 			bool m_editable = false;
 			// The position of the cursor in the text in this text area
 			unsigned int m_cursorPosition = 0;
+			// The index of the line the cursor is on, set by updateCursorPosition
+			unsigned int m_cursorLine = 0;
 			// The sprite representing the cursor in this text area
 			Sprite m_cursor;
 

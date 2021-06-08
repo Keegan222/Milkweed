@@ -109,9 +109,11 @@ void OptionsScene::init() {
 	// Values for initializing UI
 	glm::vec2 winDims = glm::vec2(800, 600);
 	glm::vec2 boxDims = glm::vec2(200.0f / winDims.x, 30.0f / winDims.y);
+	float cursorWidth = 1.0f;
+	float margin = 3.0f / 800.0f;
 	float buffer = 0.05f;
 	float textScale = 0.25f * ((float)MW::WINDOW.getDimensions().y / winDims.y);
-	glm::vec3 textColor = glm::vec3(1.0f, 1.0f, 1.0f);
+	glm::vec3 textColor = glm::vec3(0.75f, 0.75f, 0.75f);
 	Texture* buttonTexture = MW::RESOURCES.getTexture(
 		"Assets/texture/button.png");
 	Texture* textBoxTexture = MW::RESOURCES.getTexture(
@@ -129,14 +131,14 @@ void OptionsScene::init() {
 
 	// Initialize options UI group components
 	m_addressBox.init("Default Address", "", glm::vec3(buffer,
-		1.0f - (boxDims.y + buffer), 0.0f), boxDims, textScale,
-		textColor, Justification::LEFT, Justification::CENTER, textBoxTexture,
-		cursorTexture, 100);
+		1.0f - (boxDims.y + buffer), 0.0f), boxDims, cursorWidth, margin,
+		textScale, textColor, Justification::LEFT, Justification::CENTER,
+		textBoxTexture, cursorTexture, 100);
 	m_optionsUIGroup.addComponent(&m_addressBox);
 	m_portBox.init("Default Port", "", glm::vec3(buffer + boxDims.x + buffer,
-		1.0f - (boxDims.y + buffer), 0.0f), boxDims, textScale,
-		textColor, Justification::LEFT, Justification::CENTER, textBoxTexture,
-		cursorTexture, 6);
+		1.0f - (boxDims.y + buffer), 0.0f), boxDims, cursorWidth, margin,
+		textScale, textColor, Justification::LEFT, Justification::CENTER,
+		textBoxTexture, cursorTexture, 6);
 	m_optionsUIGroup.addComponent(&m_portBox);
 	m_fullScreenSwitch.init("Fullscreen", "", glm::vec3(buffer,
 		1.0f - 2 * (boxDims.y + buffer), 0.0f), boxDims, textScale,
@@ -151,9 +153,10 @@ void OptionsScene::init() {
 		arrowTexture, 0);
 	m_optionsUIGroup.addComponent(&m_resolutionCycle);
 	m_volumeSlider.init("Volume", glm::vec3(buffer,
-		1.0f - 3 * (boxDims.y + buffer), 0.0f), boxDims, textScale,
-		textColor, Justification::LEFT, Justification::CENTER, sliderTexture,
-		cursorTexture, 0, 0, 100);
+		1.0f - 3 * (boxDims.y + buffer), 0.0f), boxDims, cursorWidth,
+		10.0f / 800.0f,
+		textScale, textColor, Justification::LEFT, Justification::CENTER,
+		sliderTexture, cursorTexture, 0, 0, 100);
 	m_optionsUIGroup.addComponent(&m_volumeSlider);
 
 	// Initialize the main UI group components

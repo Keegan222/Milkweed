@@ -31,6 +31,8 @@ void ConnectScene::init() {
 	glm::vec2 winDims = glm::vec2(800, 600);
 	glm::vec2 textBoxDims = glm::vec2(300.0f, 30.0f) / winDims;
 	glm::vec2 buttonDims = glm::vec2(200.0f, 30.0f) / winDims;
+	float cursorWidth = 1.0f;
+	float margin = 3.0f / 800.0f;
 	float buffer = 0.05f;
 	Texture* textBoxTexture = MW::RESOURCES.getTexture(
 		"Assets/texture/text_box.png");
@@ -39,16 +41,17 @@ void ConnectScene::init() {
 	Texture* buttonTexture = MW::RESOURCES.getTexture(
 		"Assets/texture/button.png");
 	float textScale = 0.25f * ((float)MW::WINDOW.getDimensions().y / winDims.y);
-	glm::vec3 textColor = glm::vec3(1.0f, 1.0f, 1.0f);
+	glm::vec3 textColor = glm::vec3(0.75f, 0.75f, 0.75f);
 
 	// Set up UI components
 	m_addressBox.init("Address", "", glm::vec3(0.5f - textBoxDims.x / 2.0f, 0.5f,
-		0.0f), textBoxDims, textScale, textColor, Justification::LEFT,
-		Justification::CENTER, textBoxTexture, cursorTexture, 100);
-	m_portBox.init("Port", "", glm::vec3(0.5f - textBoxDims.x / 2.0f,
-		0.5f - (textBoxDims.y + buffer), 0.0f), textBoxDims, textScale,
-		textColor, Justification::LEFT, Justification::CENTER, textBoxTexture,
+		0.0f), textBoxDims, cursorWidth, margin, textScale, textColor,
+		Justification::LEFT, Justification::CENTER, textBoxTexture,
 		cursorTexture, 100);
+	m_portBox.init("Port", "", glm::vec3(0.5f - textBoxDims.x / 2.0f,
+		0.5f - (textBoxDims.y + buffer), 0.0f), textBoxDims, cursorWidth, margin,
+		textScale, textColor, Justification::LEFT, Justification::CENTER,
+		textBoxTexture, cursorTexture, 100);
 	m_backButton.init("Back", glm::vec3(0.0f, 0.0f, 0.0f), buttonDims,
 		textScale, textColor, Justification::CENTER, Justification::CENTER,
 		buttonTexture);

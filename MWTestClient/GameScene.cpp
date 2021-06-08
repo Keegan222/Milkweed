@@ -45,6 +45,7 @@ void GameScene::init() {
 		30.0f / winDims.y);
 	glm::vec2 backgroundDims = glm::vec2(200.0f / winDims.x,
 		buttonDims.y + 2 * buffer);
+	float cursorWidth = 1.0f;
 	Texture* backgroundTexture = MW::RESOURCES.getTexture(
 		"Assets/texture/pause_background.png");
 	Texture* buttonTexture
@@ -54,7 +55,7 @@ void GameScene::init() {
 	Texture* cursorTexture = MW::RESOURCES.getTexture(
 		"Assets/texture/cursor.png");
 	float textScale = 0.25f * ((float)MW::WINDOW.getDimensions().y / winDims.y);
-	glm::vec3 textColor = glm::vec3(1.0f, 1.0f, 1.0f);
+	glm::vec3 textColor = glm::vec3(0.75f, 0.75f, 0.75f);
 
 	// Initialize pause UI components
 	m_pauseUIGroup.init(this, PAUSE_UI_GROUP, font, &m_UISpriteShader,
@@ -73,8 +74,8 @@ void GameScene::init() {
 	// Initialize HUD UI components
 	m_HUDUIGroup.init(this, HUD_UI_GROUP, font, &m_UISpriteShader,
 		&m_UITextShader, "textColor");
-	m_statsArea.init("", 10, glm::vec3(0.75f, 0.75f, 0.0f),
-		glm::vec2(0.25f, 0.25f), textScale, textColor, Justification::LEFT,
+	m_statsArea.init("", 5, glm::vec3(0.75f, 0.75f, 0.0f),
+		glm::vec2(0.25f, 0.25f), cursorWidth, textScale, textColor, Justification::LEFT,
 		Justification::CENTER, nullptr, cursorTexture);
 	m_HUDUIGroup.addComponent(&m_statsArea);
 	updateStatsArea();
@@ -98,20 +99,7 @@ void GameScene::draw() {
 		m_pauseUIGroup.draw();
 	}
 
-	if (!(m_connected && m_authorized)) {
-		return;
-	}
-
 	m_HUDUIGroup.draw();
-
-	// Get pointers to all the sprites
-	m_playerPointers.clear();
-	for (const std::pair<unsigned int, Sprite>& player : m_players) {
-		m_playerPointers.push_back(&(m_players[player.first]));
-	}
-
-	// Draw the players on the server
-	MW::RENDERER.submit(m_playerPointers, &m_spriteShader);
 }
 
 #define PLAYER_SPEED 3.0f
@@ -146,156 +134,75 @@ void GameScene::processInput() {
 		MW::WINDOW.setFullScreen(!MW::WINDOW.isFullScreen());
 	}
 
-	// Check the connection and authorization before proceeding
-	if (!(m_connected && m_authorized) && !m_pauseMenuUp) {
+	if (!(m_connected && m_accepted)) {
 		return;
 	}
 
-	// Move the player
-	bool velocityChange = false;
-	if (MW::INPUT.isKeyDown(K_D)) {
-		if (m_players[m_playerID].velocity.x != PLAYER_SPEED) {
-			velocityChange = true;
-			m_players[m_playerID].velocity.x = PLAYER_SPEED;
-		}
-	}
-	else if (MW::INPUT.isKeyDown(K_A)) {
-		if (m_players[m_playerID].velocity.x != -PLAYER_SPEED) {
-			velocityChange = true;
-			m_players[m_playerID].velocity.x = -PLAYER_SPEED;
-		}
-	}
-	else {
-		if (m_players[m_playerID].velocity.x != 0.0f) {
-			velocityChange = true;
-			m_players[m_playerID].velocity.x = 0.0f;
-		}
-	}
-	if (MW::INPUT.isKeyDown(K_W)) {
-		if (m_players[m_playerID].velocity.y != PLAYER_SPEED) {
-			velocityChange = true;
-			m_players[m_playerID].velocity.y = PLAYER_SPEED;
-		}
-	}
-	else if (MW::INPUT.isKeyDown(K_S)) {
-		if (m_players[m_playerID].velocity.y != -PLAYER_SPEED) {
-			velocityChange = true;
-			m_players[m_playerID].velocity.y = -PLAYER_SPEED;
-		}
-	}
-	else {
-		if (m_players[m_playerID].velocity.y != 0.0f) {
-			velocityChange = true;
-			m_players[m_playerID].velocity.y = 0.0f;
-		}
-	}
-
-	// Send a message if the velocity of the player changed
-	if (velocityChange) {
-		NetMessage message;
-		message.header.ID = PLAYER_MOVEMENT;
-		message << m_playerID << m_players[m_playerID].position
-			<< m_players[m_playerID].velocity;
-		MW::NETWORK.send(message);
+	// The client is connected
+	if (MW::INPUT.isKeyPressed(K_P)) {
+		NetMessage p;
+		p.header.ID = MessageTypes::PING;
+		p << m_playerID;
+		MW::NETWORK.send(p);
 	}
 }
 
 void GameScene::processNetMessage(NetMessage& message) {
-	std::cout << "Received message " << message << std::endl;
 	switch (message.header.ID) {
 	case NetMessageTypes::CONNECTED: {
-		MWLOG(Info, GameScene, "CONNECTED message received");
+		MWLOG(Info, GameScene, "Received CONNECTED system network message");
+		MWLOG(Info, GameScene, "Connected to the server");
 		m_connected = true;
 		break;
 	}
-	case NetMessageTypes::FAILED: {
-		MWLOG(Info, GameScene, "FAILED message received");
-		disconnect();
-		break;
-	}
 	case NetMessageTypes::DISCONNECTED: {
-		MWLOG(Info, GameScene, "DISCONNECTED message received");
+		MWLOG(Info, GameScene, "Recieved DISCONNECTED system network message");
 		disconnect();
 		break;
 	}
-	case MessageTypes::PLAYER_ID_ASSIGNMENT: {
-		// Read the message out
-		unsigned int playerID;
-		glm::vec3 spawnPosition;
-		glm::vec2 spawnVelocity;
-		message >> spawnVelocity >> spawnPosition >> playerID;
-
-		// Set the playerID and generate this player in the renderer's list
-		m_playerID = playerID;
-		m_players[m_playerID] = Sprite();
-		m_players[m_playerID].init(spawnPosition, glm::vec2(50.0f, 50.0f),
-			MW::RESOURCES.getTexture("Assets/texture/self.png"));
-		m_players[m_playerID].velocity = spawnVelocity;
-
-		// The player now has been authorized with it's ID number
-		std::cout << "Received ID: " << m_playerID << std::endl;
-		m_authorized = true;
+	case NetMessageTypes::FAILED: {
+		MWLOG(Info, GameScene, "Received FAILED system network message");
+		disconnect();
 		break;
 	}
-	case MessageTypes::PLAYER_CONNECTED: {
-		// Read the message out
-		unsigned int playerID;
-		glm::vec3 spawnPosition;
-		glm::vec2 spawnVelocity;
-		message >> spawnVelocity >> spawnPosition >> playerID;
+	case MessageTypes::ACCEPT_PLAYER: {
+		MWLOG(Info, GameScene, "Received ACCEPT_PLAYER message");
+		// Initialize this player
+		message >> m_playerID;
+		m_players[m_playerID] = Player();
 
-		// Test if the player is already connected
-		std::map<unsigned int, Sprite>::iterator it
-			= m_players.find(playerID);
-		if (it != m_players.end()) {
-			return;
+		// Initialize previously connected players
+		while (message.header.size > 0) {
+			unsigned int playerID = 0;
+			message >> playerID;
+			m_players[playerID] = Player();
 		}
 
-		// The player must be added
-		m_players[playerID] = Sprite();
-		m_players[playerID].init(spawnPosition, glm::vec2(50.0f, 50.0f),
-			MW::RESOURCES.getTexture("Assets/texture/other.png"));
-		m_players[playerID].velocity = spawnVelocity;
-
-		// Send a connection message back to the new player
-		NetMessage message;
-		message.header.ID = MessageTypes::PLAYER_CONNECTED;
-		message << m_playerID << m_players[m_playerID].position
-			<< m_players[m_playerID].velocity;
-		MW::NETWORK.send(message);
+		m_accepted = true;
 
 		break;
 	}
-	case MessageTypes::PLAYER_MOVEMENT: {
-		// Read out the message
-		unsigned int playerID;
-		glm::vec3 position;
-		glm::vec2 velocity;
-		message >> velocity >> position >> playerID;
-
-		// Locate the player by its ID and update it
-		std::map<unsigned int, Sprite>::iterator it
-			= m_players.find(playerID);
-		if (it == m_players.end()) {
-			return;
-		}
-		m_players[playerID].position = position;
-		m_players[playerID].velocity = velocity;
-
-		break;
-	}
-	case MessageTypes::PLAYER_DISCONNECTED: {
-		// Read the message out
-		unsigned int playerID;
+	case MessageTypes::CONNECT_PLAYER: {
+		// Initialize a blank player with that ID
+		unsigned int playerID = 0;
 		message >> playerID;
-		
-		// Find and erase the player with the ID
-		std::map<unsigned int, Sprite>::iterator it
-			= m_players.find(playerID);
-		if (it == m_players.end()) {
-			return;
+		m_players[playerID] = Player();
+		break;
+	}
+	case MessageTypes::PING: {
+		unsigned int playerID = 0;
+		message >> playerID;
+		MWLOG(Info, GameScene, "Received PING message from player ", playerID);
+		break;
+	}
+	case MessageTypes::DISCONNECT_PLAYER: {
+		unsigned int playerID = 0;
+		message >> playerID;
+		// Search for the player with that ID and clear it out if found
+		std::map<unsigned int, Player>::iterator it = m_players.find(playerID);
+		if (it != m_players.end()) {
+			m_players.erase(it);
 		}
-		m_players.erase(it);
 		break;
 	}
 	}
@@ -306,22 +213,19 @@ void GameScene::componentEvent(unsigned int groupID, unsigned int componentID,
 	if (groupID == PAUSE_UI_GROUP) {
 		if (componentID == m_optionsButton.getID()) {
 			if (eventID == UI::Button::CLICKED_EVENT) {
+				m_pauseMenuUp = false;
+				m_pauseUIGroup.setEnabled(false);
+				m_pauseUIGroup.setVisible(false);
 				TestClient::OPTIONS_SCENE.setReturnScene(this);
 				MW::SetScene(&TestClient::OPTIONS_SCENE);
 			}
 		}
 		else if (componentID == m_disconnectButton.getID()) {
 			if (eventID == UI::Button::CLICKED_EVENT) {
-				m_connected = false;
-				m_authorized = false;
-				m_playerID = 0;
-				m_players.clear();
-				m_playerPointers.clear();
 				m_pauseMenuUp = false;
 				m_pauseUIGroup.setEnabled(false);
 				m_pauseUIGroup.setVisible(false);
-				MW::NETWORK.disconnect();
-				MW::SetScene(&TestClient::CONNECT_SCENE);
+				disconnect();
 			}
 		}
 	}
@@ -348,16 +252,8 @@ void GameScene::update(float deltaTime) {
 	m_HUDUIGroup.update(deltaTime);
 	m_pauseUIGroup.update(deltaTime);
 
-	m_spriteCamera.position = m_players[m_playerID].position
-		- glm::vec3(m_players[m_playerID].dimensions.x / 2.0f,
-			m_players[m_playerID].dimensions.y / 2.0f, 0.0f);
 	m_spriteCamera.update(deltaTime);
-
 	m_UICamera.update(deltaTime);
-
-	for (const std::pair<unsigned int, Sprite>& player : m_players) {
-		m_players[player.first].update(deltaTime);
-	}
 }
 
 void GameScene::exit() {
@@ -373,11 +269,6 @@ void GameScene::destroy() {
 	m_spriteShader.destroy();
 	m_UITextShader.destroy();
 	m_UISpriteShader.destroy();
-	m_connected = false;
-	m_authorized = false;
-	m_playerID = 0;
-	m_players.clear();
-	m_playerPointers.clear();
 	m_UICamera.destroy();
 	m_spriteCamera.destroy();
 	m_pauseUIGroup.destroy();
@@ -387,25 +278,17 @@ void GameScene::destroy() {
 
 void GameScene::updateStatsArea() {
 	std::ostringstream stream;
-	stream << "Connected users: " << m_players.size() << std::endl;
-	stream << "Position: (" << m_players[m_playerID].position.x << ", "
-		<< m_players[m_playerID].position.y << ")" << std::endl;
+	stream << "Player ID: " << m_playerID << std::endl;
+	stream << "Player count: " << m_players.size() << std::endl;
+
 	m_statsArea.setText(stream.str());
 }
 
 void GameScene::disconnect() {
 	m_connected = false;
-	m_authorized = false;
+	m_accepted = false;
 	m_playerID = 0;
 	m_players.clear();
-	for (unsigned int i = 0; i < m_playerPointers.size(); i++) {
-		m_playerPointers[i] = nullptr;
-	}
-	m_playerPointers.clear();
-
-	// Go back to the connecting scene
 	MW::NETWORK.disconnect();
-	MW::NETWORK.destroy();
-	MW::NETWORK.init();
 	MW::SetScene(&TestClient::CONNECT_SCENE);
 }

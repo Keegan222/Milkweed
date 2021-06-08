@@ -169,7 +169,7 @@ namespace Milkweed {
 			
 			// Add the character to the frame if it is inside the bounds
 			if (ch.position.x >= bounds.x
-				&& ch.position.x + ch.dimensions.x <= bounds.x + bounds.z
+				&& ch.position.x + ch.dimensions.x <= bounds.x + bounds.z * 1.1f
 				&& ch.position.y >= bounds.y
 				&& ch.position.y + ch.dimensions.y <= bounds.y + bounds.w) {
 				m_text[shader].push_back(ch);

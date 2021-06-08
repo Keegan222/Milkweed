@@ -7,19 +7,10 @@
 #ifndef GAME_SCENE_H
 #define GAME_SCENE_H
 
+#include <MWTestServer/NetTypes.h>
 #include <Milkweed/MW.h>
 
 using namespace Milkweed;
-
-/*
-* Enumeration of the types of message for the Test Server/Client system
-*/
-enum MessageTypes : unsigned int {
-	PLAYER_ID_ASSIGNMENT = 3,
-	PLAYER_CONNECTED = 4,
-	PLAYER_MOVEMENT = 5,
-	PLAYER_DISCONNECTED = 6,
-};
 
 /*
 * The main scene of the Milkweed framework's network testing client.
@@ -83,10 +74,14 @@ private:
 	std::string m_address = "127.0.0.1";
 	// The port to connect on
 	unsigned int m_port = 2773;
-	// Whether the client is connect to the server
+	// Whether this client is connected to a server
 	bool m_connected = false;
-	// Whether the server has authorized this client
-	bool m_authorized = false;
+	// Whether this client has received an acceptance message from the server
+	bool m_accepted = false;
+	// The player ID assigned to this client
+	unsigned int m_playerID = 0;
+	// The players connected to this server
+	std::map<unsigned int, Player> m_players;
 	// The camera used to draw sprites
 	Camera m_spriteCamera;
 	// The shader used to draw sprites
@@ -97,13 +92,6 @@ private:
 	Shader m_UISpriteShader;
 	// The shader used to draw text
 	Shader m_UITextShader;
-	// The ID of this player on the server
-	unsigned int m_playerID = 0;
-	// The other players' sprites with their ID's on the server, including this
-	// player
-	std::map<unsigned int, Sprite> m_players;
-	// Pointers to the other players' sprites
-	std::vector<Sprite*> m_playerPointers;
 	// The UI group for the pause menu
 	bool m_pauseMenuUp = false;
 	UI::UIGroup m_pauseUIGroup;
@@ -118,7 +106,7 @@ private:
 	*/
 	void updateStatsArea();
 	/*
-	* Disconnect this game scene from the network
+	* Disconnect this client from the network and fall back to the connect scene
 	*/
 	void disconnect();
 };

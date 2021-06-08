@@ -318,9 +318,6 @@ namespace Milkweed {
 		m_messagesIn.clear();
 	}
 
-#define SERVERLOG(LEVEL, ...) m_log, m_log.getDate(), "[", #LEVEL, "] ",\
-	"[NetServer] ", __VA_ARGS__, "\n"
-
 	bool NetServer::init(unsigned int maxMessageSize) {
 		m_log.init("mwlog/");
 

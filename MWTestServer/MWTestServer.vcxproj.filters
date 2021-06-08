@@ -19,5 +19,8 @@
     <ClInclude Include="TestServer.h">
       <Filter>Header Files</Filter>
     </ClInclude>
+    <ClInclude Include="NetTypes.h">
+      <Filter>Header Files</Filter>
+    </ClInclude>
   </ItemGroup>
 </Project>

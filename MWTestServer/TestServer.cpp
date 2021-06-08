@@ -13,54 +13,62 @@ TestServer::~TestServer() {
 }
 
 bool TestServer::onConnect(std::shared_ptr<NetConnection> client) {
-	std::cout << "Connected client " << client->getID() << std::endl;
-	// Send this client their ID number
-	NetMessage assignMessage;
-	assignMessage.header.ID = MessageTypes::PLAYER_ID_ASSIGNMENT;
-	unsigned int clientID = client->getID();
-	glm::vec3 spawnPosition = glm::vec3(0.0f, 0.0f, 0.0f);
-	glm::vec2 spawnVelocity = glm::vec2(0.0f, 0.0f);
-	assignMessage << clientID << spawnPosition << spawnVelocity;
-	messageClient(client, assignMessage);
+	SERVERLOG(Info, "Connected player with ID ", client->getID());
+	unsigned int newClientID = client->getID();
+	m_players[newClientID] = Player();
 
-	// Send a new client message to all other clients
-	NetMessage connectMessage;
-	connectMessage.header.ID = MessageTypes::PLAYER_CONNECTED;
-	connectMessage << clientID << spawnPosition << spawnVelocity;
-	messageAllClients(connectMessage, client);
+	// Notify other players
+	NetMessage omsg;
+	omsg.header.ID = MessageTypes::CONNECT_PLAYER;
+	omsg << newClientID;
+	messageAllClients(omsg, client);
+	SERVERLOG(Info, "Notified other players of connection");
+
+	// Notify the player of connection acceptance
+	NetMessage cmsg;
+	cmsg.header.ID = MessageTypes::ACCEPT_PLAYER;
+	for (const std::pair<unsigned int, Player>& player : m_players) {
+		unsigned int clientID = player.first;
+		cmsg << clientID;
+	}
+	cmsg << newClientID;
+	messageClient(client, cmsg);
+	SERVERLOG(Info, "Notified new player of acceptance");
 
 	return true;
 }
 
 void TestServer::onMessage(NetMessage& message) {
-	std::cout << "Message from client " << message.owner->getID() << std::endl
-		<< message << std::endl;
-
+	SERVERLOG(Info, message);
 	switch (message.header.ID) {
-	case MessageTypes::PLAYER_CONNECTED: {
-		messageAllClients(message, message.owner);
-		break;
-	}
-	case MessageTypes::PLAYER_MOVEMENT: {
-		messageAllClients(message, message.owner);
+	case MessageTypes::PING: {
+		messageAllClients(message);
 		break;
 	}
 	}
 }
 
 void TestServer::onDisconnect(std::shared_ptr<NetConnection> client) {
-	std::cout << "Disconnected client " << client->getID() << std::endl;
-	NetMessage disconnectMessage;
-	disconnectMessage.header.ID = MessageTypes::PLAYER_DISCONNECTED;
-	unsigned int clientID = client->getID();
-	disconnectMessage << clientID;
-	messageAllClients(disconnectMessage, client);
+	SERVERLOG(Info, "Disconnected client ", client->getID());
+	unsigned int oldClientID = client->getID();
+
+	// Notify all connected clients of the disconnect
+	NetMessage dmsg;
+	dmsg.header.ID = MessageTypes::DISCONNECT_PLAYER;
+	dmsg << oldClientID;
+	messageAllClients(dmsg, client);
+	SERVERLOG(Info, "Notified all clients of disconnect");
 }
 
 int main(int argc, char** argv) {
 	TestServer testServer(2773);
-	testServer.init();
-	while (true) {
+	if (!testServer.init()) {
+		std::cout << "Failed to initialize server" << std::endl;
+	}
+
+	while (testServer.isActive()) {
 		testServer.update(-1);
 	}
+
+	return 0;
 }

@@ -35,7 +35,7 @@ void TitleScene::init() {
 	Texture* buttonTexture
 		= MW::RESOURCES.getTexture("Assets/texture/button.png");
 	float textScale = 0.25f * ((float)MW::WINDOW.getDimensions().y / winDims.y);
-	glm::vec3 textColor = glm::vec3(1.0f, 1.0f, 1.0f);
+	glm::vec3 textColor = glm::vec3(0.75f, 0.75f, 0.75f);
 
 	m_connectButton.init("Connect", glm::vec3(0.5f - buttonDims.x / 2.0f,
 		0.5f, 0.0f), buttonDims, textScale, textColor, Justification::CENTER,

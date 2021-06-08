@@ -542,7 +542,11 @@ namespace Milkweed {
 			* @param normalPosition: The normalized position of this text box
 			* @param normalDimensions: The normalized width and height of the
 			* rectangle to render this text box's text in
-			* @param scale: The scale to draw this text box's text at
+			* @param cursorWidth: The width of the cursor to appear in this text
+			* box on the screen
+			* @param normalMargin: The normalized width of the margin in this
+			* text box
+			* @param textScale: The scale to draw this text box's text at
 			* @param color: The color to draw this text box's text in
 			* @param textHJustification: The justification to draw this text box's
 			* text with on the x-axis
@@ -556,7 +560,8 @@ namespace Milkweed {
 			*/
 			void init(const std::string& labelText,
 				const std::string& text, const glm::vec3& normalPosition,
-				const glm::vec2& normalDimensions, float textScale,
+				const glm::vec2& normalDimensions, float cursorWidth,
+				float normalMargin, float textScale,
 				const glm::vec3& textColor, Justification textHJustification,
 				Justification textVJustification, Texture* texture,
 				Texture* cursorTexture, int maxCharacters);
@@ -588,6 +593,12 @@ namespace Milkweed {
 			Sprite m_sprite;
 			// The sprite used to render this text box's cursor
 			Sprite m_cursor;
+			// The width of the cursor on the screen
+			float m_cursorWidth = 1.0f;
+			// The width of the margin of this text box on the screen
+			float m_margin = 0.0f;
+			// The normalized width of the margin of this text box
+			float m_normalMargin = 0.0f;
 			// Whether this text box is currently selected
 			bool m_selected = false;
 			// The position of the cursor in the string
@@ -730,6 +741,10 @@ namespace Milkweed {
 			* on the screen.
 			* @param normalPimensions: The normalized dimensions of this
 			* slider on the screen.
+			* @param cursorWidth: The width of the cursor to appear in this
+			* slider on the screen.
+			* @param normalMargin: The normalized width of the margin of
+			* the cursor in this slider.
 			* @param textScale: The factor to scale the text in this slider by.
 			* @param textColor: The color to display this slider's text in.
 			* @param textHJustification: The horizontal justification of the
@@ -745,8 +760,9 @@ namespace Milkweed {
 			*/
 			void init(const std::string& labelText,
 				const glm::vec3& normalPosition,
-				const glm::vec2& normalDimensions, float textScale,
-				const glm::vec3& textColor, Justification textHJustification,
+				const glm::vec2& normalDimensions, float cursorWidth,
+				float normalMargin, float textScale, const glm::vec3& textColor,
+				Justification textHJustification,
 				Justification textVJustification, Texture* texture,
 				Texture* cursorTexture, int min, int value, int max);
 			/*
@@ -783,6 +799,12 @@ namespace Milkweed {
 			Sprite m_sprite;
 			// The cursor sprite of this slider.
 			Sprite m_cursor;
+			// The width of the cursor on the screen
+			float m_cursorWidth = 1.0f;
+			// The width of the margin on the screen
+			float m_margin = 0.0f;
+			// The normalized width of the margin on the screen
+			float m_normalMargin = 0.0f;
 			// Whether this slider is selected.
 			bool m_selected = false;
 			// The minimum value of this slider.
@@ -945,6 +967,7 @@ namespace Milkweed {
 			* on the screen.
 			* @param normalDimensions: The normalized dimensions of this text
 			* area on the screen.
+			* @param cursorWidth: The width of the cursor on the screen.
 			* @param textScale: The scale of the text to appear in the labels.
 			* @parma textColor: The color of the text to appear in the labels.
 			* @param hJustification: The horizontal justification of the text
@@ -956,10 +979,10 @@ namespace Milkweed {
 			*/
 			void init(const std::string& text, unsigned int lineCount,
 				const glm::vec3& normalPosition,
-				const glm::vec2& normalDimensions, float textScale,
-				const glm::vec3& textColor, Justification hJustification,
-				Justification vJustification, Texture* texture,
-				Texture* cursorTexture);
+				const glm::vec2& normalDimensions, float cursorWidth,
+				float textScale, const glm::vec3& textColor,
+				Justification hJustification, Justification vJustification,
+				Texture* texture, Texture* cursorTexture);
 			/*
 			* Get the text displayed by this text area
 			*/
@@ -1117,6 +1140,8 @@ namespace Milkweed {
 			unsigned int m_cursorLine = 0;
 			// The sprite representing the cursor in this text area
 			Sprite m_cursor;
+			// The width of the cursor sprite on the screen
+			float m_cursorWidth = 1.0f;
 
 			/*
 			* Fill the text labels with the text from m_text based on the

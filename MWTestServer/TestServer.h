@@ -9,17 +9,9 @@
 
 #include <Milkweed/MW.h>
 
-using namespace Milkweed;
+#include "NetTypes.h"
 
-/*
-* Enumeration of the types of message for the Test Server/Client system
-*/
-enum MessageTypes : unsigned int {
-	PLAYER_ID_ASSIGNMENT = 3,
-	PLAYER_CONNECTED = 4,
-	PLAYER_MOVEMENT = 5,
-	PLAYER_DISCONNECTED = 6,
-};
+using namespace Milkweed;
 
 /*
 * The main class of the Milkweed framework's network testing server.
@@ -48,6 +40,10 @@ protected:
 	* A client has disconnected from the TestServer.
 	*/
 	void onDisconnect(std::shared_ptr<NetConnection> client) override;
+
+private:
+	// Map from client ID numbers to player information structures
+	std::map<unsigned int, Player> m_players;
 };
 
 #endif

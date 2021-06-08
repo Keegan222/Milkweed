@@ -272,7 +272,7 @@ namespace Milkweed {
 
 			// If the button is selected test if it's been clicked
 			if (m_selected) {
-				if (MW::INPUT.isButtonPressed(B_LEFT)) {
+				if (MW::INPUT.isButtonReleased(B_LEFT)) {
 					m_parent->componentEvent(m_ID, CLICKED_EVENT);
 				}
 				if (MW::INPUT.isButtonDown(B_LEFT)) {
@@ -302,8 +302,9 @@ namespace Milkweed {
 
 		void TextBox::init(const std::string& labelText,
 			const std::string& text, const glm::vec3& normalPosition,
-			const glm::vec2& normalDimensions, float textScale,
-			const glm::vec3& textColor, Justification textHJustification,
+			const glm::vec2& normalDimensions, float cursorWidth,
+			float normalMargin, float textScale, const glm::vec3& textColor,
+			Justification textHJustification,
 			Justification textVJustification, Texture* texture,
 			Texture* cursorTexture, int maxCharacters) {
 			// Set the text box up as a text label
@@ -322,15 +323,19 @@ namespace Milkweed {
 			std::cout << "Initialized label" << std::endl;
 
 			glm::vec2 winDims = MW::WINDOW.getDimensions();
+
+			m_normalMargin = normalMargin;
+			m_margin = m_normalMargin * MW::WINDOW.getDimensions().x;
 			
 			// Set up the cursor and background of this text box
 			m_sprite.init(glm::vec3(normalPosition.x * winDims.x,
 				normalPosition.y * winDims.y, normalPosition.z),
 				normalDimensions * winDims, texture);
 			m_sprite.textureCoords = UNSELECTED_COORDS;
-			m_cursor.init(glm::vec3(normalPosition.x * winDims.x,
-				normalPosition.y * winDims.y, normalPosition.z),
-				glm::vec2(1.0f, normalDimensions.y * winDims.y),
+			m_cursorWidth = cursorWidth;
+			m_cursor.init(glm::vec3((normalPosition.x + m_normalMargin)
+				* winDims.x, normalPosition.y * winDims.y, normalPosition.z),
+				glm::vec2(cursorWidth, normalDimensions.y * winDims.y),
 				cursorTexture);
 
 			// Set the position and dimensions
@@ -349,12 +354,12 @@ namespace Milkweed {
 			// Update the position of the label
 			m_label.setPosition(glm::vec3(position.x,
 				position.y + m_dimensions.y, position.z));
-			m_label.setTextPosition(glm::vec3(position.x,
+			m_label.setTextPosition(glm::vec3(position.x + m_margin,
 				position.y + m_dimensions.y, position.z + DEPTH_INCREMENT));
 			// Update the position of the text
 			m_position = glm::vec3(position.x, position.y,
 				position.z + DEPTH_INCREMENT);
-			m_textPosition = glm::vec3(position.x, position.y,
+			m_textPosition = glm::vec3(position.x + m_margin, position.y,
 				position.z + 2 * DEPTH_INCREMENT);
 			// Update the position of the background sprite
 			m_sprite.position = position;
@@ -363,6 +368,7 @@ namespace Milkweed {
 		}
 
 		void TextBox::setDimensions(const glm::vec2& dimensions) {
+			m_margin = m_normalMargin * MW::WINDOW.getDimensions().x;
 			// Set the label's dimensions
 			m_label.setDimensions(dimensions);
 			// Set the text's dimensions
@@ -384,8 +390,8 @@ namespace Milkweed {
 			m_cursorPosition++;
 			updateCursorPosition();
 			// Update the position of the text if necessary
-			if (m_cursor.position.x + 1.0f
-			> m_position.x + m_dimensions.x) {
+			if (m_cursor.position.x + m_cursorWidth
+				> m_position.x + m_dimensions.x - m_margin) {
 				m_textPosition.x -= m_dimensions.x / 4.0f;
 				updateCursorPosition();
 			}
@@ -463,7 +469,7 @@ namespace Milkweed {
 					m_cursorPosition--;
 					updateCursorPosition();
 					// Update the position of the text if necessary
-					if (m_cursor.position.x < m_position.x) {
+					if (m_cursor.position.x < m_position.x + m_margin) {
 						m_textPosition.x += m_dimensions.x / 4.0f;
 						if (m_textPosition.x > m_position.x) {
 							m_textPosition.x = m_position.x;
@@ -479,8 +485,8 @@ namespace Milkweed {
 					m_cursorPosition++;
 					updateCursorPosition();
 					// Update the position of the text if necessary
-					if (m_cursor.position.x + 1.0f
-				> m_position.x + m_dimensions.x) {
+					if (m_cursor.position.x + m_cursorWidth
+							> m_position.x + m_dimensions.x - m_margin) {
 						m_textPosition.x -= m_dimensions.x / 4.0f;
 						updateCursorPosition();
 					}
@@ -498,7 +504,7 @@ namespace Milkweed {
 					m_cursorPosition--;
 					updateCursorPosition();
 					// Update the position of the text if necessary
-					if (m_cursor.position.x < m_position.x) {
+					if (m_cursor.position.x < m_position.x + m_margin) {
 						m_textPosition.x += m_dimensions.x / 4.0f;
 						if (m_textPosition.x > m_position.x) {
 							m_textPosition.x = m_position.x;
@@ -528,7 +534,8 @@ namespace Milkweed {
 			m_maxCharacters = 0;
 			m_selected = false;
 			m_cursorPosition = 0;
-
+			m_cursorWidth = 0.0f;
+			
 			MW::INPUT.removeInputListener(this);
 		}
 
@@ -541,7 +548,7 @@ namespace Milkweed {
 
 			m_cursor.position = glm::vec3(m_textPosition.x + textWidth,
 				m_position.y, m_position.z + DEPTH_INCREMENT);
-			m_cursor.dimensions = glm::vec2(1.0f, m_dimensions.y);
+			m_cursor.dimensions = glm::vec2(m_cursorWidth, m_dimensions.y);
 		}
 
 		glm::vec4 Switch::ON_COORDS = glm::vec4(0.0f, 0.0f, 1.0f / 2.0f, 1.0f);
@@ -656,10 +663,10 @@ namespace Milkweed {
 
 		void Slider::init(const std::string& labelText,
 			const glm::vec3& normalPosition, const glm::vec2& normalDimensions,
-			float textScale, const glm::vec3& textColor,
-			Justification textHJustification, Justification textVJustification,
-			Texture* texture, Texture* cursorTexture, int min, int value,
-			int max) {
+			float cursorWidth, float normalMargin, float textScale,
+			const glm::vec3& textColor, Justification textHJustification,
+			Justification textVJustification, Texture* texture,
+			Texture* cursorTexture, int min, int value, int max) {
 			m_labelText = labelText;
 			m_min = min;
 			m_max = max;
@@ -675,9 +682,12 @@ namespace Milkweed {
 				normalPosition.y * winDims.y, normalPosition.z),
 				normalDimensions * winDims, texture);
 			m_sprite.textureCoords = UNSELECTED_COORDS;
+			m_cursorWidth = cursorWidth;
 			m_cursor.init(glm::vec3(normalPosition.x * winDims.x,
 				normalPosition.y * winDims.y, normalPosition.z),
-				glm::vec2(1.0f, normalDimensions.y * winDims.y), cursorTexture);
+				glm::vec2(cursorWidth, normalDimensions.y * winDims.y),
+				cursorTexture);
+			m_normalMargin = normalMargin;
 			setPosition(m_sprite.position);
 			setDimensions(m_sprite.dimensions);
 			setValue(value);
@@ -697,6 +707,7 @@ namespace Milkweed {
 		void Slider::setDimensions(const glm::vec2& dimensions) {
 			m_dimensions = dimensions;
 			m_sprite.dimensions = dimensions;
+			m_margin = MW::WINDOW.getDimensions().x * m_normalMargin;
 			updateCursorPosition();
 		}
 
@@ -736,17 +747,18 @@ namespace Milkweed {
 			if (m_selected && MW::INPUT.isButtonDown(B_LEFT)) {
 				glm::vec2 mousePos = MW::INPUT.getCursorPosition(
 					m_parent->getSpriteShader()->getCamera());
-				if (mousePos.x < m_sprite.position.x) {
+				if (mousePos.x < m_sprite.position.x + m_margin) {
 					m_value = m_min;
 				}
 				else if (mousePos.x
-				> m_sprite.position.x + m_sprite.dimensions.x) {
+				> m_sprite.position.x + m_sprite.dimensions.x - m_margin) {
 					m_value = m_max;
 				}
 				else {
 					m_value = m_min
-						+ (int)(((mousePos.x - m_sprite.position.x)
-							/ (m_sprite.dimensions.x)) * (m_max - m_min));
+						+ (int)(((mousePos.x - (m_sprite.position.x + m_margin))
+							/ (m_sprite.dimensions.x - 2 * m_margin))\
+							* (m_max - m_min));
 				}
 				updateCursorPosition();
 			}
@@ -766,11 +778,12 @@ namespace Milkweed {
 		}
 
 		void Slider::updateCursorPosition() {
-			m_cursor.position.x = m_sprite.position.x
+			m_cursor.position.x = m_sprite.position.x + m_margin
 				+ ((float)(m_value - m_min) / (float)(m_max - m_min))
-				* m_sprite.dimensions.x;
+				* (m_sprite.dimensions.x - 2 * m_margin - m_cursorWidth);
 			m_cursor.position.y = m_sprite.position.y;
-			m_cursor.dimensions = glm::vec2(1.0f, m_sprite.dimensions.y);
+			m_cursor.dimensions = glm::vec2(m_cursorWidth,
+				m_sprite.dimensions.y);
 		}
 
 		glm::vec4 Cycle::UNSELECTED_LEFT_COORDS = glm::vec4(0.0f, 0.0f,
@@ -973,7 +986,7 @@ namespace Milkweed {
 
 		void TextArea::init(const std::string& text, unsigned int lineCount,
 			const glm::vec3& normalPosition, const glm::vec2& normalDimensions,
-			float textScale, const glm::vec3& textColor,
+			float cursorWidth, float textScale, const glm::vec3& textColor,
 			Justification hJustification, Justification vJustification,
 			Texture* texture, Texture* cursorTexture) {
 			// Initialize the text labels to use to display lines
@@ -1005,7 +1018,8 @@ namespace Milkweed {
 
 			MWLOG(Info, UI TextArea, "Initializing cursor");
 			
-			m_cursor.init(m_labels[0].getPosition(), glm::vec2(1.0f,
+			m_cursorWidth = cursorWidth;
+			m_cursor.init(m_labels[0].getPosition(), glm::vec2(cursorWidth,
 				m_labels[0].getDimensions().y), cursorTexture);
 
 			MWLOG(Info, UI TextArea, "All the stuff if set");
@@ -1026,19 +1040,15 @@ namespace Milkweed {
 			if (m_labels.empty()) {
 				return;
 			}
-			MWLOG(Info, UI TextArea, "Labels is not empty");
 			for (unsigned int i = 0; i < m_labels.size(); i++) {
 				m_labels[i].setPosition(glm::vec3(position.x,
 					position.y + m_labels[i].getDimensions().y
 					* (m_labels.size() - 1 - i), position.z));
 				m_labels[i].setTextPosition(m_labels[i].getPosition());
 			}
-			MWLOG(Info, UI TextArea, "Set labels");
 			m_sprite.position = position;
 			m_textPosition = position.x;
-			MWLOG(Info, UI TextArea, "Set the sprite and text position");
 			updateCursorPosition();
-			MWLOG(Info, UI TextArea, "Called updateCursorPosition()");
 		}
 
 		const glm::vec2& TextArea::getDimensions() const {
@@ -1169,7 +1179,7 @@ namespace Milkweed {
 								+ m_sprite.dimensions.x / 4.0f);
 							updateCursorPosition();
 						}
-						while (m_cursor.position.x
+						while (m_cursor.position.x + m_cursorWidth
 							> m_sprite.position.x + m_sprite.dimensions.x) {
 							setTextPosition(getTextPosition()
 								- m_sprite.dimensions.x / 4.0f);
@@ -1191,7 +1201,7 @@ namespace Milkweed {
 							setTextPosition(m_sprite.position.x);
 							updateCursorPosition();
 						}
-						while (m_cursor.position.x
+						while (m_cursor.position.x + m_cursorWidth
 							> m_sprite.position.x + m_sprite.dimensions.x) {
 							setTextPosition(getTextPosition()
 								- m_sprite.dimensions.x / 4.0f);
@@ -1210,9 +1220,9 @@ namespace Milkweed {
 					if (m_cursorLine > 0) {
 						m_cursorPosition = 0;
 						bool found = false;
-						for (int l = 0; l < m_cursorLine; l++) {
+						for (int l = 0; l < (int)m_cursorLine; l++) {
 							found = false;
-							for (int c = 0; c < m_lines[l].length(); c++) {
+							for (int c = 0; c < (int)m_lines[l].length(); c++) {
 								if (l == m_cursorLine - 1) {
 									if (m_cursor.position.x < m_textPosition
 										+ getStringWidth(m_lines[l].substr(0,
@@ -1235,9 +1245,9 @@ namespace Milkweed {
 					if (!m_lines.empty() && m_cursorLine < m_lines.size() - 1) {
 						m_cursorPosition = 0;
 						bool found = false;
-						for (int l = 0; l < m_cursorLine + 2; l++) {
+						for (int l = 0; l < (int)m_cursorLine + 2; l++) {
 							found = false;
-							for (int c = 0; c < m_lines[l].length(); c++) {
+							for (int c = 0; c < (int)m_lines[l].length(); c++) {
 								if (l == m_cursorLine + 1) {
 									if (m_cursor.position.x < m_textPosition
 										+ getStringWidth(m_lines[l].substr(0,
@@ -1320,7 +1330,7 @@ namespace Milkweed {
 							+ m_sprite.dimensions.x / 4.0f);
 						updateCursorPosition();
 					}
-					while (m_cursor.position.x
+					while (m_cursor.position.x + m_cursorWidth
 						> m_sprite.position.x + m_sprite.dimensions.x) {
 						setTextPosition(getTextPosition()
 							- m_sprite.dimensions.x / 4.0f);
@@ -1379,7 +1389,7 @@ namespace Milkweed {
 						setTextPosition(m_sprite.position.x);
 						updateCursorPosition();
 					}
-					while (m_cursor.position.x
+					while (m_cursor.position.x + m_cursorWidth
 						> m_sprite.position.x + m_sprite.dimensions.x) {
 						setTextPosition(getTextPosition()
 							- m_sprite.dimensions.x / 4.0f);
@@ -1428,6 +1438,7 @@ namespace Milkweed {
 			m_sprite.destroy();
 			m_cursor.destroy();
 			m_cursorPosition = 0;
+			m_cursorWidth = 1.0f;
 			m_editable = false;
 			MW::INPUT.removeInputListener(this);
 		}
@@ -1531,7 +1542,7 @@ namespace Milkweed {
 
 			m_cursor.position.x = m_textPosition;
 			m_cursor.position.y = m_sprite.position.y + m_sprite.dimensions.y;
-			m_cursor.dimensions = glm::vec2(1.0f,
+			m_cursor.dimensions = glm::vec2(m_cursorWidth,
 				m_sprite.dimensions.y / (float)m_labels.size());
 
 			// The number of characters traversed

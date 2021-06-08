@@ -24,7 +24,8 @@ void TestScene::init() {
 	// Prepare to set up the UI
 	float textScale = 0.5f;
 	glm::vec3 textColor = glm::vec3(1.0f, 1.0f, 1.0f);
-	Texture* textAreaTexture = MW::RESOURCES.getTexture(
+	glm::vec2 cDims = glm::vec2(0.75f, 0.75f);
+	Texture* cTexture = MW::RESOURCES.getTexture(
 		"Assets/texture/text_area.png");
 	Texture* cursorTexture = MW::RESOURCES.getTexture(
 		"Assets/texture/cursor.png");
@@ -32,13 +33,14 @@ void TestScene::init() {
 	// Set up the UI
 	m_UIGroup.init(this, 0, MW::RESOURCES.getFont("Assets/font/arial.ttf"),
 		&m_spriteShader, &m_textShader, "textColor");
-	m_textArea.init("", 5, glm::vec3(0.25f, 0.25f, 0.0f), glm::vec2(0.5f, 0.5f),
-		textScale, textColor, Justification::LEFT, Justification::CENTER,
-		textAreaTexture, cursorTexture);
+	m_textArea.init("", 10, glm::vec3(0.5f - cDims.x / 2.0f,
+		0.5f - cDims.y / 2.0f, 0.0f), cDims, 10.0f, textScale, textColor,
+		Justification::LEFT, Justification::CENTER, cTexture, cursorTexture);
 	m_UIGroup.addComponent(&m_textArea);
 	m_textArea.setLineWrapEnabled(true);
-	m_textArea.setScrollEnabled(true);
 	m_textArea.setEditable(true);
+	m_textArea.setScrollEnabled(true);
+	m_textArea.setEnabled(true);
 }
 
 void TestScene::enter() {

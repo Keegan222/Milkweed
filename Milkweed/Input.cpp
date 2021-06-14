@@ -11,20 +11,30 @@ namespace Milkweed {
 
 	void InputManager::init() {
 		// Add the GLFW callback functions
-		glfwSetKeyCallback(MW::WINDOW.getWindowHandle(), key_callback);
-		glfwSetCharCallback(MW::WINDOW.getWindowHandle(), char_callback);
+		glfwSetKeyCallback(MW::WINDOW.getWindowHandle(), KeyCallback);
+		glfwSetCharCallback(MW::WINDOW.getWindowHandle(), CharCallback);
 		glfwSetMouseButtonCallback(MW::WINDOW.getWindowHandle(),
-			button_callback);
+			ButtonCallback);
 		glfwSetCursorPosCallback(MW::WINDOW.getWindowHandle(),
-			cursor_callback);
+			CursorCallback);
 		glfwSetScrollCallback(MW::WINDOW.getWindowHandle(),
-			scroll_callback);
+			ScrollCallback);
+		glfwSetJoystickCallback(JoystickCallback);
+
+		// Attempt to connect up to 16 gamepads
+		for (unsigned int gp = 0; gp < GLFW_JOYSTICK_LAST; gp++) {
+			if (glfwJoystickPresent(gp)) {
+				if (glfwJoystickIsGamepad(gp)) {
+					JoystickCallback(gp, GLFW_CONNECTED);
+				}
+			}
+		}
 
 		MWLOG(Info, InputManager, "Set GLFW input callback functions for ",
 			"keyboard, text, mouse buttons and mouse movement");
 	}
 
-	void InputManager::key_callback(GLFWwindow* window, int key, int scancode,
+	void InputManager::KeyCallback(GLFWwindow* window, int key, int scancode,
 		int action, int mods) {
 		// Decide whether the key was pressed or released and modify the key
 		// in the application's input manager
@@ -46,7 +56,7 @@ namespace Milkweed {
 		}
 	}
 
-	void InputManager::char_callback(GLFWwindow* window,
+	void InputManager::CharCallback(GLFWwindow* window,
 		unsigned int codepoint) {
 		// Notify input listeners
 		for (InputListener* l : MW::INPUT.m_listeners) {
@@ -54,7 +64,7 @@ namespace Milkweed {
 		}
 	}
 	
-	void InputManager::button_callback(GLFWwindow* window, int button,
+	void InputManager::ButtonCallback(GLFWwindow* window, int button,
 		int action, int mods) {
 		// Decide whether the button was pressed or released and modify it in
 		// the application's input manager
@@ -76,7 +86,7 @@ namespace Milkweed {
 		}
 	}
 
-	void InputManager::cursor_callback(GLFWwindow* window, double x, double y) {
+	void InputManager::CursorCallback(GLFWwindow* window, double x, double y) {
 		// Set the new cursor position and notify input listeners (invert the
 		// y-axis)
 		for (InputListener* l : MW::INPUT.m_listeners) {
@@ -84,10 +94,28 @@ namespace Milkweed {
 		}
 	}
 
-	void InputManager::scroll_callback(GLFWwindow* window, double xOffset,
+	void InputManager::ScrollCallback(GLFWwindow* window, double xOffset,
 		double yOffset) {
 		for (InputListener* l : MW::INPUT.m_listeners) {
 			l->scrolled(glm::vec2(xOffset, yOffset));
+		}
+	}
+
+	void InputManager::JoystickCallback(int jid, int event) {
+		if (event == GLFW_CONNECTED) {
+			if (glfwJoystickIsGamepad(jid)) {
+				// Attempt to find the gamepad in the list already
+				std::unordered_map<int, GLFWgamepadstate>::iterator it
+					= MW::INPUT.m_gamepads.find(jid);
+				if (it != MW::INPUT.m_gamepads.end()) {
+					return;
+				}
+				// The gamepad can be connected
+				MW::INPUT.m_gamepads[jid] = GLFWgamepadstate();
+				glfwGetGamepadState(jid, &(MW::INPUT.m_gamepads[jid]));
+				MWLOG(Info, InputManager, "Connected gamepad ", jid,
+					" with name \"", glfwGetGamepadName(jid), "\"");
+			}
 		}
 	}
 
@@ -106,22 +134,88 @@ namespace Milkweed {
 	
 	void InputManager::update() {
 		// Push the key states into the next frame
-		for (std::pair<int, bool> k : m_keys) {
+		for (const std::pair<int, bool>& k : m_keys) {
 			m_prevKeys[k.first] = k.second;
 		}
 		// Push the button states into the next frame
-		for (std::pair<int, bool> b : m_buttons) {
+		for (const std::pair<int, bool>& b : m_buttons) {
 			m_prevButtons[b.first] = b.second;
+		}
+		// Push the gamepad states into the next frame
+		m_prevGamepads.clear();
+		std::vector<std::unordered_map<int, GLFWgamepadstate>::iterator> removals;
+		for (const std::pair<int, GLFWgamepadstate>& g : m_gamepads) {
+			if (glfwJoystickPresent(g.first)) {
+				m_prevGamepads[g.first] = g.second;
+			}
+			else {
+				// The gamepad is not connected, remove it from both maps if
+				// present.
+				MWLOG(Info, InputManager, "Disconnected gamepad ", g.first);
+				std::unordered_map<int, GLFWgamepadstate>::iterator it
+					= m_gamepads.find(g.first);
+				if (it != m_gamepads.end()) {
+					removals.push_back(it);
+				}
+			}
+		}
+		// Remove all disconnected gamepads from the list
+		for (std::unordered_map<int, GLFWgamepadstate>::iterator it : removals) {
+			m_gamepads.erase(it);
 		}
 
 		// Check GLFW for new events
 		glfwPollEvents();
+		// Check GLFW for new gamepad events
+		for (const std::pair<int, GLFWgamepadstate>& g : m_gamepads) {
+			glfwGetGamepadState(g.first, &(m_gamepads[g.first]));
+		}
+		processGamepadInput();
 
 		// Update the cursor position
 		double x = 0.0, y = 0.0;
 		glfwGetCursorPos(MW::WINDOW.getWindowHandle(), &x, &y);
 		m_cursorPosition.x = (float)x;
 		m_cursorPosition.y = MW::WINDOW.getDimensions().y - (float)y;
+	}
+
+	void InputManager::processGamepadInput() {
+		for (const std::pair<int, GLFWgamepadstate>& g : m_gamepads) {
+			// Attempt to find the previous frame's data for this gamepad
+			std::unordered_map<int, GLFWgamepadstate>::iterator it
+				= m_prevGamepads.find(g.first);
+			if (it == m_prevGamepads.end()) {
+				continue;
+			}
+			// The gamepad was present last frame
+			// Check all buttons for updates since the last frame
+			for (unsigned int button = 0; button <= GLFW_GAMEPAD_BUTTON_LAST;
+				button++) {
+				if (m_gamepads[g.first].buttons[button]
+					!= m_prevGamepads[g.first].buttons[button]) {
+					// The button was changed
+					bool pressed = (m_gamepads[g.first].buttons[button]
+						== GLFW_PRESS) ? true : false;
+					for (InputListener* l : m_listeners) {
+						if (pressed) {
+							l->gamepadButtonPressed(g.first, button);
+						}
+						else {
+							l->gamepadButtonReleased(g.first, button);
+						}
+					}
+				}
+			}
+			// Check all axes for updates since the last frame
+			for (unsigned int axis = 0; axis <= GLFW_GAMEPAD_AXIS_LAST; axis++) {
+				if (m_gamepads[g.first].axes[axis]
+					!= m_prevGamepads[g.first].axes[axis]) {
+					for (InputListener* l : m_listeners) {
+						l->gamepadAxisMoved(g.first, axis);
+					}
+				}
+			}
+		}
 	}
 
 	bool InputManager::isKeyDown(int key) {
@@ -231,5 +325,125 @@ namespace Milkweed {
 		cursorPosition.y += camera->position.y;
 
 		return cursorPosition;
+	}
+
+	bool InputManager::isGamepadButtonDown(int gamepad, unsigned int button) {
+		// Ensure the button is in bounds
+		if (button > GLFW_GAMEPAD_BUTTON_LAST) {
+			return false;
+		}
+		// Attempt to find the gamepad
+		std::unordered_map<int, GLFWgamepadstate>::iterator it
+			= m_gamepads.find(gamepad);
+		if (it == m_gamepads.end()) {
+			if (glfwJoystickPresent(gamepad)) {
+				if (glfwJoystickIsGamepad(gamepad)) {
+					JoystickCallback(gamepad, GLFW_CONNECTED);
+					return isGamepadButtonDown(gamepad, button);
+				}
+				else {
+					return false;
+				}
+			}
+			else {
+				return false;
+			}
+		}
+		// The gamepad has been found
+		if (m_gamepads[gamepad].buttons[button] == GLFW_PRESS) {
+			return true;
+		}
+		else {
+			return false;
+		}
+	}
+
+	bool InputManager::isGamepadButtonPressed(int gamepad,
+		unsigned int button) {
+		// Ensure the button is in bounds
+		if (button > GLFW_GAMEPAD_BUTTON_LAST) {
+			return false;
+		}
+
+		if (!isGamepadButtonDown(gamepad, button)) {
+			return false;
+		}
+		// The button is down, find the gamepad in the last frame
+		std::unordered_map<int, GLFWgamepadstate>::iterator it
+			= m_prevGamepads.find(gamepad);
+		if (it == m_prevGamepads.end()) {
+			return true;
+		}
+		if (m_prevGamepads[gamepad].buttons[button] == GLFW_RELEASE) {
+			return true;
+		}
+		else {
+			return false;
+		}
+	}
+
+	bool InputManager::isGamepadButtonReleased(int gamepad,
+		unsigned int button) {
+		// Ensure the button is in bounds
+		if (button > GLFW_GAMEPAD_BUTTON_LAST) {
+			return false;
+		}
+
+		if (isGamepadButtonDown(gamepad, button)) {
+			return false;
+		}
+		// The button is down, find the gamepad in the last frame
+		std::unordered_map<int, GLFWgamepadstate>::iterator it
+			= m_prevGamepads.find(gamepad);
+		if (it == m_prevGamepads.end()) {
+			return false;
+		}
+		if (m_prevGamepads[gamepad].buttons[button] == GLFW_PRESS) {
+			return true;
+		}
+		else {
+			return false;
+		}
+	}
+
+#define AXIS_VALUE_NOT_FOUND -1.1f
+
+	bool InputManager::isGamepadAxisMoved(int gamepad, unsigned int axis) {
+		// Get the current position of the axis
+		float cpos = getGamepadAxisPosition(gamepad, axis);
+		if (cpos == AXIS_VALUE_NOT_FOUND) {
+			return false;
+		}
+		
+		// Attempt to find the gamepad in the previous frame
+		std::unordered_map<int, GLFWgamepadstate>::iterator it
+			= m_prevGamepads.find(gamepad);
+		if (it == m_prevGamepads.end()) {
+			return false;
+		}
+
+		// The gamepad was found, the axis was moved if its old value is not
+		// equal to the current one.
+		return cpos != it->second.axes[axis];
+	}
+
+	float InputManager::getGamepadAxisPosition(int gamepad, unsigned int axis) {
+		// Ensure the axis is in bounds
+		if (axis > GLFW_GAMEPAD_AXIS_LAST) {
+			return AXIS_VALUE_NOT_FOUND;
+		}
+
+		// Attempt to find the gamepad in the map by its ID
+		std::unordered_map<int, GLFWgamepadstate>::iterator it
+			= m_gamepads.find(gamepad);
+		if (it == m_gamepads.end()) {
+			return AXIS_VALUE_NOT_FOUND;
+		}
+		
+		return m_gamepads[gamepad].axes[axis];
+	}
+
+	unsigned int InputManager::getGamepadCount() const {
+		return (unsigned int)m_gamepads.size();
 	}
 }

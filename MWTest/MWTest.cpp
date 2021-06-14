@@ -33,18 +33,11 @@ void TestScene::init() {
 	// Set up the UI
 	m_UIGroup.init(this, 0, MW::RESOURCES.getFont("Assets/font/arial.ttf"),
 		&m_spriteShader, &m_textShader, "textColor");
-	m_textArea.init("", 10, glm::vec3(0.5f - cDims.x / 2.0f,
-		0.5f - cDims.y / 2.0f, 0.0f), cDims, 10.0f, textScale, textColor,
-		Justification::LEFT, Justification::CENTER, cTexture, cursorTexture);
-	m_UIGroup.addComponent(&m_textArea);
-	m_textArea.setLineWrapEnabled(true);
-	m_textArea.setEditable(true);
-	m_textArea.setScrollEnabled(true);
-	m_textArea.setEnabled(true);
 }
 
 void TestScene::enter() {
 	m_UIGroup.setEnabled(true);
+	MW::INPUT.addInputListener(this);
 }
 
 void TestScene::draw() {
@@ -56,7 +49,24 @@ void TestScene::processInput() {
 		MW::WINDOW.setFullScreen(!MW::WINDOW.isFullScreen());
 	}
 
+	// Test gamepad input
+	for (int gp = 0; gp < MW::INPUT.getGamepadCount(); gp++) {
+
+	}
+
 	m_UIGroup.processInput();
+}
+
+void TestScene::gamepadButtonPressed(int gp, unsigned int button) {
+	MWLOG(Info, TestScene, "Gamepad ", gp, " button press ", button);
+}
+
+void TestScene::gamepadButtonReleased(int gp, unsigned int button) {
+	MWLOG(Info, TestScene, "Gamepad ", gp, " button release ", button);
+}
+
+void TestScene::gamepadAxisMoved(int gp, unsigned int axis) {
+	MWLOG(Info, TestScene, "Gamepad ", gp, " axis moved ", axis);
 }
 
 void TestScene::updateWindowSize() {
@@ -79,6 +89,7 @@ void TestScene::update(float deltaTime) {
 
 void TestScene::exit() {
 	m_UIGroup.setEnabled(false);
+	MW::INPUT.removeInputListener(this);
 }
 
 void TestScene::destroy() {

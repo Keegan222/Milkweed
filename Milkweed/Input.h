@@ -124,6 +124,42 @@ namespace Milkweed {
 	};
 
 	/*
+	* Wrapper for default GLFW gamepad button mappings
+	*/
+	enum GamepadButton : unsigned int {
+		G_A = GLFW_GAMEPAD_BUTTON_A,
+		G_B = GLFW_GAMEPAD_BUTTON_B,
+		G_X = GLFW_GAMEPAD_BUTTON_X,
+		G_Y = GLFW_GAMEPAD_BUTTON_Y,
+		G_CROSS = GLFW_GAMEPAD_BUTTON_CROSS,
+		G_CIRCLE = GLFW_GAMEPAD_BUTTON_CIRCLE,
+		G_SQUARE = GLFW_GAMEPAD_BUTTON_SQUARE,
+		G_TRIANGLE = GLFW_GAMEPAD_BUTTON_TRIANGLE,
+		G_UP = GLFW_GAMEPAD_BUTTON_DPAD_UP,
+		G_DOWN = GLFW_GAMEPAD_BUTTON_DPAD_DOWN,
+		G_LEFT = GLFW_GAMEPAD_BUTTON_DPAD_LEFT,
+		G_RIGHT = GLFW_GAMEPAD_BUTTON_DPAD_RIGHT,
+		G_START = GLFW_GAMEPAD_BUTTON_START,
+		G_GUIDE = GLFW_GAMEPAD_BUTTON_GUIDE,
+		G_LEFT_BUMPER = GLFW_GAMEPAD_BUTTON_LEFT_BUMPER,
+		G_RIGHT_BUMPER = GLFW_GAMEPAD_BUTTON_RIGHT_BUMPER,
+		G_LEFT_THUMB = GLFW_GAMEPAD_BUTTON_LEFT_THUMB,
+		G_RIGHT_THUMB = GLFW_GAMEPAD_BUTTON_RIGHT_THUMB,
+	};
+
+	/*
+	* Wrapper for default GLFW gamepad axis mappings
+	*/
+	enum GamepadAxis : unsigned int {
+		GA_LEFT_X = GLFW_GAMEPAD_AXIS_LEFT_X,
+		GA_LEFT_Y = GLFW_GAMEPAD_AXIS_LEFT_Y,
+		GA_RIGHT_X = GLFW_GAMEPAD_AXIS_RIGHT_X,
+		GA_RIGHT_Y = GLFW_GAMEPAD_AXIS_RIGHT_Y,
+		GA_LEFT_TRIGGER = GLFW_GAMEPAD_AXIS_LEFT_TRIGGER,
+		GA_RIGHT_TRIGGER = GLFW_GAMEPAD_AXIS_RIGHT_TRIGGER,
+	};
+
+	/*
 	* An interface for listening for GLFW user input callbacks in the
 	* application's input manager
 	*/
@@ -170,6 +206,27 @@ namespace Milkweed {
 		* wheel moved.
 		*/
 		virtual void scrolled(const glm::vec2& distance) {};
+		/*
+		* A button has been pressed on a gamepad
+		* 
+		* @param gp: The ID of the gamepad on which a button has been pressed.
+		* @param button: The ID of the button which has been pressed.
+		*/
+		virtual void gamepadButtonPressed(int gp, unsigned int button) {};
+		/*
+		* A button has been released on a gamepad.
+		* 
+		* @param gp: The ID of the gamepad on which a button has been released.
+		* @param button: The ID of the button which has been released.
+		*/
+		virtual void gamepadButtonReleased(int gp, unsigned int button) {};
+		/*
+		* An axis has been moved on a gamepad.
+		* 
+		* @param gp: The ID of the gamepad on which an axis has been moved.
+		* @param axis: The ID of the axis which has been moved.
+		*/
+		virtual void gamepadAxisMoved(int gp, unsigned int axis) {};
 	};
 
 	/*
@@ -254,6 +311,30 @@ namespace Milkweed {
 		* Get the position of the mouse cursor in world-space in a given camera
 		*/
 		glm::vec2 getCursorPosition(const Camera* camera) const;
+		/*
+		* Test whether a gamepad button is currently down
+		*/
+		bool isGamepadButtonDown(int gamepad, unsigned int button);
+		/*
+		* Test whether a gamepad button has just been pressed
+		*/
+		bool isGamepadButtonPressed(int gamepad, unsigned int button);
+		/*
+		* Test whether a gamepad button has just been released
+		*/
+		bool isGamepadButtonReleased(int gamepad, unsigned int button);
+		/*
+		* Test whether a gamepad axis has just been moved
+		*/
+		bool isGamepadAxisMoved(int gamepad, unsigned int axis);
+		/*
+		* Get the position of an axis on a gamepad
+		*/
+		float getGamepadAxisPosition(int gamepad, unsigned int axis);
+		/*
+		* Get the number of gamepads currently connected
+		*/
+		unsigned int getGamepadCount() const;
 
 	private:
 		// The singleton instance of this class
@@ -262,6 +343,34 @@ namespace Milkweed {
 		* The constructor is disabled for this class
 		*/
 		InputManager() {}
+
+		/*
+		* GLFW callback function for keyboard input events
+		*/
+		static void KeyCallback(GLFWwindow* window, int key, int scancode,
+			int action, int mods);
+		/*
+		* GLFW callback function for text input events
+		*/
+		static void CharCallback(GLFWwindow* window, unsigned int codepoint);
+		/*
+		* GLFW callback function for mouse button input events
+		*/
+		static void ButtonCallback(GLFWwindow* window, int button, int action,
+			int mods);
+		/*
+		* GLFW callback function for mouse cursor input events
+		*/
+		static void CursorCallback(GLFWwindow* window, double x, double y);
+		/*
+		* GLFW callback function for mouse scroll wheel events
+		*/
+		static void ScrollCallback(GLFWwindow* window, double xOffset,
+			double yOffset);
+		/*
+		* GLFW callback function for joystick / game controller events
+		*/
+		static void JoystickCallback(int jid, int event);
 
 		// The input listeners attached to this input manager
 		std::list<InputListener*> m_listeners;
@@ -275,30 +384,13 @@ namespace Milkweed {
 		std::unordered_map<int, bool> m_prevButtons;
 		// The position of the mouse cursor on the window
 		glm::vec2 m_cursorPosition = glm::vec2();
+		// The states of all connected gamepads
+		std::unordered_map<int, GLFWgamepadstate> m_gamepads;
+		// The states of all connected gamepads in the last frame
+		std::unordered_map<int, GLFWgamepadstate> m_prevGamepads;
 
-		/*
-		* GLFW callback function for keyboard input events
-		*/
-		static void key_callback(GLFWwindow* window, int key, int scancode,
-			int action, int mods);
-		/*
-		* GLFW callback function for text input events
-		*/
-		static void char_callback(GLFWwindow* window, unsigned int codepoint);
-		/*
-		* GLFW callback function for mouse button input events
-		*/
-		static void button_callback(GLFWwindow* window, int button, int action,
-			int mods);
-		/*
-		* GLFW callback function for mouse cursor input events
-		*/
-		static void cursor_callback(GLFWwindow* window, double x, double y);
-		/*
-		* GLFW callback function for mouse scroll wheel events
-		*/
-		static void scroll_callback(GLFWwindow* window, double xOffset,
-			double yOffset);
+		// Process input to gamepads for notifying input listeners of events.
+		void processGamepadInput();
 	};
 }
 

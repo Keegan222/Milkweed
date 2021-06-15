@@ -53,15 +53,15 @@ void TitleScene::init() {
 }
 
 void TitleScene::enter() {
+	MW::INPUT.addInputListener(this);
 	// Set directions for controller input and add components
 	if (MW::INPUT.getGamepadCount() > 0) {
-		m_connectButton.setDirections(&m_quitButton, &m_optionsButton, nullptr,
-			&m_optionsButton);
-		m_optionsButton.setDirections(&m_connectButton, &m_quitButton,
-			&m_connectButton, &m_quitButton);
-		m_quitButton.setDirections(&m_optionsButton, &m_connectButton,
-			&m_optionsButton, nullptr);
-		m_mainUIGroup.setSelectedComponent(&m_connectButton);
+		setComponentDirections();
+		MW::WINDOW.setCursorEnabled(false);
+	}
+	else {
+		m_mainUIGroup.setSelectedComponent(nullptr);
+		MW::WINDOW.setCursorEnabled(true);
 	}
 
 	m_mainUIGroup.setEnabled(true);
@@ -76,6 +76,21 @@ void TitleScene::processInput() {
 
 	if (MW::INPUT.isKeyPressed(Key::F_11)) {
 		MW::WINDOW.setFullScreen(!MW::WINDOW.isFullScreen());
+	}
+}
+
+void TitleScene::gamepadConnected(int gp) {
+	MW::WINDOW.setCursorEnabled(false);
+	if (m_mainUIGroup.getSelectedComponent() == nullptr) {
+		setComponentDirections();
+		m_mainUIGroup.setSelectedComponent(&m_connectButton);
+	}
+}
+
+void TitleScene::gamepadDisconnected(int gp) {
+	if (MW::INPUT.getGamepadCount() == 1) {
+		MW::WINDOW.setCursorEnabled(true);
+		m_mainUIGroup.setSelectedComponent(nullptr);
 	}
 }
 
@@ -124,6 +139,7 @@ void TitleScene::update(float deltaTime) {
 
 void TitleScene::exit() {
 	m_mainUIGroup.setEnabled(false);
+	MW::INPUT.removeInputListener(this);
 }
 
 void TitleScene::destroy() {
@@ -132,4 +148,14 @@ void TitleScene::destroy() {
 	m_textShader.destroy();
 	m_mainUIGroup.destroy();
 	m_initialized = false;
+}
+
+void TitleScene::setComponentDirections() {
+	m_connectButton.setDirections(&m_quitButton, &m_optionsButton, nullptr,
+		&m_optionsButton);
+	m_optionsButton.setDirections(&m_connectButton, &m_quitButton,
+		&m_connectButton, &m_quitButton);
+	m_quitButton.setDirections(&m_optionsButton, &m_connectButton,
+		&m_optionsButton, nullptr);
+	m_mainUIGroup.setSelectedComponent(&m_connectButton);
 }

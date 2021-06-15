@@ -66,18 +66,16 @@ void ConnectScene::init() {
 }
 
 void ConnectScene::enter() {
+	MW::INPUT.addInputListener(this);
 	// Set up directions for gamepads
 	if (MW::INPUT.getGamepadCount() > 0) {
-		m_addressBox.setDirections(nullptr, &m_portBox, nullptr, nullptr);
-		m_portBox.setDirections(&m_addressBox, &m_defaultsButton, nullptr,
-			nullptr);
-		m_backButton.setDirections(&m_portBox, nullptr, nullptr,
-			&m_defaultsButton);
-		m_defaultsButton.setDirections(&m_portBox, nullptr, &m_backButton,
-			&m_connectButton);
-		m_connectButton.setDirections(&m_portBox, nullptr, &m_defaultsButton,
-			nullptr);
-		m_mainUIGroup.setSelectedComponent(&m_addressBox);
+		setComponentDirections();
+		m_mainUIGroup.setSelectedComponent(&m_connectButton);
+		MW::WINDOW.setCursorEnabled(false);
+	}
+	else {
+		MW::WINDOW.setCursorEnabled(true);
+		m_mainUIGroup.setSelectedComponent(nullptr);
 	}
 	m_mainUIGroup.setEnabled(true);
 	
@@ -91,6 +89,21 @@ void ConnectScene::draw() {
 
 void ConnectScene::processInput() {
 	m_mainUIGroup.processInput();
+}
+
+void ConnectScene::gamepadConnected(int gp) {
+	MW::WINDOW.setCursorEnabled(false);
+	if (m_mainUIGroup.getSelectedComponent() == nullptr) {
+		setComponentDirections();
+		m_mainUIGroup.setSelectedComponent(&m_connectButton);
+	}
+}
+
+void ConnectScene::gamepadDisconnected(int gp) {
+	if (MW::INPUT.getGamepadCount() == 1) {
+		MW::WINDOW.setCursorEnabled(true);
+		m_mainUIGroup.setSelectedComponent(nullptr);
+	}
 }
 
 void ConnectScene::componentEvent(unsigned int groupID,
@@ -138,6 +151,7 @@ void ConnectScene::update(float deltaTime) {
 }
 
 void ConnectScene::exit() {
+	MW::INPUT.removeInputListener(this);
 	m_mainUIGroup.setEnabled(false);
 }
 
@@ -146,4 +160,16 @@ void ConnectScene::destroy() {
 	m_spriteShader.destroy();
 	m_textShader.destroy();
 	m_mainUIGroup.destroy();
+}
+
+void ConnectScene::setComponentDirections() {
+	m_addressBox.setDirections(nullptr, &m_portBox, nullptr, nullptr);
+	m_portBox.setDirections(&m_addressBox, &m_defaultsButton, nullptr,
+		nullptr);
+	m_backButton.setDirections(&m_portBox, nullptr, nullptr,
+		&m_defaultsButton);
+	m_defaultsButton.setDirections(&m_portBox, nullptr, &m_backButton,
+		&m_connectButton);
+	m_connectButton.setDirections(&m_portBox, nullptr, &m_defaultsButton,
+		nullptr);
 }

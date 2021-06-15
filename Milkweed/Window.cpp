@@ -126,6 +126,16 @@ namespace Milkweed {
 		m_fullScreen = fullScreen;
 	}
 
+	void Window::setCursorEnabled(bool cursorEnabled) {
+		m_cursorEnabled = cursorEnabled;
+		if (m_cursorEnabled) {
+			glfwSetInputMode(m_window, GLFW_CURSOR, GLFW_CURSOR_NORMAL);
+		}
+		else {
+			glfwSetInputMode(m_window, GLFW_CURSOR, GLFW_CURSOR_HIDDEN);
+		}
+	}
+
 	void Window::updateSize() {
 		for (Scene* s : MW::SCENES) {
 			s->updateWindowSize();

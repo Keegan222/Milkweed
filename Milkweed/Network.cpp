@@ -26,12 +26,10 @@ namespace Milkweed {
 		const asio::ip::tcp::resolver::results_type& endpoints) {
 		// Attempt to asynchronously connect to the socket to the server at the
 		// given endpoint
-		std::cout << "Attempting to connect to server" << std::endl;
 		asio::async_connect(m_socket, endpoints,
 			[this](std::error_code error,
 				asio::ip::tcp::endpoint endpoint) {
 					if (!error) {
-						std::cout << "Connected to server" << std::endl;
 						// The connection was successful, begin reading messages
 						m_connected = true;
 						// Push a connected message to the client
@@ -43,7 +41,6 @@ namespace Milkweed {
 						readHeader();
 					}
 					else {
-						std::cout << "Didn't connect to server" << std::endl;
 						NetMessage msg;
 						msg.header.ID = NetMessageTypes::FAILED;
 						m_messagesIn->pushBack(msg);
@@ -91,15 +88,12 @@ namespace Milkweed {
 		// If the socket is connected, then tell the ASIO context to close it
 		// TODO: May need to fix the dereference here
 		if (isConnected()) {
-			std::cout << "Disconnecting" << std::endl;
 			// Notify the host of the disconnect
 			m_connected = false;
 
 			// Send the disconnected message if the NetConnection isn't owned
 			// by a server
-			std::cout << "Disconnecting netconnection" << std::endl;
 			if (!m_serverOwned && m_messagesIn != nullptr) {
-				std::cout << "Not server owned" << std::endl;
 				NetMessage message(NetMessageTypes::DISCONNECTED,
 					this->shared_from_this());
 				m_messagesIn->pushBack(message);
@@ -139,7 +133,6 @@ namespace Milkweed {
 	}
 
 	void NetConnection::readHeader() {
-		std::cout << "Reading header" << std::endl;
 		asio::async_read(m_socket,
 			asio::buffer(&m_tempMessage.header, sizeof(NetMessageHeader)),
 			[this](std::error_code error, std::size_t length) {
@@ -147,20 +140,17 @@ namespace Milkweed {
 					if (m_tempMessage.header.size == 0) {
 						// There is no body, this message can be added without
 						// one
-						std::cout << "No body" << std::endl;
 						addMessageIn();
 					}
 					else {
 						if (m_tempMessage.header.size <= m_maxMessageSize) {
 							// There is a body to read for this message, read
 							// it in from the network
-							std::cout << "Moving to body" << std::endl;
 							m_tempMessage.body.resize(
 								m_tempMessage.header.size);
 							readBody();
 						}
 						else {
-							std::cout << "Invalid body size" << std::endl;
 							// The connection won't take this message because
 							// its specified body size is too big, this is
 							// likely because a client has connected which is
@@ -170,7 +160,6 @@ namespace Milkweed {
 					}
 				}
 				else {
-					std::cout << "Erorr" << std::endl;
 					// An error has occurred, we've been disconnected
 					disconnect();
 				}
@@ -179,17 +168,14 @@ namespace Milkweed {
 	}
 
 	void NetConnection::readBody() {
-		std::cout << "Reading body" << std::endl;
 		asio::async_read(m_socket, asio::buffer(m_tempMessage.body.data(),
 			m_tempMessage.body.size()),
 			[this](std::error_code error, std::size_t length) {
 				if (!error) {
-					std::cout << "Adding message" << std::endl;
 					// Add the message to the incoming message queue
 					addMessageIn();
 				}
 				else {
-					std::cout << "Error" << std::endl;
 					// The socket has been disconnected
 					disconnect();
 				}
@@ -405,7 +391,7 @@ namespace Milkweed {
 
 		// Process up to maxMessages messages
 		int i = 0;
-		while (i != maxMessages && !m_messagesIn.empty()) {
+		while (i <= maxMessages && !m_messagesIn.empty()) {
 			NetMessage message = m_messagesIn.popFront();
 			onMessage(message);
 			i++;

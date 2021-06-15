@@ -29,6 +29,14 @@ void Scene::init() {
 	m_initialized = true;
 }
 
+void Scene::enter() {
+	MW::INPUT.addInputListener(this);
+}
+
+void Scene::exit() {
+	MW::INPUT.removeInputListener(this);
+}
+
 void Scene::destroy() {
 	m_initialized = false;
 }

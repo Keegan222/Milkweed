@@ -53,6 +53,10 @@ namespace Milkweed {
 		void init(const glm::vec3& position, const glm::vec2& dimensions,
 			Texture* texture);
 		/*
+		* Process input to this sprite
+		*/
+		virtual void processInput() {};
+		/*
 		* Update this sprite's physics
 		* 
 		* @param deltaTime: The time elapsed since the last update

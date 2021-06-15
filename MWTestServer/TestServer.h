@@ -26,6 +26,12 @@ public:
 	* Destroy this server on deletion.
 	*/
 	~TestServer();
+	/*
+	* Update the physics of the server
+	* 
+	* @param deltaTime: The elapsed time since the last frame
+	*/
+	void updatePhysics(float deltaTime);
 
 protected:
 	/*
@@ -43,7 +49,7 @@ protected:
 
 private:
 	// Map from client ID numbers to player information structures
-	std::map<unsigned int, Player> m_players;
+	std::map<unsigned int, ServerPlayer> m_players;
 };
 
 #endif

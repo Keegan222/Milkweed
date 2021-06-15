@@ -33,6 +33,9 @@ void TestScene::init() {
 	// Set up the UI
 	m_UIGroup.init(this, 0, MW::RESOURCES.getFont("Assets/font/arial.ttf"),
 		&m_spriteShader, &m_textShader, "textColor");
+
+	m_sprite.init(glm::vec3(0.0f, 0.0f, 0.0f), glm::vec2(50.0f, 50.0f),
+		MW::RESOURCES.getTexture("Assets/texture/sprite.png"));
 }
 
 void TestScene::enter() {
@@ -41,6 +44,8 @@ void TestScene::enter() {
 }
 
 void TestScene::draw() {
+	MW::RENDERER.submit({ &m_sprite }, &m_spriteShader);
+
 	m_UIGroup.draw();
 }
 
@@ -49,26 +54,57 @@ void TestScene::processInput() {
 		MW::WINDOW.setFullScreen(!MW::WINDOW.isFullScreen());
 	}
 
-	// Test gamepad input
-	for (unsigned int gp = 0; gp < MW::INPUT.getGamepadCount(); gp++) {
-		if (MW::INPUT.isGamepadButtonPressed(gp, GamepadButton::G_CIRCLE)) {
-			MWLOG(Info, TestScene, gp, ": CIRCLE");
-		}
-	}
-
 	m_UIGroup.processInput();
 }
 
+void TestScene::keyPressed(int key) {
+	MWLOG(Info, TestScene, "Key ", key, " pressed");
+}
+
+void TestScene::keyReleased(int key) {
+	MWLOG(Info, TestScene, "Key ", key, " released");
+}
+
+void TestScene::textTyped(char text) {
+	MWLOG(Info, TestScene, "Character \"", text, "\" typed");
+}
+
+void TestScene::buttonPressed(int button) {
+	MWLOG(Info, TestScene, "Mouse button ", button, " pressed");
+}
+
+void TestScene::buttonReleased(int button) {
+	MWLOG(Info, TestScene, "Mouse button ", button, " released");
+}
+
+void TestScene::cursorMoved() {
+	glm::vec2 mousePos = MW::INPUT.getCursorPosition(&m_camera);
+	
+}
+
+void TestScene::scrolled(const glm::vec2& distance) {
+	MWLOG(Info, TestScene, "Mouse scrolled (", distance.x, ", ", distance.y,
+		")");
+}
+
+void TestScene::gamepadConnected(int gp) {
+	MWLOG(Info, TestScene, "Gamepad ", gp, " connected");
+}
+
+void TestScene::gamepadDisconnected(int gp) {
+	MWLOG(Info, TestScene, "Gamepad ", gp, " disconnected");
+}
+
 void TestScene::gamepadButtonPressed(int gp, unsigned int button) {
-	MWLOG(Info, TestScene, "Gamepad ", gp, " button press ", button);
+	MWLOG(Info, TestScene, "Gamepad ", gp, " button ", button, " pressed");
 }
 
 void TestScene::gamepadButtonReleased(int gp, unsigned int button) {
-	MWLOG(Info, TestScene, "Gamepad ", gp, " button release ", button);
+	MWLOG(Info, TestScene, "Gamepad ", gp, " button ", button, " released");
 }
 
 void TestScene::gamepadAxisMoved(int gp, unsigned int axis) {
-	MWLOG(Info, TestScene, "Gamepad ", gp, " axis moved ", axis);
+	MWLOG(Info, TestScene, "Gamepad ", gp, " axis ", axis, " moved");
 }
 
 void TestScene::updateWindowSize() {

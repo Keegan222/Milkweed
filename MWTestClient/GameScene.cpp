@@ -83,13 +83,26 @@ void GameScene::init() {
 }
 
 void GameScene::enter() {
+	MW::INPUT.addInputListener(this);
 	MWLOG(Info, GameScene, "entered scene");
 	// Attempt to connect to the server
 	if (!MW::NETWORK.isConnected()) {
 		MW::NETWORK.connect(m_address, m_port);
 	}
+
+	// Set directions for the pause UI for controllers
+	if (MW::INPUT.getGamepadCount() > 0) {
+		setComponentDirections();
+		m_pauseUIGroup.setSelectedComponent(&m_optionsButton);
+		MW::WINDOW.setCursorEnabled(false);
+	}
+	else {
+		MW::WINDOW.setCursorEnabled(true);
+		m_pauseUIGroup.setSelectedComponent(nullptr);
+	}
 	m_pauseUIGroup.setEnabled(false);
 	m_pauseUIGroup.setVisible(false);
+
 	m_statsArea.setEnabled(false);
 }
 
@@ -115,7 +128,8 @@ void GameScene::processInput() {
 	}
 
 	// Check for the escape menu
-	if (MW::INPUT.isKeyPressed(F_ESCAPE)) {
+	if (MW::INPUT.isKeyPressed(F_ESCAPE)
+		|| MW::INPUT.isGamepadButtonPressed(G_BACK)) {
 		m_pauseMenuUp = !m_pauseMenuUp;
 		if (m_pauseMenuUp) {
 			m_pauseUIGroup.setEnabled(true);
@@ -147,6 +161,21 @@ void GameScene::processInput() {
 	}
 }
 
+void GameScene::gamepadConnected(int gp) {
+	MW::WINDOW.setCursorEnabled(false);
+	if (m_pauseUIGroup.getSelectedComponent() == nullptr) {
+		setComponentDirections();
+		m_pauseUIGroup.setSelectedComponent(&m_optionsButton);
+	}
+}
+
+void GameScene::gamepadDisconnected(int gp) {
+	if (MW::INPUT.getGamepadCount() == 1) {
+		MW::WINDOW.setCursorEnabled(true);
+		m_pauseUIGroup.setSelectedComponent(nullptr);
+	}
+}
+
 void GameScene::processNetMessage(NetMessage& message) {
 	switch (message.header.ID) {
 	case NetMessageTypes::CONNECTED: {
@@ -169,13 +198,13 @@ void GameScene::processNetMessage(NetMessage& message) {
 		MWLOG(Info, GameScene, "Received ACCEPT_PLAYER message");
 		// Initialize this player
 		message >> m_playerID;
-		m_players[m_playerID] = Player();
+		m_players[m_playerID] = ClientPlayer();
 
 		// Initialize previously connected players
 		while (message.header.size > 0) {
 			unsigned int playerID = 0;
 			message >> playerID;
-			m_players[playerID] = Player();
+			m_players[playerID] = ClientPlayer();
 		}
 
 		m_accepted = true;
@@ -186,7 +215,7 @@ void GameScene::processNetMessage(NetMessage& message) {
 		// Initialize a blank player with that ID
 		unsigned int playerID = 0;
 		message >> playerID;
-		m_players[playerID] = Player();
+		m_players[playerID] = ClientPlayer();
 		break;
 	}
 	case MessageTypes::PING: {
@@ -199,7 +228,8 @@ void GameScene::processNetMessage(NetMessage& message) {
 		unsigned int playerID = 0;
 		message >> playerID;
 		// Search for the player with that ID and clear it out if found
-		std::map<unsigned int, Player>::iterator it = m_players.find(playerID);
+		std::map<unsigned int, ClientPlayer>::iterator it
+			= m_players.find(playerID);
 		if (it != m_players.end()) {
 			m_players.erase(it);
 		}
@@ -257,6 +287,7 @@ void GameScene::update(float deltaTime) {
 }
 
 void GameScene::exit() {
+	MW::INPUT.removeInputListener(this);
 	MWLOG(Info, GameScene, "Exited scene");
 	m_pauseMenuUp = false;
 	m_pauseUIGroup.setEnabled(false);
@@ -291,4 +322,11 @@ void GameScene::disconnect() {
 	m_players.clear();
 	MW::NETWORK.disconnect();
 	MW::SetScene(&TestClient::CONNECT_SCENE);
+}
+
+void GameScene::setComponentDirections() {
+	m_optionsButton.setDirections(nullptr, &m_disconnectButton, nullptr,
+		nullptr);
+	m_disconnectButton.setDirections(&m_optionsButton, nullptr, nullptr,
+		nullptr);
 }

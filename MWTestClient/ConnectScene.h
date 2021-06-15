@@ -17,6 +17,8 @@ public:
 	void enter() override;
 	void draw() override;
 	void processInput() override;
+	void gamepadConnected(int gp) override;
+	void gamepadDisconnected(int gp) override;
 	void componentEvent(unsigned int groupID, unsigned int componentID,
 		unsigned int eventID) override;
 	void updateWindowSize() override;
@@ -29,9 +31,10 @@ private:
 	Camera m_UICamera;
 	Shader m_spriteShader, m_textShader;
 	UI::UIGroup m_mainUIGroup;
-
 	UI::TextBox m_addressBox, m_portBox;
 	UI::Button m_backButton, m_defaultsButton, m_connectButton;
+
+	void setComponentDirections();
 };
 
 #endif

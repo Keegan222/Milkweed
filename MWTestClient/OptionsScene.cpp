@@ -170,6 +170,7 @@ void OptionsScene::init() {
 }
 
 void OptionsScene::enter() {
+	MW::INPUT.addInputListener(this);
 	m_addressBox.setText(Options::DEFAULT_ADDRESS);
 	m_portBox.setText(std::to_string(Options::DEFAULT_PORT));
 	m_fullScreenSwitch.setText(Options::FULL_SCREEN ? "Enabled" : "Disabled");
@@ -192,23 +193,13 @@ void OptionsScene::enter() {
 
 	// Set game controller directions for UI components
 	if (MW::INPUT.getGamepadCount() > 0) {
-		m_addressBox.setDirections(nullptr, &m_fullScreenSwitch, nullptr,
-			&m_portBox);
-		m_portBox.setDirections(nullptr, &m_resolutionCycle, &m_addressBox,
-			&m_fullScreenSwitch);
-		m_fullScreenSwitch.setDirections(&m_addressBox, &m_volumeSlider,
-			&m_portBox, &m_resolutionCycle);
-		m_resolutionCycle.setDirections(&m_portBox, &m_saveButton,
-			&m_fullScreenSwitch, &m_volumeSlider);
-		m_volumeSlider.setDirections(&m_fullScreenSwitch, &m_backButton,
-			&m_resolutionCycle, nullptr);
-		m_backButton.setDirections(&m_volumeSlider, nullptr, nullptr,
-			&m_defaultsButton);
-		m_defaultsButton.setDirections(&m_volumeSlider, nullptr, &m_backButton,
-			&m_saveButton);
-		m_saveButton.setDirections(&m_resolutionCycle, nullptr,
-			&m_defaultsButton, nullptr);
+		setComponentDirections();
 		m_mainUIGroup.setSelectedComponent(&m_backButton);
+		MW::WINDOW.setCursorEnabled(false);
+	}
+	else {
+		MW::WINDOW.setCursorEnabled(true);
+		m_mainUIGroup.setSelectedComponent(nullptr);
 	}
 	m_mainUIGroup.setEnabled(true);
 }
@@ -219,6 +210,21 @@ void OptionsScene::draw() {
 
 void OptionsScene::processInput() {
 	m_mainUIGroup.processInput();
+}
+
+void OptionsScene::gamepadConnected(int gp) {
+	MW::WINDOW.setCursorEnabled(false);
+	if (m_mainUIGroup.getSelectedComponent() == nullptr) {
+		setComponentDirections();
+		m_mainUIGroup.setSelectedComponent(&m_backButton);
+	}
+}
+
+void OptionsScene::gamepadDisconnected(int gp) {
+	if (MW::INPUT.getGamepadCount() == 1) {
+		MW::WINDOW.setCursorEnabled(true);
+		m_mainUIGroup.setSelectedComponent(nullptr);
+	}
 }
 
 void OptionsScene::componentEvent(unsigned int groupID,
@@ -290,6 +296,7 @@ void OptionsScene::update(float deltaTime) {
 }
 
 void OptionsScene::exit() {
+	MW::INPUT.removeInputListener(this);
 	m_mainUIGroup.setEnabled(false);
 }
 
@@ -297,4 +304,23 @@ void OptionsScene::destroy() {
 	m_mainUIGroup.destroy();
 
 	m_initialized = false;
+}
+
+void OptionsScene::setComponentDirections() {
+	m_addressBox.setDirections(nullptr, &m_fullScreenSwitch, nullptr,
+		&m_portBox);
+	m_portBox.setDirections(nullptr, &m_resolutionCycle, &m_addressBox,
+		&m_fullScreenSwitch);
+	m_fullScreenSwitch.setDirections(&m_addressBox, &m_volumeSlider,
+		&m_portBox, &m_resolutionCycle);
+	m_resolutionCycle.setDirections(&m_portBox, &m_defaultsButton,
+		&m_fullScreenSwitch, &m_volumeSlider);
+	m_volumeSlider.setDirections(&m_fullScreenSwitch, &m_backButton,
+		&m_resolutionCycle, &m_defaultsButton);
+	m_backButton.setDirections(&m_volumeSlider, nullptr, &m_saveButton,
+		&m_defaultsButton);
+	m_defaultsButton.setDirections(&m_resolutionCycle, nullptr,
+		&m_backButton, &m_saveButton);
+	m_saveButton.setDirections(&m_resolutionCycle, nullptr,
+		&m_defaultsButton, &m_backButton);
 }

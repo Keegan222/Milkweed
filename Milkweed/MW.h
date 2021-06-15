@@ -27,7 +27,7 @@ namespace Milkweed {
 	/*
 	* An abstract scene in a Milkweed framework application
 	*/
-	class Scene {
+	class Scene : public InputListener {
 	public:
 		/*
 		* Initialize this scene on the start of the application
@@ -36,7 +36,7 @@ namespace Milkweed {
 		/*
 		* Switch to this scene from another scene
 		*/
-		virtual void enter() = 0;
+		virtual void enter();
 		/*
 		* Draw this scene's graphics on the window
 		*/
@@ -69,7 +69,7 @@ namespace Milkweed {
 		/*
 		* Switch from this scene to another one
 		*/
-		virtual void exit() = 0;
+		virtual void exit();
 		/*
 		* Free this scene's memory
 		*/

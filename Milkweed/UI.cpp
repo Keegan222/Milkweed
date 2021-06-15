@@ -500,7 +500,8 @@ namespace Milkweed {
 			// appropriately
 			if (RectContains(glm::vec4(m_position.x, m_position.y, m_dimensions.x,
 				m_dimensions.y), MW::INPUT.getCursorPosition(
-					m_parent->getSpriteShader()->getCamera()))) {
+					m_parent->getSpriteShader()->getCamera()))
+					&& MW::WINDOW.isCursorEnabled()) {
 				m_sprite.textureCoords = SELECTED_COORDS;
 				if (!m_selected) {
 					m_parent->componentEvent(m_ID, SELECTED_EVENT);
@@ -532,7 +533,8 @@ namespace Milkweed {
 					}
 				}
 				// Test for mouse clicking
-				if (MW::INPUT.isButtonReleased(B_LEFT)) {
+				if (MW::INPUT.isButtonReleased(B_LEFT)
+					&& MW::WINDOW.isCursorEnabled()) {
 					if (RectContains(glm::vec4(m_position.x, m_position.y,
 						m_dimensions.x, m_dimensions.y),
 						MW::INPUT.getCursorPosition(
@@ -540,7 +542,8 @@ namespace Milkweed {
 						m_parent->componentEvent(m_ID, CLICKED_EVENT);
 					}
 				}
-				if (MW::INPUT.isButtonDown(B_LEFT)) {
+				if (MW::INPUT.isButtonDown(B_LEFT)
+					&& MW::WINDOW.isCursorEnabled()) {
 					if (RectContains(glm::vec4(m_position.x, m_position.y,
 						m_dimensions.x, m_dimensions.y),
 						MW::INPUT.getCursorPosition(
@@ -612,14 +615,12 @@ namespace Milkweed {
 				textVJustification);
 
 			// Set up the label of this text box
-			std::cout << "Initializing label" << std::endl;
 			m_label.init(labelText, glm::vec3(normalPosition.x,
 				normalPosition.y + normalDimensions.y, normalPosition.z),
 				normalDimensions, glm::vec3(normalPosition.x,
 					normalPosition.y + normalDimensions.y, normalPosition.z),
 				textScale, textColor, textHJustification, textVJustification);
 			m_label.setOwned(true);
-			std::cout << "Initialized label" << std::endl;
 
 			glm::vec2 winDims = MW::WINDOW.getDimensions();
 
@@ -648,8 +649,6 @@ namespace Milkweed {
 		}
 
 		void TextBox::setPosition(const glm::vec3& position) {
-			std::cout << "Updated position to " << position.x << ", "
-				<< position.y << ", " << position.z << std::endl;
 			// Update the position of the label
 			m_label.setPosition(glm::vec3(position.x,
 				position.y + m_dimensions.y, position.z));
@@ -697,7 +696,6 @@ namespace Milkweed {
 		}
 
 		void TextBox::add() {
-			std::cout << "Adding" << std::endl;
 			m_parent->addComponent(&m_label);
 		}
 
@@ -722,7 +720,8 @@ namespace Milkweed {
 				glm::vec2 mousePos = MW::INPUT.getCursorPosition(
 					m_parent->getSpriteShader()->getCamera());
 				if (RectContains(glm::vec4(m_position.x, m_position.y,
-					m_dimensions.x, m_dimensions.y), mousePos)) {
+					m_dimensions.x, m_dimensions.y), mousePos)
+					&& MW::WINDOW.isCursorEnabled()) {
 					// Selected
 					m_selected = true;
 					m_sprite.textureCoords = SELECTED_COORDS;
@@ -748,7 +747,8 @@ namespace Milkweed {
 					m_parent->getSpriteShader()->getCamera());
 				if (RectContains(glm::vec4(m_sprite.position.x,
 					m_sprite.position.y, m_sprite.dimensions.x,
-					m_sprite.dimensions.y), mousePos)) {
+					m_sprite.dimensions.y), mousePos)
+					&& MW::WINDOW.isCursorEnabled()) {
 					// Set the cursor position
 					for (m_cursorPosition = 0;
 						m_cursorPosition < m_text.length();
@@ -984,7 +984,7 @@ namespace Milkweed {
 			if (RectContains(glm::vec4(m_sprite.position.x, m_sprite.position.y,
 				m_sprite.dimensions.x, m_sprite.dimensions.y),
 				MW::INPUT.getCursorPosition(m_parent->getSpriteShader()
-					->getCamera()))) {
+					->getCamera())) && MW::WINDOW.isCursorEnabled()) {
 				if (!m_selected) {
 					setSelected(true);
 					m_parent->componentEvent(m_ID, SELECTED_EVENT);
@@ -1007,7 +1007,8 @@ namespace Milkweed {
 				m_dimensions.x, m_dimensions.y),
 				MW::INPUT.getCursorPosition(
 					m_parent->getSpriteShader()->getCamera()))) {
-				if (MW::INPUT.isButtonPressed(B_LEFT)) {
+				if (MW::INPUT.isButtonPressed(B_LEFT)
+					&& MW::WINDOW.isCursorEnabled()) {
 					if (m_on) {
 						setOn(false);
 						m_parent->componentEvent(m_ID, OFF_EVENT);
@@ -1116,7 +1117,8 @@ namespace Milkweed {
 		}
 
 		void Slider::processInput() {
-			if (MW::INPUT.isButtonPressed(B_LEFT)) {
+			if (MW::INPUT.isButtonPressed(B_LEFT)
+				&& MW::WINDOW.isCursorEnabled()) {
 				if (RectContains(glm::vec4(m_sprite.position.x,
 					m_sprite.position.y, m_dimensions.x, m_dimensions.y),
 					MW::INPUT.getCursorPosition(
@@ -1128,7 +1130,8 @@ namespace Milkweed {
 					}
 				}
 			}
-			else if (MW::INPUT.isButtonReleased(B_LEFT)) {
+			else if (MW::INPUT.isButtonReleased(B_LEFT)
+				&& MW::WINDOW.isCursorEnabled()) {
 				if (m_selected) {
 					m_selected = false;
 					m_sprite.textureCoords = UNSELECTED_COORDS;
@@ -1136,7 +1139,8 @@ namespace Milkweed {
 				}
 			}
 
-			if (m_selected && MW::INPUT.isButtonDown(B_LEFT)) {
+			if (m_selected && MW::INPUT.isButtonDown(B_LEFT)
+				&& MW::WINDOW.isCursorEnabled()) {
 				glm::vec2 mousePos = MW::INPUT.getCursorPosition(
 					m_parent->getSpriteShader()->getCamera());
 				if (mousePos.x < m_sprite.position.x + m_margin) {
@@ -1330,7 +1334,8 @@ namespace Milkweed {
 			// Test if the left arrow is selected
 			if (RectContains(glm::vec4(m_leftArrow.position.x,
 				m_leftArrow.position.y, m_leftArrow.dimensions.x,
-				m_leftArrow.dimensions.y), mousePos)) {
+				m_leftArrow.dimensions.y), mousePos)
+				&& MW::WINDOW.isCursorEnabled()) {
 				if (!m_leftArrowSelected) {
 					m_leftArrowSelected = true;
 					m_leftArrow.textureCoords = SELECTED_LEFT_COORDS;
@@ -1348,7 +1353,8 @@ namespace Milkweed {
 			// Test if the right arrow is selected
 			if (RectContains(glm::vec4(m_rightArrow.position.x,
 				m_rightArrow.position.y, m_rightArrow.dimensions.x,
-				m_rightArrow.dimensions.y), mousePos)) {
+				m_rightArrow.dimensions.y), mousePos)
+				&& MW::WINDOW.isCursorEnabled()) {
 				if (!m_rightArrowSelected) {
 					m_rightArrowSelected = true;
 					m_rightArrow.textureCoords = SELECTED_RIGHT_COORDS;
@@ -1364,7 +1370,8 @@ namespace Milkweed {
 			}
 
 			// Test if either button is clicked
-			if (MW::INPUT.isButtonDown(B_LEFT)) {
+			if (MW::INPUT.isButtonDown(B_LEFT)
+				&& MW::WINDOW.isCursorEnabled()) {
 				if (RectContains(glm::vec4(m_leftArrow.position.x,
 					m_leftArrow.position.y, m_leftArrow.dimensions.x,
 					m_leftArrow.dimensions.y), mousePos)) {
@@ -1376,7 +1383,8 @@ namespace Milkweed {
 					m_rightArrow.textureCoords = CLICKED_RIGHT_COORDS;
 				}
 			}
-			if (MW::INPUT.isButtonReleased(B_LEFT)) {
+			if (MW::INPUT.isButtonReleased(B_LEFT)
+				&& MW::WINDOW.isCursorEnabled()) {
 				bool updated = false;
 				if (RectContains(glm::vec4(m_leftArrow.position.x,
 					m_leftArrow.position.y, m_leftArrow.dimensions.x,
@@ -1408,25 +1416,16 @@ namespace Milkweed {
 					m_leftArrow.textureCoords = UNSELECTED_LEFT_COORDS;
 				}
 				if (m_rightArrowSelected) {
-					m_rightArrow.textureCoords = SELECTED_LEFT_COORDS;
+					m_rightArrow.textureCoords = SELECTED_RIGHT_COORDS;
 				}
 				else {
-					m_rightArrow.textureCoords = UNSELECTED_LEFT_COORDS;
+					m_rightArrow.textureCoords = UNSELECTED_RIGHT_COORDS;
 				}
 				
 				if (updated) {
 					m_text = m_options[m_selection];
 					m_parent->componentEvent(m_ID, VALUE_UPDATE_EVENT);
 				}
-			}
-			else if (MW::INPUT.isButtonReleased(B_LEFT)) {
-				// Reset the texture coordinates from clicked
-				m_rightArrowSelected
-					? m_rightArrow.textureCoords = SELECTED_RIGHT_COORDS
-					: m_rightArrow.textureCoords = UNSELECTED_RIGHT_COORDS;
-				m_leftArrowSelected
-					? m_leftArrow.textureCoords = SELECTED_LEFT_COORDS
-					: m_leftArrow.textureCoords = UNSELECTED_LEFT_COORDS;
 			}
 
 			if (!m_selected) {
@@ -1663,7 +1662,8 @@ namespace Milkweed {
 					m_parent->getSpriteShader()->getCamera());
 				if (RectContains(glm::vec4(m_sprite.position.x,
 					m_sprite.position.y, m_sprite.dimensions.x,
-					m_sprite.dimensions.y), mousePos)) {
+					m_sprite.dimensions.y), mousePos)
+					&& MW::WINDOW.isCursorEnabled()) {
 					if (!m_selected) {
 						m_selected = true;
 						m_sprite.textureCoords = SELECTED_COORDS;
@@ -1777,7 +1777,8 @@ namespace Milkweed {
 					}
 				}
 
-				if (MW::INPUT.isButtonPressed(B_LEFT)) {
+				if (MW::INPUT.isButtonPressed(B_LEFT)
+					&& MW::WINDOW.isCursorEnabled()) {
 					glm::vec2 mousePos = MW::INPUT.getCursorPosition(
 						m_parent->getSpriteShader()->getCamera());
 					unsigned int line = 0;

@@ -33,6 +33,8 @@ public:
 	* Process input to the scene.
 	*/
 	void processInput() override;
+	void gamepadConnected(int gp) override;
+	void gamepadDisconnected(int gp) override;
 	/*
 	* Process a message recieved from a test server
 	*/
@@ -81,7 +83,7 @@ private:
 	// The player ID assigned to this client
 	unsigned int m_playerID = 0;
 	// The players connected to this server
-	std::map<unsigned int, Player> m_players;
+	std::map<unsigned int, ClientPlayer> m_players;
 	// The camera used to draw sprites
 	Camera m_spriteCamera;
 	// The shader used to draw sprites
@@ -109,6 +111,8 @@ private:
 	* Disconnect this client from the network and fall back to the connect scene
 	*/
 	void disconnect();
+
+	void setComponentDirections();
 };
 
 #endif

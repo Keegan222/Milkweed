@@ -61,6 +61,14 @@ namespace Milkweed {
 		* Set whether this window should appear in fullscreen mode
 		*/
 		void setFullScreen(bool fullScreen);
+		/*
+		* Get whether the mouse cursor is usable on this window
+		*/
+		bool isCursorEnabled() const { return m_cursorEnabled; }
+		/*
+		* Set whether the mouse cursor is usable on this window
+		*/
+		void setCursorEnabled(bool cursorEnabled);
 
 	private:
 		// The singleton instance of this class
@@ -82,6 +90,8 @@ namespace Milkweed {
 		bool m_fullScreen = false;
 		// Whether this window has been initialized or not
 		bool m_initialized = false;
+		// Whether the mouse cursor is usable in this window
+		bool m_cursorEnabled = true;
 
 		/*
 		* The size of the window has changes, notify all the application's

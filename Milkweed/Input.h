@@ -207,6 +207,18 @@ namespace Milkweed {
 		*/
 		virtual void scrolled(const glm::vec2& distance) {};
 		/*
+		* A gamepad has been connected
+		* 
+		* @param gp: The ID of the newly connected gamepad.
+		*/
+		virtual void gamepadConnected(int gp) {};
+		/*
+		* A gamepad has been disconnected.
+		* 
+		* @param gp: The ID of the disconnected gamepad.
+		*/
+		virtual void gamepadDisconnected(int gp) {};
+		/*
 		* A button has been pressed on a gamepad
 		* 
 		* @param gp: The ID of the gamepad on which a button has been pressed.
@@ -312,21 +324,67 @@ namespace Milkweed {
 		*/
 		glm::vec2 getCursorPosition(const Camera* camera) const;
 		/*
+		* Test whether a gamepad ID is currently valid
+		*/
+		bool isGamepadConnected(int gamepad);
+		/*
+		* Test whether a gamepad button is currently down on any connected
+		* gamepad.
+		* 
+		* @param button: The button to test for.
+		* @param gamepad: A pointer to populate with the ID of the first gamepad
+		* found to have this button down.
+		*/
+		bool isGamepadButtonDown(unsigned int button,
+			int* gamepad = nullptr);
+		/*
 		* Test whether a gamepad button is currently down
 		*/
 		bool isGamepadButtonDown(int gamepad, unsigned int button);
+		/*
+		* Test whether a gamepad button has just been pressed on any connected
+		* gamepad.
+		* 
+		* @param button: The button to test for.
+		* @param gamepad: A pointer to populate with the ID of the first gamepad
+		* found to have this button pressed.
+		*/
+		bool isGamepadButtonPressed(unsigned int button,
+			int* gamepad = nullptr);
 		/*
 		* Test whether a gamepad button has just been pressed
 		*/
 		bool isGamepadButtonPressed(int gamepad, unsigned int button);
 		/*
+		* Test whether a gamepad button has just been released on any connected
+		* gamepad.
+		* 
+		* @param button: The button to test for.
+		* @param gamepad: A pointer to populate with the ID of the first gamepad
+		* found to have this button released.
+		*/
+		bool isGamepadButtonReleased(unsigned int button,
+			int* gamepad = nullptr);
+		/*
 		* Test whether a gamepad button has just been released
 		*/
 		bool isGamepadButtonReleased(int gamepad, unsigned int button);
 		/*
-		* Test whether a gamepad axis has just been moved
+		* Test whether a gamepad axis has just been moved on any connected
+		* gamepad.
 		*/
-		bool isGamepadAxisMoved(int gamepad, unsigned int axis);
+		bool isGamepadAxisMoved(unsigned int axis, float* distance = nullptr,
+			int* gamepad = nullptr);
+		/*
+		* Test whether a gamepad axis has just been moved
+		* 
+		* @param gamepad: The ID of the gamepad to test
+		* @param axis: The axis to test for movement
+		* @param distance: A pointer to populate with the distance the axis has
+		* moved.
+		*/
+		bool isGamepadAxisMoved(int gamepad, unsigned int axis,
+			float* distance = nullptr);
 		/*
 		* Get the position of an axis on a gamepad
 		*/

@@ -99,9 +99,6 @@ void OptionsScene::init() {
 		"cameraMatrix", &m_UICamera);
 
 	// Initialize UI groups
-	m_optionsUIGroup.init(this, OPTIONS_UI_GROUP, MW::RESOURCES.getFont(
-			"Assets/font/arial.ttf"), &m_spriteShader, &m_textShader,
-		"textColor");
 	m_mainUIGroup.init(this, MAIN_UI_GROUP, MW::RESOURCES.getFont(
 			"Assets/font/arial.ttf"), &m_spriteShader, &m_textShader,
 		"textColor");
@@ -134,44 +131,40 @@ void OptionsScene::init() {
 		1.0f - (boxDims.y + buffer), 0.0f), boxDims, cursorWidth, margin,
 		textScale, textColor, Justification::LEFT, Justification::CENTER,
 		textBoxTexture, cursorTexture, 100);
-	m_optionsUIGroup.addComponent(&m_addressBox);
 	m_portBox.init("Default Port", "", glm::vec3(buffer + boxDims.x + buffer,
 		1.0f - (boxDims.y + buffer), 0.0f), boxDims, cursorWidth, margin,
 		textScale, textColor, Justification::LEFT, Justification::CENTER,
 		textBoxTexture, cursorTexture, 6);
-	m_optionsUIGroup.addComponent(&m_portBox);
 	m_fullScreenSwitch.init("Fullscreen", "", glm::vec3(buffer,
 		1.0f - 2 * (boxDims.y + buffer), 0.0f), boxDims, textScale,
 		textColor, Justification::LEFT, Justification::CENTER, switchTexture,
 		false);
-	m_optionsUIGroup.addComponent(&m_fullScreenSwitch);
 	m_resolutionCycle.init("Window Resolution",
 		{ "800x600", "1080x720", "1920x1080" },
 		glm::vec3(buffer + boxDims.x + buffer,
 			1.0f - 2 * (boxDims.y + buffer), 0.0f), boxDims, 20.0f, textScale,
 		textColor, Justification::LEFT, Justification::CENTER, cycleTexture,
 		arrowTexture, 0);
-	m_optionsUIGroup.addComponent(&m_resolutionCycle);
 	m_volumeSlider.init("Volume", glm::vec3(buffer,
 		1.0f - 3 * (boxDims.y + buffer), 0.0f), boxDims, cursorWidth,
 		10.0f / 800.0f,
 		textScale, textColor, Justification::LEFT, Justification::CENTER,
 		sliderTexture, cursorTexture, 0, 0, 100);
-	m_optionsUIGroup.addComponent(&m_volumeSlider);
+	m_mainUIGroup.addComponents({ &m_addressBox, &m_portBox,
+		&m_fullScreenSwitch, &m_resolutionCycle, &m_volumeSlider });
 
 	// Initialize the main UI group components
 	m_backButton.init("Back", glm::vec3(0.0f, 0.0f, 0.0f), boxDims,
 		textScale, textColor, Justification::CENTER, Justification::CENTER,
 		buttonTexture);
-	m_mainUIGroup.addComponent(&m_backButton);
 	m_defaultsButton.init("Defaults", glm::vec3(0.5f - boxDims.x / 2,
 		0.0f, 0.0f), boxDims, textScale, textColor, Justification::CENTER,
 		Justification::CENTER, buttonTexture);
-	m_mainUIGroup.addComponent(&m_defaultsButton);
 	m_saveButton.init("Save", glm::vec3(1.0f - boxDims.x, 0.0f, 0.0f),
 		boxDims, textScale, textColor, Justification::CENTER,
 		Justification::CENTER, buttonTexture);
-	m_mainUIGroup.addComponent(&m_saveButton);
+	m_mainUIGroup.addComponents({ &m_backButton, &m_defaultsButton,
+		&m_saveButton });
 
 	m_initialized = true;
 }
@@ -197,32 +190,46 @@ void OptionsScene::enter() {
 	}
 	m_volumeSlider.setValue(Options::VOLUME);
 
-	m_optionsUIGroup.setEnabled(true);
+	// Set game controller directions for UI components
+	if (MW::INPUT.getGamepadCount() > 0) {
+		m_addressBox.setDirections(nullptr, &m_fullScreenSwitch, nullptr,
+			&m_portBox);
+		m_portBox.setDirections(nullptr, &m_resolutionCycle, &m_addressBox,
+			&m_fullScreenSwitch);
+		m_fullScreenSwitch.setDirections(&m_addressBox, &m_volumeSlider,
+			&m_portBox, &m_resolutionCycle);
+		m_resolutionCycle.setDirections(&m_portBox, &m_saveButton,
+			&m_fullScreenSwitch, &m_volumeSlider);
+		m_volumeSlider.setDirections(&m_fullScreenSwitch, &m_backButton,
+			&m_resolutionCycle, nullptr);
+		m_backButton.setDirections(&m_volumeSlider, nullptr, nullptr,
+			&m_defaultsButton);
+		m_defaultsButton.setDirections(&m_volumeSlider, nullptr, &m_backButton,
+			&m_saveButton);
+		m_saveButton.setDirections(&m_resolutionCycle, nullptr,
+			&m_defaultsButton, nullptr);
+		m_mainUIGroup.setSelectedComponent(&m_backButton);
+	}
 	m_mainUIGroup.setEnabled(true);
 }
 
 void OptionsScene::draw() {
-	m_optionsUIGroup.draw();
 	m_mainUIGroup.draw();
 }
 
 void OptionsScene::processInput() {
-	m_optionsUIGroup.processInput();
 	m_mainUIGroup.processInput();
 }
 
 void OptionsScene::componentEvent(unsigned int groupID,
 	unsigned int componentID, unsigned int eventID) {
 	switch (groupID) {
-	case OPTIONS_UI_GROUP: {
+	case MAIN_UI_GROUP: {
 		if (componentID == m_fullScreenSwitch.getID()) {
 			m_fullScreenSwitch.setText(m_fullScreenSwitch.isOn()
 				? "Enabled" : "Disabled");
 		}
-		break;
-	}
-	case MAIN_UI_GROUP: {
-		if (componentID == m_backButton.getID()) {
+		else if (componentID == m_backButton.getID()) {
 			if (eventID == UI::Button::CLICKED_EVENT) {
 				MW::SetScene(m_returnScene);
 			}
@@ -272,7 +279,6 @@ void OptionsScene::componentEvent(unsigned int groupID,
 }
 
 void OptionsScene::updateWindowSize() {
-	m_optionsUIGroup.updateWindowSize();
 	m_mainUIGroup.updateWindowSize();
 	m_UICamera.position = glm::vec3(MW::WINDOW.getDimensions().x / 2.0f,
 		MW::WINDOW.getDimensions().y / 2.0f, 0.0f);
@@ -280,17 +286,14 @@ void OptionsScene::updateWindowSize() {
 
 void OptionsScene::update(float deltaTime) {
 	m_UICamera.update(deltaTime);
-	m_optionsUIGroup.update(deltaTime);
 	m_mainUIGroup.update(deltaTime);
 }
 
 void OptionsScene::exit() {
-	m_optionsUIGroup.setEnabled(false);
 	m_mainUIGroup.setEnabled(false);
 }
 
 void OptionsScene::destroy() {
-	m_optionsUIGroup.destroy();
 	m_mainUIGroup.destroy();
 
 	m_initialized = false;

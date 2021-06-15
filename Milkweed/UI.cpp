@@ -22,6 +22,14 @@ namespace Milkweed {
 			return true;
 		}
 
+		void UIComponent::setDirections(UIComponent* up, UIComponent* down,
+			UIComponent* left, UIComponent* right) {
+			m_up = up;
+			m_down = down;
+			m_left = left;
+			m_right = right;
+		}
+
 		void UIGroup::init(Scene* parent, unsigned int ID, Font* font,
 			Shader* spriteShader, Shader* textShader,
 			const std::string& textColorUniform) {
@@ -45,6 +53,144 @@ namespace Milkweed {
 		}
 
 		void UIGroup::processInput() {
+			if (m_selectedComponent != nullptr) {
+				m_selectedComponent->setSelected(true);
+			}
+
+			// Process selected component changing input
+			// From the keyboard
+			if (MW::INPUT.isKeyPressed(Key::F_TAB)) {
+				if (MW::INPUT.isKeyDown(Key::F_LEFT_SHIFT)) {
+					// Move to the component to the left
+					moveLeft();
+				}
+				else {
+					// Move to the component to the right
+					moveRight();
+				}
+			}
+
+#define AXIS_THRESHOLD 0.85f
+			// From gamepads
+			if (m_gamepad != NO_GAMEPAD) {
+				if (m_gamepad == ANY_GAMEPAD) {
+					int gp = NO_GAMEPAD;
+					// Test for input from all connected gamepads
+					if (MW::INPUT.isGamepadAxisMoved(GA_LEFT_X, nullptr, &gp)) {
+						if (gp != NO_GAMEPAD) {
+							float apos = MW::INPUT.getGamepadAxisPosition(gp,
+								GA_LEFT_X);
+							if (apos > AXIS_THRESHOLD) {
+								if (!m_gpRight) {
+									m_gpRight = true;
+									moveRight();
+								}
+							}
+							else {
+								if (m_gpRight) {
+									m_gpRight = false;
+								}
+							}
+							if (apos < -AXIS_THRESHOLD) {
+								if (!m_gpLeft) {
+									m_gpLeft = true;
+									moveLeft();
+								}
+							}
+							else {
+								if (m_gpLeft) {
+									m_gpLeft = false;
+								}
+							}
+						}
+					}
+					if (MW::INPUT.isGamepadAxisMoved(GA_LEFT_Y, nullptr, &gp)) {
+						if (gp != NO_GAMEPAD) {
+							float apos = MW::INPUT.getGamepadAxisPosition(gp,
+								GA_LEFT_Y);
+							if (apos > AXIS_THRESHOLD) {
+								if (!m_gpDown) {
+									m_gpDown = true;
+									moveDown();
+								}
+							}
+							else {
+								if (m_gpDown) {
+									m_gpDown = false;
+								}
+							}
+							if (apos < -AXIS_THRESHOLD) {
+								if (!m_gpUp) {
+									m_gpUp = true;
+									moveUp();
+								}
+							}
+							else {
+								if (m_gpUp) {
+									m_gpUp = false;
+								}
+							}
+						}
+					}
+				}
+				else {
+					// Test for input from the gamepad which controls this
+					// group
+					if (MW::INPUT.isGamepadAxisMoved(m_gamepad, GA_LEFT_X)) {
+						float apos = MW::INPUT.getGamepadAxisPosition(m_gamepad,
+							GA_LEFT_X);
+						if (apos > AXIS_THRESHOLD) {
+							if (!m_gpRight) {
+								m_gpRight = true;
+								moveRight();
+							}
+						}
+						else {
+							if (m_gpRight) {
+								m_gpRight = false;
+							}
+						}
+						if (apos < -AXIS_THRESHOLD) {
+							if (!m_gpLeft) {
+								m_gpLeft = true;
+								moveLeft();
+							}
+						}
+						else {
+							if (m_gpLeft) {
+								m_gpLeft = false;
+							}
+						}
+					}
+					if (MW::INPUT.isGamepadAxisMoved(m_gamepad, GA_LEFT_Y)) {
+						float apos = MW::INPUT.getGamepadAxisPosition(m_gamepad,
+							GA_LEFT_Y);
+						if (apos > AXIS_THRESHOLD) {
+							if (!m_gpDown) {
+								m_gpDown = true;
+								moveDown();
+							}
+						}
+						else {
+							if (m_gpDown) {
+								m_gpDown = false;
+							}
+						}
+						if (apos < -AXIS_THRESHOLD) {
+							if (!m_gpUp) {
+								m_gpUp = true;
+								moveUp();
+							}
+						}
+						else {
+							if (m_gpUp) {
+								m_gpUp = false;
+							}
+						}
+					}
+				}
+			}
+
 			// Process input to all components
 			for (UIComponent* c : m_components) {
 				if (c->isEnabled()) {
@@ -160,6 +306,95 @@ namespace Milkweed {
 			return false;
 		}
 
+		void UIGroup::setSelectedComponent(UIComponent* component) {
+			if (component == nullptr) {
+				if (m_selectedComponent != nullptr) {
+					m_selectedComponent->setSelected(false);
+				}
+				m_selectedComponent = nullptr;
+				return;
+			}
+			std::vector<UIComponent*>::iterator it
+				= std::find(m_components.begin(), m_components.end(),
+					component);
+			if (it == m_components.end()) {
+				return;
+			}
+			if (m_selectedComponent != nullptr) {
+				m_selectedComponent->setSelected(false);
+			}
+			m_selectedComponent = component;
+			component->setSelected(true);
+		}
+
+		int UIGroup::getGamepad() const {
+			if (m_gamepad == ANY_GAMEPAD || m_gamepad == NO_GAMEPAD) {
+				return m_gamepad;
+			}
+
+			if (MW::INPUT.isGamepadConnected(m_gamepad)) {
+				return m_gamepad;
+			}
+			else {
+				return ANY_GAMEPAD;
+			}
+		}
+
+		void UIGroup::setGamepad(int gamepad) {
+			m_gpUp = m_gpDown = m_gpLeft = m_gpRight = false;
+			if (gamepad == ANY_GAMEPAD || gamepad == NO_GAMEPAD) {
+				m_gamepad = gamepad;
+			}
+
+			if (MW::INPUT.isGamepadConnected(gamepad)) {
+				m_gamepad = gamepad;
+			}
+		}
+
+		void UIGroup::moveUp() {
+			if (m_selectedComponent != nullptr) {
+				UIComponent* up = m_selectedComponent->m_up;
+				if (up != nullptr) {
+					m_selectedComponent->setSelected(false);
+					up->setSelected(true);
+					m_selectedComponent = up;
+				}
+			}
+		}
+
+		void UIGroup::moveDown() {
+			if (m_selectedComponent != nullptr) {
+				UIComponent* down = m_selectedComponent->m_down;
+				if (down != nullptr) {
+					m_selectedComponent->setSelected(false);
+					down->setSelected(true);
+					m_selectedComponent = down;
+				}
+			}
+		}
+
+		void UIGroup::moveLeft() {
+			if (m_selectedComponent != nullptr) {
+				UIComponent* left = m_selectedComponent->m_left;
+				if (left != nullptr) {
+					m_selectedComponent->setSelected(false);
+					left->setSelected(true);
+					m_selectedComponent = left;
+				}
+			}
+		}
+
+		void UIGroup::moveRight() {
+			if (m_selectedComponent != nullptr) {
+				UIComponent* right = m_selectedComponent->m_right;
+				if (right != nullptr) {
+					m_selectedComponent->setSelected(false);
+					right->setSelected(true);
+					m_selectedComponent = right;
+				}
+			}
+		}
+
 		void TextLabel::init(const std::string& text,
 			const glm::vec3& normalPosition,
 			const glm::vec2& normalDimensions,
@@ -211,7 +446,7 @@ namespace Milkweed {
 			const glm::vec3& textColor, Justification textHJustification,
 			Justification textVJustification, Texture* texture) {
 			glm::vec2 winDims = MW::WINDOW.getDimensions();
-			((TextLabel*)this)->init(text, normalPosition, normalDimensions, 
+			((TextLabel*)this)->init(text, normalPosition, normalDimensions,
 				normalPosition, textScale, textColor, textHJustification,
 				textVJustification);
 			m_sprite.init(glm::vec3(normalPosition.x * winDims.x,
@@ -219,6 +454,16 @@ namespace Milkweed {
 				normalDimensions * winDims, texture);
 			setPosition(m_position);
 			m_sprite.textureCoords = UNSELECTED_COORDS;
+		}
+
+		void Button::setSelected(bool selected) {
+			m_selected = selected;
+			if (m_selected) {
+				m_sprite.textureCoords = SELECTED_COORDS;
+			}
+			else {
+				m_sprite.textureCoords = UNSELECTED_COORDS;
+			}
 		}
 
 		void Button::setPosition(const glm::vec3& position) {
@@ -263,20 +508,74 @@ namespace Milkweed {
 				m_selected = true;
 			}
 			else {
-				m_sprite.textureCoords = UNSELECTED_COORDS;
-				if (m_selected) {
-					m_parent->componentEvent(m_ID, UNSELECTED_EVENT);
+				if (this != m_parent->getSelectedComponent()) {
+					m_sprite.textureCoords = UNSELECTED_COORDS;
+					if (m_selected) {
+						m_parent->componentEvent(m_ID, UNSELECTED_EVENT);
+					}
+					m_selected = false;
 				}
-				m_selected = false;
 			}
 
 			// If the button is selected test if it's been clicked
 			if (m_selected) {
+				// Test for keyboard clicking
+				UIComponent* sc = m_parent->getSelectedComponent();
+				if (MW::INPUT.isKeyReleased(F_ENTER)) {
+					if (sc == this) {
+						m_parent->componentEvent(m_ID, CLICKED_EVENT);
+					}
+				}
+				if (MW::INPUT.isKeyDown(F_ENTER)) {
+					if (sc == this) {
+						m_sprite.textureCoords = CLICKED_COORDS;
+					}
+				}
+				// Test for mouse clicking
 				if (MW::INPUT.isButtonReleased(B_LEFT)) {
-					m_parent->componentEvent(m_ID, CLICKED_EVENT);
+					if (RectContains(glm::vec4(m_position.x, m_position.y,
+						m_dimensions.x, m_dimensions.y),
+						MW::INPUT.getCursorPosition(
+							m_parent->getSpriteShader()->getCamera()))) {
+						m_parent->componentEvent(m_ID, CLICKED_EVENT);
+					}
 				}
 				if (MW::INPUT.isButtonDown(B_LEFT)) {
-					m_sprite.textureCoords = CLICKED_COORDS;
+					if (RectContains(glm::vec4(m_position.x, m_position.y,
+						m_dimensions.x, m_dimensions.y),
+						MW::INPUT.getCursorPosition(
+							m_parent->getSpriteShader()->getCamera()))) {
+						m_sprite.textureCoords = CLICKED_COORDS;
+					}
+				}
+				// Test for gamepad clicking
+				int gp = m_parent->getGamepad();
+				if (gp == NO_GAMEPAD) {
+					return;
+				}
+				else if (gp == ANY_GAMEPAD) {
+					if (MW::INPUT.isGamepadButtonReleased(G_A)) {
+						if (sc == this) {
+							m_parent->componentEvent(m_ID, CLICKED_EVENT);
+						}
+					}
+					if (MW::INPUT.isGamepadButtonDown(G_A)) {
+						if (sc == this) {
+							m_sprite.textureCoords = CLICKED_COORDS;
+						}
+					}
+				}
+				else {
+					if (MW::INPUT.isGamepadButtonReleased(gp, G_A)) {
+						if (sc == this) {
+							m_parent->componentEvent(m_ID, CLICKED_EVENT);
+						}
+					}
+					if (MW::INPUT.isGamepadButtonDown(gp, G_A)) {
+						if (sc == this) {
+							m_sprite.textureCoords = CLICKED_COORDS;
+						}
+					}
 				}
 			}
 		}
@@ -439,6 +738,11 @@ namespace Milkweed {
 				return;
 			}
 
+			if (MW::INPUT.isKeyPressed(F_ENTER)
+				|| MW::INPUT.isGamepadButtonPressed(G_A)) {
+				m_parent->componentEvent(m_ID, RETURN_EVENT);
+			}
+
 			if (MW::INPUT.isButtonDown(B_LEFT)) {
 				glm::vec2 mousePos = MW::INPUT.getCursorPosition(
 					m_parent->getSpriteShader()->getCamera());
@@ -463,34 +767,22 @@ namespace Milkweed {
 
 			// Set the cursor position
 			if (MW::INPUT.isKeyPressed(F_LEFT)
-				|| (MW::INPUT.isKeyDown(F_LEFT) && m_timer > UI_UPDATE_TIME)) {
-				if (m_cursorPosition > 0) {
-					m_timer = 0.0f;
-					m_cursorPosition--;
-					updateCursorPosition();
-					// Update the position of the text if necessary
-					if (m_cursor.position.x < m_position.x + m_margin) {
-						m_textPosition.x += m_dimensions.x / 4.0f;
-						if (m_textPosition.x > m_position.x) {
-							m_textPosition.x = m_position.x;
-						}
-						updateCursorPosition();
-					}
-				}
+				|| (MW::INPUT.isKeyDown(F_LEFT) && m_timer > UI_UPDATE_TIME)
+				|| MW::INPUT.isGamepadButtonPressed(
+					m_parent->getGamepad(), G_LEFT)
+				|| (MW::INPUT.isGamepadButtonDown(
+					m_parent->getGamepad(), G_LEFT)
+					&& m_timer > UI_UPDATE_TIME)) {
+				moveCursorLeft();
 			}
 			else if (MW::INPUT.isKeyPressed(F_RIGHT)
-				|| (MW::INPUT.isKeyDown(F_RIGHT) && m_timer > UI_UPDATE_TIME)) {
-				if (m_cursorPosition < m_text.length()) {
-					m_timer = 0.0f;
-					m_cursorPosition++;
-					updateCursorPosition();
-					// Update the position of the text if necessary
-					if (m_cursor.position.x + m_cursorWidth
-							> m_position.x + m_dimensions.x - m_margin) {
-						m_textPosition.x -= m_dimensions.x / 4.0f;
-						updateCursorPosition();
-					}
-				}
+				|| (MW::INPUT.isKeyDown(F_RIGHT) && m_timer > UI_UPDATE_TIME)
+				|| MW::INPUT.isGamepadButtonPressed(
+					m_parent->getGamepad(), G_RIGHT)
+				|| (MW::INPUT.isGamepadButtonDown(
+					m_parent->getGamepad(), G_RIGHT)
+					&& m_timer > UI_UPDATE_TIME)) {
+				moveCursorRight();
 			}
 
 			// Handle backspace
@@ -551,9 +843,43 @@ namespace Milkweed {
 			m_cursor.dimensions = glm::vec2(m_cursorWidth, m_dimensions.y);
 		}
 
-		glm::vec4 Switch::ON_COORDS = glm::vec4(0.0f, 0.0f, 1.0f / 2.0f, 1.0f);
-		glm::vec4 Switch::OFF_COORDS = glm::vec4(1.0f / 2.0f, 0.0f,
-			1.0f / 2.0f, 1.0f);
+		void TextBox::moveCursorLeft() {
+			if (m_cursorPosition > 0) {
+				m_timer = 0.0f;
+				m_cursorPosition--;
+				updateCursorPosition();
+				// Update the position of the text if necessary
+				if (m_cursor.position.x < m_position.x + m_margin) {
+					m_textPosition.x += m_dimensions.x / 4.0f;
+					if (m_textPosition.x > m_position.x) {
+						m_textPosition.x = m_position.x;
+					}
+					updateCursorPosition();
+				}
+			}
+		}
+
+		void TextBox::moveCursorRight() {
+			if (m_cursorPosition < m_text.length()) {
+				m_timer = 0.0f;
+				m_cursorPosition++;
+				updateCursorPosition();
+				// Update the position of the text if necessary
+				if (m_cursor.position.x + m_cursorWidth
+					> m_position.x + m_dimensions.x - m_margin) {
+					m_textPosition.x -= m_dimensions.x / 4.0f;
+					updateCursorPosition();
+				}
+			}
+		}
+
+		glm::vec4 Switch::ON_COORDS = glm::vec4(0.0f, 0.0f, 1.0f / 4.0f, 1.0f);
+		glm::vec4 Switch::OFF_COORDS = glm::vec4(1.0f / 4.0f, 0.0f,
+			1.0f / 4.0f, 1.0f);
+		glm::vec4 Switch::ON_SELECTED_COORDS = glm::vec4(2.0f / 4.0f, 0.0f,
+			1.0f / 4.0f, 1.0f);
+		glm::vec4 Switch::OFF_SELECTED_COORDS = glm::vec4(3.0f / 4.0f, 0.0f,
+			1.0f / 4.0f, 1.0f);
 
 		void Switch::init(const std::string& labelText, const std::string& text,
 			const glm::vec3& normalPosition, const glm::vec2& normalDimensions,
@@ -600,13 +926,43 @@ namespace Milkweed {
 			m_label.setDimensions(dimensions);
 		}
 
+		void Switch::setSelected(bool selected) {
+			m_selected = selected;
+			if (m_selected) {
+				if (m_on) {
+					m_sprite.textureCoords = ON_SELECTED_COORDS;
+				}
+				else {
+					m_sprite.textureCoords = ON_COORDS;
+				}
+			}
+			else {
+				if (m_on) {
+					m_sprite.textureCoords = OFF_SELECTED_COORDS;
+				}
+				else {
+					m_sprite.textureCoords = OFF_COORDS;
+				}
+			}
+		}
+
 		void Switch::setOn(bool on) {
 			m_on = on;
 			if (on) {
-				m_sprite.textureCoords = ON_COORDS;
+				if (m_selected) {
+					m_sprite.textureCoords = ON_SELECTED_COORDS;
+				}
+				else {
+					m_sprite.textureCoords = ON_COORDS;
+				}
 			}
 			else {
-				m_sprite.textureCoords = OFF_COORDS;
+				if (m_selected) {
+					m_sprite.textureCoords = OFF_SELECTED_COORDS;
+				}
+				else {
+					m_sprite.textureCoords = OFF_COORDS;
+				}
 			}
 		}
 
@@ -624,20 +980,56 @@ namespace Milkweed {
 				return;
 			}
 
-			if (MW::INPUT.isButtonPressed(B_LEFT)) {
-				if (RectContains(glm::vec4(m_position.x, m_position.y,
-					m_dimensions.x, m_dimensions.y),
-					MW::INPUT.getCursorPosition(
-						m_parent->getSpriteShader()->getCamera()))) {
+			// Test if this switch is selected by the mouse
+			if (RectContains(glm::vec4(m_sprite.position.x, m_sprite.position.y,
+				m_sprite.dimensions.x, m_sprite.dimensions.y),
+				MW::INPUT.getCursorPosition(m_parent->getSpriteShader()
+					->getCamera()))) {
+				if (!m_selected) {
+					setSelected(true);
+					m_parent->componentEvent(m_ID, SELECTED_EVENT);
+				}
+			}
+			else {
+				if (this != m_parent->getSelectedComponent()) {
+					if (m_selected) {
+						setSelected(false);
+						m_parent->componentEvent(m_ID, UNSELECTED_EVENT);
+					}
+				}
+			}
+
+			if (!m_selected) {
+				return;
+			}
+
+			if (RectContains(glm::vec4(m_position.x, m_position.y,
+				m_dimensions.x, m_dimensions.y),
+				MW::INPUT.getCursorPosition(
+					m_parent->getSpriteShader()->getCamera()))) {
+				if (MW::INPUT.isButtonPressed(B_LEFT)) {
 					if (m_on) {
-						m_on = false;
-						m_sprite.textureCoords = OFF_COORDS;
+						setOn(false);
 						m_parent->componentEvent(m_ID, OFF_EVENT);
 					}
 					else {
-						m_on = true;
-						m_sprite.textureCoords = ON_COORDS;
+						setOn(true);
 						m_parent->componentEvent(m_ID, ON_EVENT);
+					}
+				}
+			}
+			else {
+				if (this == m_parent->getSelectedComponent()) {
+					if (MW::INPUT.isGamepadButtonPressed(m_parent->getGamepad(),
+						G_A)) {
+						if (m_on) {
+							setOn(false);
+							m_parent->componentEvent(m_ID, OFF_EVENT);
+						}
+						else {
+							setOn(true);
+							m_parent->componentEvent(m_ID, ON_EVENT);
+						}
 					}
 				}
 			}
@@ -762,6 +1154,39 @@ namespace Milkweed {
 				}
 				updateCursorPosition();
 			}
+
+			if (!m_selected) {
+				return;
+			}
+
+			// Handle gamepad input
+			if (MW::INPUT.isGamepadButtonPressed(m_parent->getGamepad(),
+				G_LEFT) || (MW::INPUT.isGamepadButtonDown(
+					m_parent->getGamepad(), G_LEFT)
+					&& m_timer > UI_UPDATE_TIME)) {
+				m_timer = 0.0f;
+				if (m_value > m_min) {
+					m_value--;
+					updateCursorPosition();
+				}
+			}
+			else if (MW::INPUT.isGamepadButtonPressed(m_parent->getGamepad(),
+				G_RIGHT) || (MW::INPUT.isGamepadButtonDown(
+					m_parent->getGamepad(), G_LEFT)
+					&& m_timer > UI_UPDATE_TIME)) {
+				m_timer = 0.0f;
+				if (m_value < m_max) {
+					m_value++;
+					updateCursorPosition();
+				}
+			}
+		}
+
+		void Slider::update(float deltaTime) {
+			if (m_timer > UI_UPDATE_TIME) {
+				m_timer = 0.0f;
+			}
+			m_timer += deltaTime;
 		}
 
 		void Slider::destroy() {
@@ -874,6 +1299,20 @@ namespace Milkweed {
 			m_text = m_options[selection];
 		}
 
+		void Cycle::setSelected(bool selected) {
+			m_selected = selected;
+			m_leftArrowSelected = selected;
+			m_rightArrowSelected = selected;
+			if (m_selected) {
+				m_leftArrow.textureCoords = SELECTED_LEFT_COORDS;
+				m_rightArrow.textureCoords = SELECTED_RIGHT_COORDS;
+			}
+			else {
+				m_leftArrow.textureCoords = UNSELECTED_LEFT_COORDS;
+				m_rightArrow.textureCoords = UNSELECTED_RIGHT_COORDS;
+			}
+		}
+
 		void Cycle::add() {
 			m_parent->addComponent(&m_label);
 		}
@@ -898,9 +1337,11 @@ namespace Milkweed {
 				}
 			}
 			else {
-				if (m_leftArrowSelected) {
-					m_leftArrowSelected = false;
-					m_leftArrow.textureCoords = UNSELECTED_LEFT_COORDS;
+				if (this != m_parent->getSelectedComponent()) {
+					if (m_leftArrowSelected) {
+						m_leftArrowSelected = false;
+						m_leftArrow.textureCoords = UNSELECTED_LEFT_COORDS;
+					}
 				}
 			}
 
@@ -914,36 +1355,65 @@ namespace Milkweed {
 				}
 			}
 			else {
-				if (m_rightArrowSelected) {
-					m_rightArrowSelected = false;
-					m_rightArrow.textureCoords = UNSELECTED_RIGHT_COORDS;
+				if (this != m_parent->getSelectedComponent()) {
+					if (m_rightArrowSelected) {
+						m_rightArrowSelected = false;
+						m_rightArrow.textureCoords = UNSELECTED_RIGHT_COORDS;
+					}
 				}
 			}
 
 			// Test if either button is clicked
-			if (MW::INPUT.isButtonPressed(B_LEFT)) {
+			if (MW::INPUT.isButtonDown(B_LEFT)) {
+				if (RectContains(glm::vec4(m_leftArrow.position.x,
+					m_leftArrow.position.y, m_leftArrow.dimensions.x,
+					m_leftArrow.dimensions.y), mousePos)) {
+					m_leftArrow.textureCoords = CLICKED_LEFT_COORDS;
+				}
+				else if (RectContains(glm::vec4(m_rightArrow.position.x,
+					m_rightArrow.position.y, m_rightArrow.dimensions.x,
+					m_rightArrow.dimensions.y), mousePos)) {
+					m_rightArrow.textureCoords = CLICKED_RIGHT_COORDS;
+				}
+			}
+			if (MW::INPUT.isButtonReleased(B_LEFT)) {
 				bool updated = false;
-				if (m_leftArrowSelected) {
+				if (RectContains(glm::vec4(m_leftArrow.position.x,
+					m_leftArrow.position.y, m_leftArrow.dimensions.x,
+					m_leftArrow.dimensions.y), mousePos)) {
 					if (m_selection > 0) {
 						m_selection--;
 					}
 					else {
 						m_selection = m_options.size() - 1;
 					}
-					m_leftArrow.textureCoords = CLICKED_LEFT_COORDS;
 					updated = true;
 				}
-				else if (m_rightArrowSelected) {
+				else if (RectContains(glm::vec4(m_rightArrow.position.x,
+					m_rightArrow.position.y, m_rightArrow.dimensions.x,
+					m_rightArrow.dimensions.y), mousePos)) {
 					if (m_selection < m_options.size() - 1) {
 						m_selection++;
 					}
 					else {
 						m_selection = 0;
 					}
-					m_rightArrow.textureCoords = CLICKED_RIGHT_COORDS;
 					updated = true;
 				}
 
+				if (m_leftArrowSelected) {
+					m_leftArrow.textureCoords = SELECTED_LEFT_COORDS;
+				}
+				else {
+					m_leftArrow.textureCoords = UNSELECTED_LEFT_COORDS;
+				}
+				if (m_rightArrowSelected) {
+					m_rightArrow.textureCoords = SELECTED_LEFT_COORDS;
+				}
+				else {
+					m_rightArrow.textureCoords = UNSELECTED_LEFT_COORDS;
+				}
+				
 				if (updated) {
 					m_text = m_options[m_selection];
 					m_parent->componentEvent(m_ID, VALUE_UPDATE_EVENT);
@@ -957,6 +1427,46 @@ namespace Milkweed {
 				m_leftArrowSelected
 					? m_leftArrow.textureCoords = SELECTED_LEFT_COORDS
 					: m_leftArrow.textureCoords = UNSELECTED_LEFT_COORDS;
+			}
+
+			if (!m_selected) {
+				return;
+			}
+			if (MW::INPUT.isGamepadButtonDown(m_parent->getGamepad(), G_LEFT)) {
+				m_leftArrow.textureCoords = CLICKED_LEFT_COORDS;
+			}
+			else if (MW::INPUT.isGamepadButtonDown(m_parent->getGamepad(),
+				G_RIGHT)) {
+				m_rightArrow.textureCoords = CLICKED_RIGHT_COORDS;
+			}
+			bool updated = false;
+			if (MW::INPUT.isGamepadButtonReleased(m_parent->getGamepad(),
+				G_LEFT)) {
+				m_leftArrow.textureCoords = SELECTED_LEFT_COORDS;
+				if (m_selection > 0) {
+					m_selection--;
+				}
+				else {
+					m_selection = m_options.size() - 1;
+				}
+				updated = true;
+				m_parent->componentEvent(m_ID, VALUE_UPDATE_EVENT);
+			}
+			else if (MW::INPUT.isGamepadButtonReleased(m_parent->getGamepad(),
+				G_RIGHT)) {
+				m_rightArrow.textureCoords = SELECTED_RIGHT_COORDS;
+				if (m_selection < m_options.size() - 1) {
+					m_selection++;
+				}
+				else {
+					m_selection = 0;
+				}
+				updated = true;
+				m_parent->componentEvent(m_ID, VALUE_UPDATE_EVENT);
+			}
+			if (updated) {
+				m_text = m_options[m_selection];
+				m_parent->componentEvent(m_ID, VALUE_UPDATE_EVENT);
 			}
 		}
 

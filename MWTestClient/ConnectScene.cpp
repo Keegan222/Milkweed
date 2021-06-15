@@ -66,6 +66,19 @@ void ConnectScene::init() {
 }
 
 void ConnectScene::enter() {
+	// Set up directions for gamepads
+	if (MW::INPUT.getGamepadCount() > 0) {
+		m_addressBox.setDirections(nullptr, &m_portBox, nullptr, nullptr);
+		m_portBox.setDirections(&m_addressBox, &m_defaultsButton, nullptr,
+			nullptr);
+		m_backButton.setDirections(&m_portBox, nullptr, nullptr,
+			&m_defaultsButton);
+		m_defaultsButton.setDirections(&m_portBox, nullptr, &m_backButton,
+			&m_connectButton);
+		m_connectButton.setDirections(&m_portBox, nullptr, &m_defaultsButton,
+			nullptr);
+		m_mainUIGroup.setSelectedComponent(&m_addressBox);
+	}
 	m_mainUIGroup.setEnabled(true);
 	
 	m_addressBox.setText(Options::DEFAULT_ADDRESS);

@@ -38,12 +38,11 @@ public:
 	void setReturnScene(Scene* returnScene) { m_returnScene = returnScene; }
 
 private:
-	const static unsigned int OPTIONS_UI_GROUP = 0;
 	const static unsigned int MAIN_UI_GROUP = 1;
 	Scene* m_returnScene = nullptr;
 	Camera m_UICamera;
 	Shader m_spriteShader, m_textShader;
-	UI::UIGroup m_optionsUIGroup, m_mainUIGroup;
+	UI::UIGroup m_mainUIGroup;
 	UI::TextBox m_addressBox, m_portBox;
 	UI::Switch m_fullScreenSwitch;
 	UI::Cycle m_resolutionCycle;

@@ -58,6 +58,14 @@ namespace Milkweed {
 			*/
 			virtual void setEnabled(bool enabled) { m_enabled = enabled; }
 			/*
+			* Test whether this component is selected
+			*/
+			virtual bool isSelected() const { return m_selected; }
+			/*
+			* Set whether this component is selected
+			*/
+			virtual void setSelected(bool selected) { m_selected = selected; }
+			/*
 			* Test whether this component is visible
 			*/
 			virtual bool isVisible() const { return m_visible; }
@@ -79,6 +87,43 @@ namespace Milkweed {
 			* another component.
 			*/
 			void setOwned(bool owned) { m_owned = owned; }
+			/*
+			* Get a pointer to the component above this one
+			*/
+			UIComponent* getUp() { return m_up; }
+			/*
+			* Set a pointer to the component above this one
+			*/
+			void setUp(UIComponent* up) { m_up = up; }
+			/*
+			* Get a pointer to the component below this one
+			*/
+			UIComponent* getDown() { return m_down; }
+			/*
+			* Set a pointer to the component below this one
+			*/
+			void setDown(UIComponent* down) { m_down = down; }
+			/*
+			* Get a pointer to the component to the left of this one
+			*/
+			UIComponent* getLeft() { return m_left; }
+			/*
+			* Set a pointer to the component to the left of this one
+			*/
+			void setLeft(UIComponent* left) { m_left = left; }
+			/*
+			* Get a pointer to the component to the right of this one
+			*/
+			UIComponent* getRight() { return m_right; }
+			/*
+			* Set a pointer to the component to the right of this one
+			*/
+			void setRight(UIComponent* right) { m_right = right; }
+			/*
+			* Set pointers to the components around this one
+			*/
+			void setDirections(UIComponent* up, UIComponent* down,
+				UIComponent* left, UIComponent* right);
 
 		protected:
 			// Allow groups to call the draw, processInput, update, and destroy
@@ -88,6 +133,8 @@ namespace Milkweed {
 			UIGroup* m_parent = nullptr;
 			// Whether this component is currently enabled
 			bool m_enabled = true;
+			// Whether this component is currently selected
+			bool m_selected = false;
 			// Whether this component is currently visible
 			bool m_visible = true;
 			// The ID number of this component within its group
@@ -95,6 +142,14 @@ namespace Milkweed {
 			// Whether this component's size and position are controlled by
 			// another component
 			bool m_owned = false;
+			// Pointer to the component above this component
+			UIComponent* m_up = nullptr;
+			// Pointer to the component below this component
+			UIComponent* m_down = nullptr;
+			// Pointer to the component to the left of this component
+			UIComponent* m_left = nullptr;
+			// Pointer to the component to the right of this component
+			UIComponent* m_right = nullptr;
 
 			/*
 			* Test whether a 2D point falls in a rectangle
@@ -126,6 +181,9 @@ namespace Milkweed {
 			*/
 			virtual void destroy() = 0;
 		};
+
+#define NO_GAMEPAD -2
+#define ANY_GAMEPAD -1
 
 		/*
 		* A set of UIComponents which can be drawn and process input as a group
@@ -249,6 +307,40 @@ namespace Milkweed {
 			void setTextColorUniform(const std::string& textColorUniform) {
 				m_textColorUniform = textColorUniform;
 			}
+			/*
+			* Get the selected component in this group
+			*/
+			UIComponent* getSelectedComponent() const {
+				return m_selectedComponent;
+			}
+			/*
+			* Set the selected component in this group
+			*/
+			void setSelectedComponent(UIComponent* component);
+			/*
+			* Get the ID of the gamepad controlling this group
+			*/
+			int getGamepad() const;
+			/*
+			* Set the ID of the gamepad controlling this group
+			*/
+			void setGamepad(int gamepad);
+			/*
+			* Move the selection in this UI group up
+			*/
+			void moveUp();
+			/*
+			* Move the selection in this UI group down
+			*/
+			void moveDown();
+			/*
+			* Move the selection in this UI group left
+			*/
+			void moveLeft();
+			/*
+			* Move the selection in this UI group right
+			*/
+			void moveRight();
 
 		private:
 			// The parent scene of this group
@@ -265,11 +357,18 @@ namespace Milkweed {
 			std::string m_textColorUniform = "";
 			// The components in this group mapped to their ID numbers
 			std::vector<UIComponent*> m_components;
+			// The currently selected component in this group
+			UIComponent* m_selectedComponent = nullptr;
 			// The working component ID for adding new components to this group
 			unsigned int m_CID = 0;
 			// The last saved dimensions of the window for dynamic resizing
 			// of components
 			glm::vec2 m_previousWindowDims = glm::vec2();
+			// The ID of the gamepad which controls this UI group
+			int m_gamepad = ANY_GAMEPAD;
+			// Whether the directions of the gamepad axes have been toggled
+			bool m_gpUp = false, m_gpDown = false, m_gpLeft = false,
+				m_gpRight = false;
 		};
 
 		/*
@@ -484,6 +583,10 @@ namespace Milkweed {
 				const glm::vec3& textColor, Justification textHJustification,
 				Justification textVJustification, Texture* texture);
 			/*
+			* Set whether this button is selected
+			*/
+			void setSelected(bool selected) override;
+			/*
 			* Set the position of this button
 			*/
 			void setPosition(const glm::vec3& position) override;
@@ -491,10 +594,6 @@ namespace Milkweed {
 			* Set the dimensions of this button
 			*/
 			void setDimensions(const glm::vec2& dimensions) override;
-			/*
-			* Test if this button is selected
-			*/
-			bool isSelected() const { return m_selected; }
 
 		protected:
 			// The texture coordinates of this button's unselected texture
@@ -503,8 +602,6 @@ namespace Milkweed {
 			static glm::vec4 SELECTED_COORDS;
 			// The texture coordinates of this button's clicked texture
 			static glm::vec4 CLICKED_COORDS;
-			// Whether the mouse cursor is over this button
-			bool m_selected = false;
 			// The sprite containing this button's textures
 			Sprite m_sprite;
 
@@ -574,9 +671,17 @@ namespace Milkweed {
 			*/
 			void setDimensions(const glm::vec2& dimensions) override;
 			/*
-			* Test if this text box is selected
+			* Set whether this text box is selected
 			*/
-			bool isSelected() const { return m_selected; }
+			void setSelected(bool selected) override {
+				m_selected = selected;
+				if (m_selected) {
+					m_sprite.textureCoords = SELECTED_COORDS;
+				}
+				else {
+					m_sprite.textureCoords = UNSELECTED_COORDS;
+				}
+			}
 			/*
 			* Text has been typed on the keyboard
 			*/
@@ -635,6 +740,14 @@ namespace Milkweed {
 			* box has been set
 			*/
 			void updateCursorPosition();
+			/*
+			* Move the cursor left one character in the text
+			*/
+			void moveCursorLeft();
+			/*
+			* Move the cursor right one character in the text
+			*/
+			void moveCursorRight();
 		};
 
 		/*
@@ -646,6 +759,10 @@ namespace Milkweed {
 			const static unsigned int ON_EVENT = 0;
 			// The event ID for toggling this switch off
 			const static unsigned int OFF_EVENT = 1;
+			// The event ID for selecting this switch
+			const static unsigned int SELECTED_EVENT = 2;
+			// The event ID for unselecting this switch
+			const static unsigned int UNSELECTED_EVENT = 3;
 
 			/*
 			* Initialize this switch.
@@ -683,6 +800,10 @@ namespace Milkweed {
 			*/
 			void setDimensions(const glm::vec2& dimensions) override;
 			/*
+			* Set whether this switch is selected
+			*/
+			void setSelected(bool selected) override;
+			/*
 			* Test whether this switch is in its on state
 			*/
 			bool isOn() const { return m_on; }
@@ -696,6 +817,10 @@ namespace Milkweed {
 			static glm::vec4 ON_COORDS;
 			// The texture coordinates of this switch's off texture
 			static glm::vec4 OFF_COORDS;
+			// The texture coordinates of this switch's on and selected texture
+			static glm::vec4 ON_SELECTED_COORDS;
+			// The texture coordinates of this switch's off and selected texture
+			static glm::vec4 OFF_SELECTED_COORDS;
 			// Whether this switch is in its on state
 			bool m_on = false;
 			// The text label to appear above this switch
@@ -780,6 +905,18 @@ namespace Milkweed {
 			*/
 			void setDimensions(const glm::vec2& dimensions) override;
 			/*
+			* Set whether this slider is selected.
+			*/
+			void setSelected(bool selected) override {
+				m_selected = selected;
+				if (m_selected) {
+					m_sprite.textureCoords = SELECTED_COORDS;
+				}
+				else {
+					m_sprite.textureCoords = UNSELECTED_COORDS;
+				}
+			}
+			/*
 			* Get the current value of this slider.
 			*/
 			int getValue() const { return m_value; }
@@ -805,14 +942,14 @@ namespace Milkweed {
 			float m_margin = 0.0f;
 			// The normalized width of the margin on the screen
 			float m_normalMargin = 0.0f;
-			// Whether this slider is selected.
-			bool m_selected = false;
 			// The minimum value of this slider.
 			int m_min = 0;
 			// The current value of this slider.
 			int m_value = 0;
 			// The maxmimum value of this slider.
 			int m_max = 0;
+			// The timer for this component's movements
+			float m_timer = 0.0f;
 
 			/*
 			* Draw this slider on the screen.
@@ -822,6 +959,10 @@ namespace Milkweed {
 			* Process input to this slider.
 			*/
 			void processInput() override;
+			/*
+			* Update this slider's timer
+			*/
+			void update(float deltaTime) override;
 			/*
 			* Free this slider's memory.
 			*/
@@ -895,6 +1036,10 @@ namespace Milkweed {
 			* be followed by calling setDimensions() to take effect
 			*/
 			void setArrowWidth(float arrowWidth) { m_arrowWidth = arrowWidth; }
+			/*
+			* Set whether this cycle is selected
+			*/
+			void setSelected(bool selected) override;
 
 		protected:
 			// The texture coordinates of the unselected left arrow
@@ -1052,13 +1197,9 @@ namespace Milkweed {
 			*/
 			void setLineWrapEnabled(bool lineWrapEnabled);
 			/*
-			* Test whether this text area is selected
-			*/
-			bool isSelected() const { return m_selected; }
-			/*
 			* Set whether this text area is selected
 			*/
-			void setSelected(bool selected);
+			void setSelected(bool selected) override;
 			/*
 			* Get the x-position of the text in this text area
 			*/
@@ -1124,8 +1265,6 @@ namespace Milkweed {
 			int m_scroll = 0;
 			// Whether line wrapping is enabled for the text in this text area
 			bool m_lineWrapEnabled = false;
-			// Whether this text area is currently selected
-			bool m_selected = false;
 			// The background sprite of this text area.
 			Sprite m_sprite;
 			// The dimensions of this text area on the screen

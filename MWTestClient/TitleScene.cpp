@@ -40,22 +40,30 @@ void TitleScene::init() {
 	m_connectButton.init("Connect", glm::vec3(0.5f - buttonDims.x / 2.0f,
 		0.5f, 0.0f), buttonDims, textScale, textColor, Justification::CENTER,
 		Justification::CENTER, buttonTexture);
-	m_mainUIGroup.addComponent(&m_connectButton);
-
 	m_optionsButton.init("Options", glm::vec3(0.5f - buttonDims.x / 2.0f,
 		0.5f - (buttonDims.y + buffer), 0.0f), buttonDims, textScale, textColor, Justification::CENTER,
 		Justification::CENTER, buttonTexture);
-	m_mainUIGroup.addComponent(&m_optionsButton);
-
 	m_quitButton.init("Quit", glm::vec3(0.5f - buttonDims.x / 2.0f,
 		0.5f - 2 * (buttonDims.y + buffer), 0.0f), buttonDims, textScale,
 		textColor, Justification::CENTER, Justification::CENTER, buttonTexture);
-	m_mainUIGroup.addComponent(&m_quitButton);
+	m_mainUIGroup.addComponents({ &m_connectButton, &m_optionsButton,
+			&m_quitButton });
 
 	m_initialized = true;
 }
 
 void TitleScene::enter() {
+	// Set directions for controller input and add components
+	if (MW::INPUT.getGamepadCount() > 0) {
+		m_connectButton.setDirections(&m_quitButton, &m_optionsButton, nullptr,
+			&m_optionsButton);
+		m_optionsButton.setDirections(&m_connectButton, &m_quitButton,
+			&m_connectButton, &m_quitButton);
+		m_quitButton.setDirections(&m_optionsButton, &m_connectButton,
+			&m_optionsButton, nullptr);
+		m_mainUIGroup.setSelectedComponent(&m_connectButton);
+	}
+
 	m_mainUIGroup.setEnabled(true);
 }
 

@@ -50,8 +50,10 @@ void TestScene::processInput() {
 	}
 
 	// Test gamepad input
-	for (int gp = 0; gp < MW::INPUT.getGamepadCount(); gp++) {
-
+	for (unsigned int gp = 0; gp < MW::INPUT.getGamepadCount(); gp++) {
+		if (MW::INPUT.isGamepadButtonPressed(gp, GamepadButton::G_CIRCLE)) {
+			MWLOG(Info, TestScene, gp, ": CIRCLE");
+		}
 	}
 
 	m_UIGroup.processInput();

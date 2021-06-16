@@ -389,12 +389,20 @@ namespace Milkweed {
 				client), m_clients.end());
 		}
 
-		// Process up to maxMessages messages
-		int i = 0;
-		while (i <= maxMessages && !m_messagesIn.empty()) {
-			NetMessage message = m_messagesIn.popFront();
-			onMessage(message);
-			i++;
+		if (maxMessages == -1) {
+			while (!m_messagesIn.empty()) {
+				NetMessage message = m_messagesIn.popFront();
+				onMessage(message);
+			}
+		}
+		else {
+			// Process up to maxMessages messages
+			int i = 0;
+			while (i <= maxMessages && !m_messagesIn.empty()) {
+				NetMessage message = m_messagesIn.popFront();
+				onMessage(message);
+				i++;
+			}
 		}
 	}
 

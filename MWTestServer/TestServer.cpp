@@ -22,8 +22,9 @@ void TestServer::updatePhysics(float deltaTime) {
 bool TestServer::onConnect(std::shared_ptr<NetConnection> client) {
 	SERVERLOG(Info, "Connected player with ID ", client->getID());
 	unsigned int newClientID = client->getID();
-	m_players[newClientID] = ServerPlayer(newClientID,
-		glm::vec3(0.0f, 0.0f, 0.0f), glm::vec2(0.0f, 0.0f));
+	m_players[newClientID] = ServerPlayer();
+	m_players[newClientID].init(this, newClientID, PLAYER_SPAWNPOINT,
+		glm::vec2(0.0f, 0.0f));
 
 	// Notify other players
 	NetMessage omsg;
@@ -35,10 +36,18 @@ bool TestServer::onConnect(std::shared_ptr<NetConnection> client) {
 	// Notify the player of connection acceptance
 	NetMessage cmsg;
 	cmsg.header.ID = MessageTypes::ACCEPT_PLAYER;
+	SERVERLOG(Info, "cmsg contains ", m_players.size(), " playerIDs");
 	for (const std::pair<unsigned int, ServerPlayer>& player : m_players) {
 		unsigned int clientID = player.first;
-		cmsg << clientID;
+		if (clientID != newClientID) {
+			SERVERLOG(Info, "adding ", clientID, " to cmsg");
+			cmsg << clientID << m_players[clientID].position
+				<< m_players[clientID].velocity;
+		}
 	}
+	int otherCount = m_players.size() - 1;
+	cmsg << otherCount;
+	SERVERLOG(Info, "adding self ", newClientID, " to cmsg");
 	cmsg << newClientID;
 	messageClient(client, cmsg);
 	SERVERLOG(Info, "Notified new player of acceptance");
@@ -51,6 +60,34 @@ void TestServer::onMessage(NetMessage& message) {
 	switch (message.header.ID) {
 	case MessageTypes::PING: {
 		messageAllClients(message);
+		break;
+	}
+	case MessageTypes::MOVEMENT_LEFT: {
+		unsigned int clientID = message.owner->getID();
+		SERVERLOG(Info, "Movement left from ", clientID);
+		m_players[clientID].velocity.x = -PLAYER_SPEED_X;
+		sendPlayerPVUpdate(clientID);
+		break;
+	}
+	case MessageTypes::MOVEMENT_STOP_LEFT: {
+		unsigned int clientID = message.owner->getID();
+		SERVERLOG(Info, "Movement stop left from ", clientID);
+		m_players[clientID].velocity.x = 0.0f;
+		sendPlayerPVUpdate(clientID);
+		break;
+	}
+	case MessageTypes::MOVEMENT_RIGHT: {
+		unsigned int clientID = message.owner->getID();
+		SERVERLOG(Info, "Movement right from ", clientID);
+		m_players[clientID].velocity.x = PLAYER_SPEED_X;
+		sendPlayerPVUpdate(clientID);
+		break;
+	}
+	case MessageTypes::MOVEMENT_STOP_RIGHT: {
+		unsigned int clientID = message.owner->getID();
+		SERVERLOG(Info, "Movement stop right from ", clientID);
+		m_players[clientID].velocity.x = 0.0f;
+		sendPlayerPVUpdate(clientID);
 		break;
 	}
 	}
@@ -95,8 +132,6 @@ int main(int argc, char** argv) {
 	while (testServer.isActive()) {
 		// Update the messages from the network
 		testServer.update(-1);
-
-
 		double now = glfwGetTime();
 		float elapsed = (float)(now - startTime);
 		startTime = now;
@@ -111,4 +146,13 @@ int main(int argc, char** argv) {
 	}
 
 	return 0;
+}
+
+void TestServer::sendPlayerPVUpdate(unsigned int playerID) {
+	SERVERLOG(Info, "Update PV player ", playerID);
+	NetMessage pvUpdate;
+	pvUpdate.header.ID = MessageTypes::PLAYER_PV_UPDATE;
+	pvUpdate << playerID << m_players[playerID].position
+		<< m_players[playerID].velocity;
+	messageAllClients(pvUpdate);
 }

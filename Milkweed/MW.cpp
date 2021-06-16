@@ -128,13 +128,14 @@ bool MW::SetScene(Scene* scene) {
 void MW::Run() {
 	// Set up physics time-keeping variables
 	double startTime = glfwGetTime();
-	unsigned int physicsSteps = 0, maxPhysicsSteps = 10;
+	unsigned int physicsSteps = 0, maxPhysicsSteps = 10, maxNetMessages = 10;
 
 	// Start the game loop
 	while (RUNNING) {
 		// Draw the application's graphics and process input
 		Draw();
 		ProcessInput();
+		ProcessNetMessages(maxNetMessages);
 
 		// Find the elapsed time since last frame
 		double now = glfwGetTime();
@@ -176,6 +177,22 @@ void MW::ProcessInput() {
 	INPUT.update();
 	if (glfwGetWindowAttrib(WINDOW.getWindowHandle(), GLFW_FOCUSED)) {
 		SCENE->processInput();
+	}
+}
+
+void MW::ProcessNetMessages(unsigned int count) {
+	if (count == -1) {
+		while (!MW::NETWORK.getMessagesIn().empty()) {
+			NetMessage msg = MW::NETWORK.getMessagesIn().popFront();
+			SCENE->processNetMessage(msg);
+		}
+	}
+	else {
+		unsigned int m = 0;
+		while (!MW::NETWORK.getMessagesIn().empty() && m++ < count) {
+			NetMessage msg = MW::NETWORK.getMessagesIn().popFront();
+			SCENE->processNetMessage(msg);
+		}
 	}
 }
 

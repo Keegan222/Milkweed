@@ -9,7 +9,7 @@
 
 #include <Milkweed/MW.h>
 
-#include "NetTypes.h"
+#include "ServerPlayer.h"
 
 using namespace Milkweed;
 
@@ -50,6 +50,8 @@ protected:
 private:
 	// Map from client ID numbers to player information structures
 	std::map<unsigned int, ServerPlayer> m_players;
+
+	void sendPlayerPVUpdate(unsigned int playerID);
 };
 
 #endif

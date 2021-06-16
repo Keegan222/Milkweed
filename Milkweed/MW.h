@@ -46,6 +46,10 @@ namespace Milkweed {
 		*/
 		virtual void processInput() = 0;
 		/*
+		* Process a message recieved by the network client on this scene
+		*/
+		virtual void processNetMessage(NetMessage& message) {};
+		/*
 		* Process a UI component event on this scene
 		* 
 		* @param groupID: The ID of the UI group this event originated from
@@ -166,6 +170,13 @@ namespace Milkweed {
 		* Process input to the application
 		*/
 		static void ProcessInput();
+		/*
+		* Process up to count messages from the network
+		* 
+		* @param count: The number of messages to process in the active scene
+		* (-1 for +inf)
+		*/
+		static void ProcessNetMessages(unsigned int count = -1);
 		/*
 		* Update the application's physics
 		*/

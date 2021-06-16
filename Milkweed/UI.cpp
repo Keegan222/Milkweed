@@ -1176,7 +1176,7 @@ namespace Milkweed {
 			}
 			else if (MW::INPUT.isGamepadButtonPressed(m_parent->getGamepad(),
 				G_RIGHT) || (MW::INPUT.isGamepadButtonDown(
-					m_parent->getGamepad(), G_LEFT)
+					m_parent->getGamepad(), G_RIGHT)
 					&& m_timer > UI_UPDATE_TIME)) {
 				m_timer = 0.0f;
 				if (m_value < m_max) {

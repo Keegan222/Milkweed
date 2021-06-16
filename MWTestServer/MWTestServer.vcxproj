@@ -153,10 +153,12 @@
     </Link>
   </ItemDefinitionGroup>
   <ItemGroup>
+    <ClCompile Include="ServerPlayer.cpp" />
     <ClCompile Include="TestServer.cpp" />
   </ItemGroup>
   <ItemGroup>
     <ClInclude Include="NetTypes.h" />
+    <ClInclude Include="ServerPlayer.h" />
     <ClInclude Include="TestServer.h" />
   </ItemGroup>
   <Import Project="$(VCTargetsPath)\Microsoft.Cpp.targets" />

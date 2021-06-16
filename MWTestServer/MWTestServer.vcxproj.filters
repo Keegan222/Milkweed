@@ -14,12 +14,18 @@
     <ClCompile Include="TestServer.cpp">
       <Filter>Source Files</Filter>
     </ClCompile>
+    <ClCompile Include="ServerPlayer.cpp">
+      <Filter>Source Files</Filter>
+    </ClCompile>
   </ItemGroup>
   <ItemGroup>
     <ClInclude Include="TestServer.h">
       <Filter>Header Files</Filter>
     </ClInclude>
     <ClInclude Include="NetTypes.h">
+      <Filter>Header Files</Filter>
+    </ClInclude>
+    <ClInclude Include="ServerPlayer.h">
       <Filter>Header Files</Filter>
     </ClInclude>
   </ItemGroup>

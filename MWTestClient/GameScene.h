@@ -7,8 +7,9 @@
 #ifndef GAME_SCENE_H
 #define GAME_SCENE_H
 
-#include <MWTestServer/NetTypes.h>
 #include <Milkweed/MW.h>
+
+#include "ClientPlayer.h"
 
 using namespace Milkweed;
 
@@ -38,7 +39,7 @@ public:
 	/*
 	* Process a message recieved from a test server
 	*/
-	void processNetMessage(NetMessage& message);
+	void processNetMessage(NetMessage& message) override;
 	/*
 	* Process a UI component event to the scene.
 	*/
@@ -68,6 +69,10 @@ public:
 	* Set the port for the game scene to connect on
 	*/
 	void setPort(unsigned int port) { m_port = port; }
+	/*
+	* Get the player ID of this client on the server
+	*/
+	unsigned int getPlayerID() const { return m_playerID; }
 
 private:
 	const static unsigned int PAUSE_UI_GROUP = 0;
@@ -82,6 +87,8 @@ private:
 	bool m_accepted = false;
 	// The player ID assigned to this client
 	unsigned int m_playerID = 0;
+	// Pointers to the sprites of all the connected players
+	std::vector<Sprite*> m_playerPointers;
 	// The players connected to this server
 	std::map<unsigned int, ClientPlayer> m_players;
 	// The camera used to draw sprites

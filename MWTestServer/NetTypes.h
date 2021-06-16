@@ -10,6 +10,7 @@
 #ifndef NET_TYPES_H
 #define NET_TYPES_H
 
+#include <iostream>
 #include <Milkweed/Sprite.h>
 
 using namespace Milkweed;
@@ -35,83 +36,61 @@ enum MessageTypes : unsigned int {
 	* Contains the player ID of the now disconnected player
 	*/
 	DISCONNECT_PLAYER = 3,
+	/*
+	* A player has inputted a left-movement
+	*/
+	MOVEMENT_LEFT = 4,
+	/*
+	* A player has inputted a right-movement
+	*/
+	MOVEMENT_RIGHT = 5,
+	/*
+	* A player has released the left-movement input
+	*/
+	MOVEMENT_STOP_LEFT = 6,
+	/*
+	* A player has released the right-movement input
+	*/
+	MOVEMENT_STOP_RIGHT = 7,
+	/*
+	* A position and velocity update from the server for a connected player
+	*/
+	PLAYER_PV_UPDATE = 8,
 };
 
+// Shared definition for game qualities
+#define PLAYER_SPAWNPOINT glm::vec3(0.0f, 0.0f, 0.0f)
 #define PLAYER_DIMENSIONS glm::vec2(35.0f, 60.0f)
+#define GRAVITY 5.81f
+#define PLAYER_SPEED_X 5.0f
+#define MIN_VELOCITY_Y -35.0f
+#define TOWN_FLOOR_Y 0.0f
+#define TOWN_WALL 0.0f
 
 /*
-* Structure for all the information needed to simulate a single player on the
-* server side of the network.
+* Structure for all information representing a general player
 */
-class ServerPlayer : public Sprite {
+class Player : public Sprite {
 public:
-	// The client ID of this player on the server
-	unsigned int clientID = 0;
-	// The physics timer of this sprite
-	float timer = 0.0f;
-
 	/*
-	* Construct a blank server player as a sprite
-	*/
-	ServerPlayer() {};
-	/*
-	* Construct a server player as a sprite
-	* 
-	* @param clientID: The client ID number of this player on the server.
-	* @param position: The position of this player in the game world.
-	* @param velocity: The velocity of this player in the game world.
-	*/
-	ServerPlayer(unsigned int clientID, const glm::vec3& position,
-		const glm::vec2& velocity) {
-		this->clientID = clientID;
-		this->position = position;
-		this->velocity = velocity;
-		this->dimensions = PLAYER_DIMENSIONS;
-	};
-	/*
-	* Update the physics of this server player's sprite in the game world.
-	* 
-	* @param deltaTime: The elapsed time in frames since the last update.
+	* Update the physics of this player
 	*/
 	void update(float deltaTime) override {
-		timer += deltaTime;
-		if (timer > 60.0f) {
-			timer = 0.0f;
-			std::cout << "Updated player physics for one second" << std::endl;
+		// Apply gravity to the y-velocity
+		this->velocity.y -= GRAVITY * deltaTime;
+		if (this->velocity.y < MIN_VELOCITY_Y) {
+			this->velocity.y = MIN_VELOCITY_Y;
 		}
-	};
-	/*
-	* Free this server player's memory
-	*/
-	void destroy() override {
-		this->clientID = 0;
-		this->timer = 0.0f;
-		this->position = glm::vec3();
-		this->velocity = glm::vec2();
-		this->dimensions = glm::vec2();
-	};
-};
-
-/*
-* Structure for all the information needed to simulate a single player on the
-* client side of the network.
-*/
-class ClientPlayer : public Sprite {
-public:
-	// The client ID of this player assigned by the server
-	unsigned int clientID = 0;
-
-	/*
-	* Construct this client player as a blank sprite.
-	*/
-	ClientPlayer() {};
-	/*
-	* Construct this client player with a client ID and sprite information.
-	* 
-	* @param clientID: The client ID of this player assigned by the server.
-	*/
-	ClientPlayer(unsigned int clientID) {
-		this->clientID = clientID;
+		this->position.x += this->velocity.x * deltaTime;
+		this->position.y += this->velocity.y * deltaTime;
+		// Make moving out of bounds impossible
+		if (this->position.x < TOWN_WALL) {
+			this->position.x = TOWN_WALL;
+		}
+		if (this->position.y < TOWN_FLOOR_Y) {
+			this->position.y = TOWN_FLOOR_Y;
+			this->velocity.y = 0.0f;
+		}
 	};
 };
 

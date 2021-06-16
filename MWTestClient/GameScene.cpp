@@ -4,6 +4,8 @@
 * Created:	2021.05.16
 */
 
+#include <MWTestServer/NetTypes.h>
+
 #include "TestClient.h"
 #include "GameScene.h"
 
@@ -112,19 +114,21 @@ void GameScene::draw() {
 		m_pauseUIGroup.draw();
 	}
 
+	m_playerPointers.resize(m_players.size());
+	int i = 0;
+	for (const std::pair<unsigned int, ClientPlayer>& p : m_players) {
+		m_playerPointers[i++] = &(m_players[p.first]);
+	}
+	MW::RENDERER.submit(m_playerPointers, &m_spriteShader);
+
 	m_HUDUIGroup.draw();
 }
 
 #define PLAYER_SPEED 3.0f
 
 void GameScene::processInput() {
-	// Process network input here
-	unsigned int messageCount = 0;
-	while (messageCount < 10 && !MW::NETWORK.getMessagesIn().empty()) {
-		NetMessage message = MW::NETWORK.getMessagesIn().popFront();
-		processNetMessage(message);
-
-		messageCount++;
+	if (MW::INPUT.isKeyPressed(K_G)) {
+		MW::RENDERER.dumpNextFrame();
 	}
 
 	// Check for the escape menu
@@ -148,7 +152,7 @@ void GameScene::processInput() {
 		MW::WINDOW.setFullScreen(!MW::WINDOW.isFullScreen());
 	}
 
-	if (!(m_connected && m_accepted)) {
+	if (!(m_connected && m_accepted) || m_pauseMenuUp) {
 		return;
 	}
 
@@ -159,6 +163,8 @@ void GameScene::processInput() {
 		p << m_playerID;
 		MW::NETWORK.send(p);
 	}
+
+	m_players[m_playerID].processInput();
 }
 
 void GameScene::gamepadConnected(int gp) {
@@ -195,16 +201,29 @@ void GameScene::processNetMessage(NetMessage& message) {
 		break;
 	}
 	case MessageTypes::ACCEPT_PLAYER: {
-		MWLOG(Info, GameScene, "Received ACCEPT_PLAYER message");
+		MWLOG(Info, GameScene, "Received ACCEPT_PLAYER message with size ",
+			message.body.size());
 		// Initialize this player
+		m_players.clear();
+		m_playerID = 0;
 		message >> m_playerID;
-		m_players[m_playerID] = ClientPlayer();
+		m_players.emplace(m_playerID, ClientPlayer());
+		m_players[m_playerID].init(this, m_playerID);
 
 		// Initialize previously connected players
-		while (message.header.size > 0) {
+		int otherCount = 0;
+		message >> otherCount;
+		std::cout << "Other count: " << otherCount << std::endl;
+		for (int i = 0; i < otherCount; i++) {
 			unsigned int playerID = 0;
-			message >> playerID;
-			m_players[playerID] = ClientPlayer();
+			glm::vec3 pos = glm::vec3();
+			glm::vec2 vel = glm::vec2();
+			message >> vel >> pos >> playerID;
+			std::cout << "Initialize player " << playerID << std::endl;
+			m_players.emplace(playerID, ClientPlayer());
+			m_players[playerID].init(this, playerID);
+			m_players[playerID].position = pos;
+			m_players[playerID].velocity = vel;
 		}
 
 		m_accepted = true;
@@ -215,13 +234,27 @@ void GameScene::processNetMessage(NetMessage& message) {
 		// Initialize a blank player with that ID
 		unsigned int playerID = 0;
 		message >> playerID;
-		m_players[playerID] = ClientPlayer();
+		m_players.emplace(playerID, ClientPlayer());
+		m_players[playerID].init(this, playerID);
+		std::cout << "COnnected player message " << playerID << std::endl;
 		break;
 	}
 	case MessageTypes::PING: {
 		unsigned int playerID = 0;
 		message >> playerID;
 		MWLOG(Info, GameScene, "Received PING message from player ", playerID);
+		break;
+	}
+	case MessageTypes::PLAYER_PV_UPDATE: {
+		glm::vec2 velocity = glm::vec2();
+		glm::vec3 position = glm::vec3();
+		unsigned int playerID = 0;
+		message >> velocity >> position >> playerID;
+		MWLOG(Info, GameScene, "Updating player position ", playerID,
+			" to (", position.x , ", ", position.y, ") velocity (",
+			velocity.x, ", ", velocity.y, ")");
+		m_players[playerID].position = position;
+		m_players[playerID].velocity = velocity;
 		break;
 	}
 	case MessageTypes::DISCONNECT_PLAYER: {
@@ -282,6 +315,11 @@ void GameScene::update(float deltaTime) {
 	m_HUDUIGroup.update(deltaTime);
 	m_pauseUIGroup.update(deltaTime);
 
+	for (const std::pair<unsigned int, ClientPlayer>& player : m_players) {
+		m_players[player.first].update(deltaTime);
+	}
+	m_spriteCamera.position = m_players[m_playerID].position;
+
 	m_spriteCamera.update(deltaTime);
 	m_UICamera.update(deltaTime);
 }
@@ -311,6 +349,8 @@ void GameScene::updateStatsArea() {
 	std::ostringstream stream;
 	stream << "Player ID: " << m_playerID << std::endl;
 	stream << "Player count: " << m_players.size() << std::endl;
+	stream << "Position: (" << m_players[m_playerID].position.x << ", "
+		<< m_players[m_playerID].position.y << ")" << std::endl;
 
 	m_statsArea.setText(stream.str());
 }

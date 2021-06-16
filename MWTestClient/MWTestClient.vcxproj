@@ -153,6 +153,7 @@
     </Link>
   </ItemDefinitionGroup>
   <ItemGroup>
+    <ClInclude Include="ClientPlayer.h" />
     <ClInclude Include="ConnectScene.h" />
     <ClInclude Include="GameScene.h" />
     <ClInclude Include="OptionsScene.h" />
@@ -160,6 +161,7 @@
     <ClInclude Include="TitleScene.h" />
   </ItemGroup>
   <ItemGroup>
+    <ClCompile Include="ClientPlayer.cpp" />
     <ClCompile Include="ConnectScene.cpp" />
     <ClCompile Include="GameScene.cpp" />
     <ClCompile Include="OptionsScene.cpp" />

@@ -86,7 +86,7 @@ void GameScene::init() {
 
 void GameScene::enter() {
 	MW::INPUT.addInputListener(this);
-	MWLOG(Info, GameScene, "entered scene");
+	MWLOG(Info, GameScene, "Entered scene");
 	// Attempt to connect to the server
 	if (!MW::NETWORK.isConnected()) {
 		MW::NETWORK.connect(m_address, m_port);
@@ -108,6 +108,8 @@ void GameScene::enter() {
 	m_statsArea.setEnabled(false);
 }
 
+#define SELF_DEPTH 0.1f
+
 void GameScene::draw() {
 	if (m_pauseMenuUp) {
 		MW::RENDERER.submit({ &m_pauseBackground }, &m_UISpriteShader);
@@ -119,6 +121,7 @@ void GameScene::draw() {
 	for (const std::pair<unsigned int, ClientPlayer>& p : m_players) {
 		m_playerPointers[i++] = &(m_players[p.first]);
 	}
+	m_players[m_playerID].position.z = SELF_DEPTH;
 	MW::RENDERER.submit(m_playerPointers, &m_spriteShader);
 
 	m_HUDUIGroup.draw();
@@ -186,7 +189,6 @@ void GameScene::processNetMessage(NetMessage& message) {
 	switch (message.header.ID) {
 	case NetMessageTypes::CONNECTED: {
 		MWLOG(Info, GameScene, "Received CONNECTED system network message");
-		MWLOG(Info, GameScene, "Connected to the server");
 		m_connected = true;
 		break;
 	}
@@ -201,8 +203,6 @@ void GameScene::processNetMessage(NetMessage& message) {
 		break;
 	}
 	case MessageTypes::ACCEPT_PLAYER: {
-		MWLOG(Info, GameScene, "Received ACCEPT_PLAYER message with size ",
-			message.body.size());
 		// Initialize this player
 		m_players.clear();
 		m_playerID = 0;
@@ -213,13 +213,11 @@ void GameScene::processNetMessage(NetMessage& message) {
 		// Initialize previously connected players
 		int otherCount = 0;
 		message >> otherCount;
-		std::cout << "Other count: " << otherCount << std::endl;
 		for (int i = 0; i < otherCount; i++) {
 			unsigned int playerID = 0;
 			glm::vec3 pos = glm::vec3();
 			glm::vec2 vel = glm::vec2();
 			message >> vel >> pos >> playerID;
-			std::cout << "Initialize player " << playerID << std::endl;
 			m_players.emplace(playerID, ClientPlayer());
 			m_players[playerID].init(this, playerID);
 			m_players[playerID].position = pos;
@@ -236,13 +234,11 @@ void GameScene::processNetMessage(NetMessage& message) {
 		message >> playerID;
 		m_players.emplace(playerID, ClientPlayer());
 		m_players[playerID].init(this, playerID);
-		std::cout << "COnnected player message " << playerID << std::endl;
 		break;
 	}
 	case MessageTypes::PING: {
 		unsigned int playerID = 0;
 		message >> playerID;
-		MWLOG(Info, GameScene, "Received PING message from player ", playerID);
 		break;
 	}
 	case MessageTypes::PLAYER_PV_UPDATE: {
@@ -250,9 +246,6 @@ void GameScene::processNetMessage(NetMessage& message) {
 		glm::vec3 position = glm::vec3();
 		unsigned int playerID = 0;
 		message >> velocity >> position >> playerID;
-		MWLOG(Info, GameScene, "Updating player position ", playerID,
-			" to (", position.x , ", ", position.y, ") velocity (",
-			velocity.x, ", ", velocity.y, ")");
 		m_players[playerID].position = position;
 		m_players[playerID].velocity = velocity;
 		break;
@@ -297,8 +290,6 @@ void GameScene::componentEvent(unsigned int groupID, unsigned int componentID,
 void GameScene::updateWindowSize() {
 	m_HUDUIGroup.updateWindowSize();
 	glm::vec2 resizeScale = m_pauseUIGroup.updateWindowSize();
-	MWLOG(Info, GameScene, "Update window size scaling ", resizeScale.x,
-		", ", resizeScale.y);
 	m_pauseBackground.dimensions *= resizeScale;
 	m_pauseBackground.position.x *= resizeScale.x;
 	m_pauseBackground.position.y *= resizeScale.y;

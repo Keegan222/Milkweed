@@ -53,16 +53,21 @@ enum MessageTypes : unsigned int {
 	*/
 	MOVEMENT_STOP_RIGHT = 7,
 	/*
+	* A player has pressed the jump input
+	*/
+	MOVEMENT_JUMP = 8,
+	/*
 	* A position and velocity update from the server for a connected player
 	*/
-	PLAYER_PV_UPDATE = 8,
+	PLAYER_PV_UPDATE = 9,
 };
 
 // Shared definition for game qualities
 #define PLAYER_SPAWNPOINT glm::vec3(0.0f, 0.0f, 0.0f)
 #define PLAYER_DIMENSIONS glm::vec2(35.0f, 60.0f)
-#define GRAVITY 5.81f
+#define GRAVITY 0.981f
 #define PLAYER_SPEED_X 5.0f
+#define PLAYER_JUMP_SPEED 17.0f
 #define MIN_VELOCITY_Y -35.0f
 #define TOWN_FLOOR_Y 0.0f
 #define TOWN_WALL 0.0f
@@ -72,6 +77,9 @@ enum MessageTypes : unsigned int {
 */
 class Player : public Sprite {
 public:
+	// Whether this player is in a jump
+	bool jumping = false;
+
 	/*
 	* Update the physics of this player
 	*/
@@ -90,6 +98,7 @@ public:
 		if (this->position.y < TOWN_FLOOR_Y) {
 			this->position.y = TOWN_FLOOR_Y;
 			this->velocity.y = 0.0f;
+			this->jumping = false;
 		}
 	};
 };

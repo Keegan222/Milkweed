@@ -22,7 +22,7 @@ glm::ivec2 Options::WINDOW_RESOLUTION = glm::ivec2(800, 600);
 int Options::VOLUME = 100;
 
 bool Options::LoadOptions() {
-	MWLOG(Info, Options, "Loading options");
+	MWLOG(Info, Options, "Loading options file");
 	std::ifstream optionsFile(OPTIONS_FILE_NAME);
 	if (!optionsFile.good()) {
 		return false;

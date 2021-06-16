@@ -10,7 +10,6 @@
 #define X_AXIS_THRESHOLD 0.85f
 
 void ClientPlayer::init(GameScene* parent, unsigned int clientID) {
-	std::cout << "Initializing player with ID " << clientID << std::endl;
 	this->parent = parent;
 	this->clientID = clientID;
 	this->position = PLAYER_SPAWNPOINT;
@@ -57,6 +56,9 @@ void ClientPlayer::processInput() {
 				moveLeft(false);
 			}
 		}
+		if (MW::INPUT.isGamepadButtonPressed(G_A, &gp)) {
+			jump();
+		}
 	}
 	else {
 		// Take input from keyboard
@@ -71,6 +73,9 @@ void ClientPlayer::processInput() {
 		}
 		if (MW::INPUT.isKeyReleased(K_D) && this->velocity.x != 0.0f) {
 			moveRight(false);
+		}
+		if (MW::INPUT.isKeyPressed(S_SPACE)) {
+			jump();
 		}
 	}
 }
@@ -90,7 +95,6 @@ void ClientPlayer::destroy() {
 
 void ClientPlayer::moveLeft(bool start) {
 	if (start) {
-		MWLOG(Info, ClientPlayer, "Move left = true");
 		NetMessage moveMsg;
 		moveMsg.header.ID = MOVEMENT_LEFT;
 		int tID = this->parent->getPlayerID();
@@ -99,7 +103,6 @@ void ClientPlayer::moveLeft(bool start) {
 		this->velocity.x = -PLAYER_SPEED_X;
 	}
 	else {
-		MWLOG(Info, ClientPlayer, "Move left = false");
 		NetMessage moveMsg;
 		moveMsg.header.ID = MOVEMENT_STOP_LEFT;
 		int tID = this->parent->getPlayerID();
@@ -111,7 +114,6 @@ void ClientPlayer::moveLeft(bool start) {
 
 void ClientPlayer::moveRight(bool start) {
 	if (start) {
-		MWLOG(Info, ClientPlayer, "Move right = true");
 		NetMessage moveMsg;
 		moveMsg.header.ID = MOVEMENT_RIGHT;
 		int tID = this->parent->getPlayerID();
@@ -120,7 +122,6 @@ void ClientPlayer::moveRight(bool start) {
 		this->velocity.x = PLAYER_SPEED_X;
 	}
 	else {
-		MWLOG(Info, ClientPlayer, "Move right = false");
 		NetMessage moveMsg;
 		moveMsg.header.ID = MOVEMENT_STOP_RIGHT;
 		int tID = this->parent->getPlayerID();
@@ -128,4 +129,19 @@ void ClientPlayer::moveRight(bool start) {
 		MW::NETWORK.send(moveMsg);
 		this->velocity.x = 0.0f;
 	}
+}
+
+void ClientPlayer::jump() {
+	// Can't initiate a jump if already in one
+	if (this->jumping) {
+		return;
+	}
+	this->jumping = true;
+	this->velocity.y = PLAYER_JUMP_SPEED;
+	// Send the jump input to the server
+	NetMessage jmsg;
+	jmsg.header.ID = MessageTypes::MOVEMENT_JUMP;
+	int tID = this->parent->getPlayerID();
+	jmsg << tID;
+	MW::NETWORK.send(jmsg);
 }

@@ -96,9 +96,6 @@ void TitleScene::gamepadDisconnected(int gp) {
 
 void TitleScene::componentEvent(unsigned int groupID, unsigned int componentID,
 	unsigned int eventID) {
-	MWLOG(Info, TitleScene, "Event ", eventID, " on component ", componentID,
-		" from group ", groupID);
-
 	switch (groupID) {
 	case MAIN_UI_GROUP: {
 		switch (eventID) {
@@ -122,8 +119,6 @@ void TitleScene::componentEvent(unsigned int groupID, unsigned int componentID,
 }
 
 void TitleScene::updateWindowSize() {
-	MWLOG(Info, TitleScene, "Updated window size");
-
 	// Update the UI positioning
 	m_mainUIGroup.updateWindowSize();
 

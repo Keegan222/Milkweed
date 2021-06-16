@@ -49,6 +49,10 @@ private:
 	* Initiate a move right
 	*/
 	void moveRight(bool start);
+	/*
+	* Initiate a jump move
+	*/
+	void jump();
 };
 
 #endif

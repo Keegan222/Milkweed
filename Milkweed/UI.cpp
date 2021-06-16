@@ -1499,7 +1499,6 @@ namespace Milkweed {
 			Justification hJustification, Justification vJustification,
 			Texture* texture, Texture* cursorTexture) {
 			// Initialize the text labels to use to display lines
-			MWLOG(Info, UI TextArea, "Initializing text area");
 			m_labels.resize(lineCount);
 			float dy = normalDimensions.y / (float)lineCount;
 			for (unsigned int i = 0; i < lineCount; i++) {
@@ -1512,7 +1511,6 @@ namespace Milkweed {
 					vJustification);
 			}
 			m_text = text;
-			MWLOG(Info, UI TextArea, "Initialized labels");
 
 			// Initialize the background and cursor sprites based on the window
 			// size and the normalized position and dimensions
@@ -1522,16 +1520,10 @@ namespace Milkweed {
 				normalDimensions * winDims, texture);
 			setTextPosition(normalPosition.x * winDims.x);
 			m_sprite.textureCoords = UNSELECTED_COORDS;
-
-			MWLOG(Info, UI TextArea, "Initialzed the sprite");
-
-			MWLOG(Info, UI TextArea, "Initializing cursor");
 			
 			m_cursorWidth = cursorWidth;
 			m_cursor.init(m_labels[0].getPosition(), glm::vec2(cursorWidth,
 				m_labels[0].getDimensions().y), cursorTexture);
-
-			MWLOG(Info, UI TextArea, "All the stuff if set");
 
 			MW::INPUT.addInputListener(this);
 		}
@@ -1568,7 +1560,6 @@ namespace Milkweed {
 			if (m_labels.empty()) {
 				return;
 			}
-			MWLOG(Info, UI TextArea, "Setting dimensions");
 			m_dimensions = dimensions;
 			float dy = dimensions.y / (float)m_labels.size();
 			for (unsigned int i = 0; i < m_labels.size(); i++) {
@@ -1792,7 +1783,6 @@ namespace Milkweed {
 						}
 					}
 
-					MWLOG(Info, UI TextArea, "Clicked on line ", line);
 					if (line >= m_lines.size()) {
 						m_cursorPosition = m_text.length();
 						updateCursorPosition();

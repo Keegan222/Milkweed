@@ -51,7 +51,10 @@ private:
 	// Map from client ID numbers to player information structures
 	std::map<unsigned int, ServerPlayer> m_players;
 
+	void publishPlayerUsername(unsigned int clientID, int destID = -1);
 	void sendPlayerPVUpdate(NetMessage& message);
+	bool validatePlayerMovement(unsigned int clientID,
+		const glm::vec3& position, const glm::vec2& velocity);
 };
 
 #endif

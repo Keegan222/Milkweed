@@ -9,6 +9,7 @@
 // Define the keys for the options
 #define OPTIONS_FILE_NAME "test_client_options.ini"
 #define INITIALIZED_KEY "initialized"
+#define DEFAULT_USERNAME_KEY "default_username"
 #define DEFAULT_ADDRESS_KEY "default_address"
 #define DEFAULT_PORT_KEY "default_port"
 #define FULL_SCREEN_KEY "full_screen"
@@ -17,6 +18,7 @@
 
 // Initialize all options to their default values
 bool Options::INITIALIZED = false;
+std::string Options::DEFAULT_USERNAME = "";
 std::string Options::DEFAULT_ADDRESS = "127.0.0.1";
 unsigned int Options::DEFAULT_PORT = 2773;
 bool Options::FULL_SCREEN = false;
@@ -42,6 +44,9 @@ bool Options::LoadOptions() {
 
 		if (parts[0] == INITIALIZED_KEY) {
 			INITIALIZED = std::stoi(parts[1]);
+		}
+		else if (parts[0] == DEFAULT_USERNAME_KEY) {
+			DEFAULT_USERNAME = parts[1];
 		}
 		else if (parts[0] == DEFAULT_ADDRESS_KEY) {
 			DEFAULT_ADDRESS = parts[1];
@@ -77,6 +82,7 @@ bool Options::SaveOptions() {
 		return false;
 	}
 	optionsFile << INITIALIZED_KEY << ": " << INITIALIZED << std::endl;
+	optionsFile << DEFAULT_USERNAME_KEY << ": " << DEFAULT_USERNAME << std::endl;
 	optionsFile << DEFAULT_ADDRESS_KEY << ": " << DEFAULT_ADDRESS << std::endl;
 	optionsFile << DEFAULT_PORT_KEY << ": " << DEFAULT_PORT << std::endl;
 	optionsFile << FULL_SCREEN_KEY << ": " << FULL_SCREEN << std::endl;
@@ -133,30 +139,33 @@ void OptionsScene::init() {
 		"Assets/texture/slider.png");
 
 	// Initialize options UI group components
-	m_addressBox.init("Default Address", "", glm::vec3(buffer,
+	m_usernameBox.init("Default Username", "", glm::vec3(buffer,
+		1.0f - (boxDims.y + buffer), 0.0f), boxDims, cursorWidth, margin,
+		textScale, textColor, Justification::LEFT, Justification::CENTER,
+		textBoxTexture, cursorTexture, 20);
+	m_addressBox.init("Default Address", "", glm::vec3(0.5f - boxDims.x / 2.0f,
 		1.0f - (boxDims.y + buffer), 0.0f), boxDims, cursorWidth, margin,
 		textScale, textColor, Justification::LEFT, Justification::CENTER,
 		textBoxTexture, cursorTexture, 100);
-	m_portBox.init("Default Port", "", glm::vec3(buffer + boxDims.x + buffer,
-		1.0f - (boxDims.y + buffer), 0.0f), boxDims, cursorWidth, margin,
+	m_portBox.init("Default Port", "", glm::vec3(buffer,
+		1.0f - 2 * (boxDims.y + buffer), 0.0f), boxDims, cursorWidth, margin,
 		textScale, textColor, Justification::LEFT, Justification::CENTER,
 		textBoxTexture, cursorTexture, 6);
-	m_fullScreenSwitch.init("Fullscreen", "", glm::vec3(buffer,
-		1.0f - 2 * (boxDims.y + buffer), 0.0f), boxDims, textScale,
-		textColor, Justification::LEFT, Justification::CENTER, switchTexture,
-		false);
+	m_fullScreenSwitch.init("Fullscreen", "", glm::vec3(
+		0.5f - boxDims.x / 2.0f, 1.0f - 2 * (boxDims.y + buffer), 0.0f),
+		boxDims, textScale, textColor, Justification::LEFT,
+		Justification::CENTER, switchTexture, false);
 	m_resolutionCycle.init("Window Resolution",
 		{ "800x600", "1080x720", "1920x1080" },
-		glm::vec3(buffer + boxDims.x + buffer,
-			1.0f - 2 * (boxDims.y + buffer), 0.0f), boxDims, 20.0f, textScale,
-		textColor, Justification::LEFT, Justification::CENTER, cycleTexture,
-		arrowTexture, 0);
-	m_volumeSlider.init("Volume", glm::vec3(buffer,
+		glm::vec3(buffer, 1.0f - 3 * (boxDims.y + buffer), 0.0f), boxDims,
+		20.0f, textScale, textColor, Justification::LEFT, Justification::CENTER,
+		cycleTexture, arrowTexture, 0);
+	m_volumeSlider.init("Volume", glm::vec3(0.5f - boxDims.x / 2.0f,
 		1.0f - 3 * (boxDims.y + buffer), 0.0f), boxDims, cursorWidth,
 		10.0f / 800.0f,
 		textScale, textColor, Justification::LEFT, Justification::CENTER,
 		sliderTexture, cursorTexture, 0, 0, 100);
-	m_mainUIGroup.addComponents({ &m_addressBox, &m_portBox,
+	m_mainUIGroup.addComponents({ &m_usernameBox, &m_addressBox, &m_portBox,
 		&m_fullScreenSwitch, &m_resolutionCycle, &m_volumeSlider });
 
 	// Initialize the main UI group components
@@ -177,6 +186,7 @@ void OptionsScene::init() {
 
 void OptionsScene::enter() {
 	MW::INPUT.addInputListener(this);
+	m_usernameBox.setText(Options::DEFAULT_USERNAME);
 	m_addressBox.setText(Options::DEFAULT_ADDRESS);
 	m_portBox.setText(std::to_string(Options::DEFAULT_PORT));
 	m_fullScreenSwitch.setText(Options::FULL_SCREEN ? "Enabled" : "Disabled");
@@ -248,6 +258,7 @@ void OptionsScene::componentEvent(unsigned int groupID,
 		}
 		else if (componentID == m_defaultsButton.getID()) {
 			if (eventID == UI::Button::CLICKED_EVENT) {
+				m_usernameBox.setText("");
 				m_addressBox.setText("127.0.0.1");
 				m_portBox.setText(std::to_string(2773));
 				m_fullScreenSwitch.setText("Disabled");
@@ -259,6 +270,7 @@ void OptionsScene::componentEvent(unsigned int groupID,
 		else if (componentID == m_saveButton.getID()) {
 			if (eventID == UI::Button::CLICKED_EVENT) {
 				// Set the options and save them to the disk
+				Options::DEFAULT_USERNAME = m_usernameBox.getText();
 				Options::DEFAULT_ADDRESS = m_addressBox.getText();
 				Options::DEFAULT_PORT = std::atoi(m_portBox.getText().c_str());
 				Options::FULL_SCREEN = m_fullScreenSwitch.isOn();
@@ -313,20 +325,21 @@ void OptionsScene::destroy() {
 }
 
 void OptionsScene::setComponentDirections() {
-	m_addressBox.setDirections(nullptr, &m_fullScreenSwitch, nullptr,
+	m_usernameBox.setDirections(nullptr, &m_portBox, nullptr, &m_addressBox);
+	m_addressBox.setDirections(nullptr, &m_fullScreenSwitch, &m_usernameBox,
 		&m_portBox);
-	m_portBox.setDirections(nullptr, &m_resolutionCycle, &m_addressBox,
+	m_portBox.setDirections(&m_usernameBox, &m_resolutionCycle, &m_addressBox,
 		&m_fullScreenSwitch);
-	m_fullScreenSwitch.setDirections(&m_addressBox, &m_volumeSlider,
-		&m_portBox, &m_resolutionCycle);
-	m_resolutionCycle.setDirections(&m_portBox, &m_defaultsButton,
+	m_fullScreenSwitch.setDirections(&m_addressBox, &m_volumeSlider, &m_portBox,
+		&m_resolutionCycle);
+	m_resolutionCycle.setDirections(&m_portBox, &m_backButton,
 		&m_fullScreenSwitch, &m_volumeSlider);
-	m_volumeSlider.setDirections(&m_fullScreenSwitch, &m_backButton,
-		&m_resolutionCycle, &m_defaultsButton);
-	m_backButton.setDirections(&m_volumeSlider, nullptr, &m_saveButton,
+	m_volumeSlider.setDirections(&m_fullScreenSwitch, &m_defaultsButton,
+		&m_resolutionCycle, &m_saveButton);
+	m_backButton.setDirections(&m_resolutionCycle, nullptr, nullptr,
 		&m_defaultsButton);
-	m_defaultsButton.setDirections(&m_resolutionCycle, nullptr,
-		&m_backButton, &m_saveButton);
-	m_saveButton.setDirections(&m_resolutionCycle, nullptr,
-		&m_defaultsButton, &m_backButton);
+	m_defaultsButton.setDirections(&m_volumeSlider, nullptr, &m_backButton,
+		&m_saveButton);
+	m_saveButton.setDirections(&m_volumeSlider, nullptr, &m_defaultsButton,
+		nullptr);
 }

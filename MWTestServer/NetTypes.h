@@ -20,46 +20,78 @@ using namespace Milkweed;
 */
 enum MessageTypes : unsigned int {
 	/*
-	* Contains the player ID of a newly connected player
+	* Contents in unpacking order:
+	* - The ID of the newly connected player (unsigned int).
 	*/
 	CONNECT_PLAYER = 0,
 	/*
-	* Contains the player ID of the newly accepted player and a list of the
-	* player ID's of the currently connected players
+	* Contents in unpacking order:
+	* - The ID of the newly accepted player (unsigned int).
+	* - The count of other players on the server (int).
+	* - A series of the other players' player IDs (unsigned int),
+	* positions (glm::vec3), and velocities (glm::vec2).
 	*/
 	ACCEPT_PLAYER = 1,
 	/*
-	* No body. Echoed by the server to all clients ignoring the sender
+	* Contents in unpacking order:
+	* - The length of the requested username (int).
+	* - A series of characters of the requested username (char).
 	*/
-	PING = 2,
+	USERNAME_REQUEST = 2,
 	/*
-	* Contains the player ID of the now disconnected player
+	* Contents in unpacking order:
+	* - The ID of the player being assigned a username (unsigned int).
+	* - The length of the assigned username (int).
+	* - A series of characters of the assigned username (char).
 	*/
-	DISCONNECT_PLAYER = 3,
+	USERNAME_ASSIGNMENT = 3,
 	/*
-	* A player has inputted a left-movement
+	* Contents in unpacking order:
+	* - None, but should be echoed back if the server is in a good mood.
 	*/
-	MOVEMENT_LEFT = 4,
+	PING = 4,
 	/*
-	* A player has inputted a right-movement
+	* Contents in unpacking order:
+	* - The ID of the newly disconnected player.
 	*/
-	MOVEMENT_RIGHT = 5,
+	DISCONNECT_PLAYER = 5,
 	/*
-	* A player has released the left-movement input
+	* Contents in unpacking order:
+	* - The position of the player after requesting a movement left.
+	* - The velocity of the player after requesting a movement left.
 	*/
-	MOVEMENT_STOP_LEFT = 6,
+	MOVEMENT_LEFT = 6,
 	/*
-	* A player has released the right-movement input
+	* Contents in unpacking order:
+	* - The position of the player after requesting a movement right.
+	* - The velocity of the player after requesting a movement right.
 	*/
-	MOVEMENT_STOP_RIGHT = 7,
+	MOVEMENT_RIGHT = 7,
 	/*
-	* A player has pressed the jump input
+	* Contents in unpacking order:
+	* - The position of the player after stopping a movement left.
+	* - The velocity of the player after stopping a movement left.
 	*/
-	MOVEMENT_JUMP = 8,
+	MOVEMENT_STOP_LEFT = 8,
 	/*
-	* A position and velocity update from the server for a connected player
+	* Contents in unpacking order:
+	* - The position of the player after stopping a movement right.
+	* - The velocity of the player after stopping a movement right.
 	*/
-	PLAYER_PV_UPDATE = 9,
+	MOVEMENT_STOP_RIGHT = 9,
+	/*
+	* Contents in unpacking order:
+	* - The position of the player after requesting a jump.
+	* - The velocity of the player after requesting a jump.
+	*/
+	MOVEMENT_JUMP = 10,
+	/*
+	* Contents in unpacking order:
+	* - The ID of the player being updated.
+	* - The position of the player.
+	* - The velocity of the player.
+	*/
+	PLAYER_PV_UPDATE = 11,
 };
 
 // Shared definition for game qualities
@@ -78,6 +110,8 @@ enum MessageTypes : unsigned int {
 */
 class Player : public Sprite {
 public:
+	// The username of this player
+	std::string username = "";
 	// Whether this player is in a jump
 	bool jumping = false;
 

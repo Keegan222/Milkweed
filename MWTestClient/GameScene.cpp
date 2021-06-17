@@ -22,6 +22,10 @@ void GameScene::init() {
 		"Assets/shader/sprite_fragment_shader.glsl",
 		Shader::getDefaultVertexAttributes("inPosition", "inTextureCoords"),
 		"cameraMatrix", &m_spriteCamera);
+	m_spriteTextShader.init("Assets/shader/text_vertex_shader.glsl",
+		"Assets/shader/text_fragment_shader.glsl",
+		Shader::getDefaultVertexAttributes("inPosition", "inTextureCoords"),
+		"cameraMatrix", &m_spriteCamera);
 
 	// Initialize the UI camera
 	m_UICamera.init();
@@ -39,7 +43,7 @@ void GameScene::init() {
 		"cameraMatrix", &m_UICamera);
 
 	// Initialize UI component variables
-	Font* font = MW::RESOURCES.getFont("Assets/font/arial.ttf");
+	m_font = MW::RESOURCES.getFont("Assets/font/arial.ttf");
 	float buffer = 0.015f;
 	glm::vec2 cWinDims = MW::WINDOW.getDimensions();
 	glm::vec2 winDims = glm::vec2(800, 600);
@@ -60,7 +64,7 @@ void GameScene::init() {
 	glm::vec3 textColor = glm::vec3(0.75f, 0.75f, 0.75f);
 
 	// Initialize pause UI components
-	m_pauseUIGroup.init(this, PAUSE_UI_GROUP, font, &m_UISpriteShader,
+	m_pauseUIGroup.init(this, PAUSE_UI_GROUP, m_font, &m_UISpriteShader,
 		&m_UITextShader, "textColor");
 	m_pauseBackground.init(glm::vec3((cWinDims.x - backgroundDims.x) / 2.0f,
 		cWinDims.y / 2.0f, 1.0f), backgroundDims, backgroundTexture);
@@ -74,7 +78,7 @@ void GameScene::init() {
 	m_pauseUIGroup.addComponents({ &m_optionsButton, &m_disconnectButton });
 
 	// Initialize HUD UI components
-	m_HUDUIGroup.init(this, HUD_UI_GROUP, font, &m_UISpriteShader,
+	m_HUDUIGroup.init(this, HUD_UI_GROUP, m_font, &m_UISpriteShader,
 		&m_UITextShader, "textColor");
 	m_statsArea.init("", 5, glm::vec3(0.75f, 0.75f, 0.0f),
 		glm::vec2(0.25f, 0.25f), cursorWidth, textScale, textColor, Justification::LEFT,
@@ -124,6 +128,16 @@ void GameScene::draw() {
 	int i = 0;
 	for (const std::pair<unsigned int, ClientPlayer>& p : m_players) {
 		m_playerPointers[i++] = &(m_players[p.first]);
+		// Draw the player's username
+		ClientPlayer* cp = &(m_players[p.first]);
+		float mid = cp->position.x + cp->dimensions.x / 2.0f;
+		float width = cp->dimensions.x * 4.5f;
+		float height = m_font->maxCharacterHeight - m_font->minCharacterHeight;
+		MW::RENDERER.submit(cp->username, glm::vec3(mid - width / 2.0f,
+			cp->position.y + cp->dimensions.y, cp->position.z), glm::vec4(
+				mid - width / 2.0f, cp->position.y + cp->dimensions.y,
+				width, height), 0.3f, m_font, &m_spriteTextShader,
+			Justification::CENTER, Justification::CENTER);
 	}
 	m_players[m_playerID].position.z = SELF_DEPTH;
 	MW::RENDERER.submit(m_playerPointers, &m_spriteShader);
@@ -207,6 +221,14 @@ void GameScene::processNetMessage(NetMessage& message) {
 		disconnect();
 		break;
 	}
+	case MessageTypes::CONNECT_PLAYER: {
+		// Initialize a blank player with that ID
+		unsigned int playerID = 0;
+		message >> playerID;
+		m_players.emplace(playerID, ClientPlayer());
+		m_players[playerID].init(this, playerID);
+		break;
+	}
 	case MessageTypes::ACCEPT_PLAYER: {
 		// Initialize this player
 		m_players.clear();
@@ -222,23 +244,47 @@ void GameScene::processNetMessage(NetMessage& message) {
 			unsigned int playerID = 0;
 			glm::vec3 pos = glm::vec3();
 			glm::vec2 vel = glm::vec2();
-			message >> vel >> pos >> playerID;
+			message >> playerID >> pos >> vel;
 			m_players.emplace(playerID, ClientPlayer());
 			m_players[playerID].init(this, playerID);
 			m_players[playerID].position = pos;
 			m_players[playerID].velocity = vel;
 		}
 
+		// Send username request
+		NetMessage umsg;
+		umsg.header.ID = MessageTypes::USERNAME_REQUEST;
+		const char* usrName = m_username.c_str();
+		int length = m_username.length();
+		for (int i = length - 1; i >= 0; i--) {
+			umsg << usrName[i];
+		}
+		umsg << length;
+		MW::NETWORK.send(umsg);
+
 		m_accepted = true;
 
 		break;
 	}
-	case MessageTypes::CONNECT_PLAYER: {
-		// Initialize a blank player with that ID
-		unsigned int playerID = 0;
-		message >> playerID;
-		m_players.emplace(playerID, ClientPlayer());
-		m_players[playerID].init(this, playerID);
+	case MessageTypes::USERNAME_ASSIGNMENT: {
+		unsigned int clientID = 0;
+		int length = 0;
+		std::string username;
+		message >> clientID >> length;
+		if (length < 0) {
+			length = 0;
+			break;
+		}
+		else if (length > 20) {
+			length = 20;
+		}
+		username.resize(length);
+		for (int i = 0; i < length; i++) {
+			message >> username[i];
+		}
+		MWLOG(Info, GameScene, "Received username \"", username, "\" (",
+			length, " characters) for client ", clientID);
+		m_players[clientID].username = username;
 		break;
 	}
 	case MessageTypes::PING: {
@@ -332,6 +378,7 @@ void GameScene::exit() {
 void GameScene::destroy() {
 	MWLOG(Info, GameScene, "Destroyed scene");
 	m_spriteShader.destroy();
+	m_spriteTextShader.destroy();
 	m_UITextShader.destroy();
 	m_UISpriteShader.destroy();
 	m_UICamera.destroy();

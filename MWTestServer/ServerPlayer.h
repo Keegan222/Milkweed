@@ -7,6 +7,9 @@
 #ifndef SERVER_PLAYER_H
 #define SERVER_PLAYER_H
 
+#include <string>
+#include <Milkweed/Network.h>
+
 #include "NetTypes.h"
 
 class TestServer;
@@ -36,6 +39,10 @@ public:
 	* Free this server player's memory
 	*/
 	void destroy() override;
+
+private:
+	friend TestServer;
+	std::shared_ptr<NetConnection> m_client = nullptr;
 };
 
 #endif

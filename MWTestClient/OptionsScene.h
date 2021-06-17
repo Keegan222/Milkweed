@@ -14,6 +14,7 @@ using namespace Milkweed;
 class Options {
 public:
 	static bool INITIALIZED;
+	static std::string DEFAULT_USERNAME;
 	static std::string DEFAULT_ADDRESS;
 	static unsigned int DEFAULT_PORT;
 	static bool FULL_SCREEN;
@@ -46,7 +47,7 @@ private:
 	Camera m_UICamera;
 	Shader m_spriteShader, m_textShader;
 	UI::UIGroup m_mainUIGroup;
-	UI::TextBox m_addressBox, m_portBox;
+	UI::TextBox m_usernameBox, m_addressBox, m_portBox;
 	UI::Switch m_fullScreenSwitch;
 	UI::Cycle m_resolutionCycle;
 	UI::Slider m_volumeSlider;

@@ -62,6 +62,10 @@ public:
 	*/
 	void destroy() override;
 	/*
+	* Set the username to connect to the server with
+	*/
+	void setUsername(const std::string& username) { m_username = username; }
+	/*
 	* Set the address for the game scene to connect to
 	*/
 	void setAddress(const std::string& address) { m_address = address; }
@@ -77,6 +81,8 @@ public:
 private:
 	const static unsigned int PAUSE_UI_GROUP = 0;
 	const static unsigned int HUD_UI_GROUP = 1;
+	// The username to connect to the server with
+	std::string m_username = "";
 	// The address to connect to
 	std::string m_address = "127.0.0.1";
 	// The port to connect on
@@ -95,6 +101,10 @@ private:
 	Camera m_spriteCamera;
 	// The shader used to draw sprites
 	Shader m_spriteShader;
+	// The shader used to draw text on sprites
+	Shader m_spriteTextShader;
+	// The font to use to draw text in this scene
+	Font* m_font = nullptr;
 	// The camera used to draw the pause UI
 	Camera m_UICamera;
 	// The shader used to draw UI sprites

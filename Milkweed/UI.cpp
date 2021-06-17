@@ -678,7 +678,7 @@ namespace Milkweed {
 		}
 
 		void TextBox::textTyped(char text) {
-			if (!m_selected) {
+			if (!m_selected || (int)m_text.length() >= m_maxCharacters) {
 				return;
 			}
 

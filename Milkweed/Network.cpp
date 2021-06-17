@@ -332,7 +332,7 @@ namespace Milkweed {
 
 	bool NetServer::messageClient(std::shared_ptr<NetConnection> client,
 		const NetMessage& message) {
-		if (client) {
+		if (client != nullptr) {
 			if (client->isConnected()) {
 				// The client exists and is connected, send the message
 				client->send(message);

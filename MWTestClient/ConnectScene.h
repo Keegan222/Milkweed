@@ -31,7 +31,7 @@ private:
 	Camera m_UICamera;
 	Shader m_spriteShader, m_textShader;
 	UI::UIGroup m_mainUIGroup;
-	UI::TextBox m_addressBox, m_portBox;
+	UI::TextBox m_usernameBox, m_addressBox, m_portBox;
 	UI::Button m_backButton, m_defaultsButton, m_connectButton;
 
 	void setComponentDirections();

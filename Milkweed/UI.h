@@ -686,6 +686,13 @@ namespace Milkweed {
 			* Text has been typed on the keyboard
 			*/
 			void textTyped(char text) override;
+			/*
+			* Set the text that appears in this text box
+			*/
+			void setText(const std::string& text) override {
+				m_text = text;
+				updateCursorPosition();
+			};
 
 		protected:
 			// The texture coordinates for this text box's unselected texture

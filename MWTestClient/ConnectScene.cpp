@@ -44,14 +44,18 @@ void ConnectScene::init() {
 	glm::vec3 textColor = glm::vec3(0.75f, 0.75f, 0.75f);
 
 	// Set up UI components
-	m_addressBox.init("Address", "", glm::vec3(0.5f - textBoxDims.x / 2.0f, 0.5f,
-		0.0f), textBoxDims, cursorWidth, margin, textScale, textColor,
+	m_usernameBox.init("Username", "", glm::vec3(0.5f - textBoxDims.x / 2.0f,
+		0.5f, 0.0f), textBoxDims, cursorWidth, margin, textScale, textColor,
 		Justification::LEFT, Justification::CENTER, textBoxTexture,
-		cursorTexture, 100);
+		cursorTexture, 20);
+	m_addressBox.init("Address", "", glm::vec3(0.5f - textBoxDims.x / 2.0f,
+		0.5f - (textBoxDims.y + buffer), 0.0f), textBoxDims, cursorWidth,
+		margin, textScale, textColor, Justification::LEFT,
+		Justification::CENTER, textBoxTexture, cursorTexture, 100);
 	m_portBox.init("Port", "", glm::vec3(0.5f - textBoxDims.x / 2.0f,
-		0.5f - (textBoxDims.y + buffer), 0.0f), textBoxDims, cursorWidth, margin,
-		textScale, textColor, Justification::LEFT, Justification::CENTER,
-		textBoxTexture, cursorTexture, 100);
+		0.5f - 2.0f * (textBoxDims.y + buffer), 0.0f), textBoxDims,
+		cursorWidth, margin, textScale, textColor, Justification::LEFT,
+		Justification::CENTER, textBoxTexture, cursorTexture, 6);
 	m_backButton.init("Back", glm::vec3(0.0f, 0.0f, 0.0f), buttonDims,
 		textScale, textColor, Justification::CENTER, Justification::CENTER,
 		buttonTexture);
@@ -61,8 +65,8 @@ void ConnectScene::init() {
 	m_connectButton.init("Connect", glm::vec3(1.0f - buttonDims.x, 0.0f, 0.0f),
 		buttonDims, textScale, textColor, Justification::CENTER,
 		Justification::CENTER, buttonTexture);
-	m_mainUIGroup.addComponents({ &m_addressBox, &m_portBox, &m_backButton,
-		&m_defaultsButton, &m_connectButton });
+	m_mainUIGroup.addComponents({ &m_usernameBox, &m_addressBox, &m_portBox,
+		&m_backButton, &m_defaultsButton, &m_connectButton });
 }
 
 void ConnectScene::enter() {
@@ -78,7 +82,9 @@ void ConnectScene::enter() {
 		m_mainUIGroup.setSelectedComponent(nullptr);
 	}
 	m_mainUIGroup.setEnabled(true);
-	
+
+	// Place default strings in text boxes
+	m_usernameBox.setText(Options::DEFAULT_USERNAME);
 	m_addressBox.setText(Options::DEFAULT_ADDRESS);
 	m_portBox.setText(std::to_string(Options::DEFAULT_PORT));
 }
@@ -128,6 +134,7 @@ void ConnectScene::componentEvent(unsigned int groupID,
 			if (eventID == UI::Button::CLICKED_EVENT) {
 				// Attempt to connect to the server by switching to the game
 				// scene
+				TestClient::GAME_SCENE.setUsername(m_usernameBox.getText());
 				TestClient::GAME_SCENE.setAddress(m_addressBox.getText());
 				TestClient::GAME_SCENE.setPort(std::atoi(
 					m_portBox.getText().c_str()));
@@ -163,7 +170,8 @@ void ConnectScene::destroy() {
 }
 
 void ConnectScene::setComponentDirections() {
-	m_addressBox.setDirections(nullptr, &m_portBox, nullptr, nullptr);
+	m_usernameBox.setDirections(nullptr, &m_addressBox, nullptr, nullptr);
+	m_addressBox.setDirections(&m_usernameBox, &m_portBox, nullptr, nullptr);
 	m_portBox.setDirections(&m_addressBox, &m_defaultsButton, nullptr,
 		nullptr);
 	m_backButton.setDirections(&m_portBox, nullptr, nullptr,

@@ -70,7 +70,8 @@ enum MessageTypes : unsigned int {
 #define PLAYER_JUMP_SPEED 17.0f
 #define MIN_VELOCITY_Y -35.0f
 #define TOWN_FLOOR_Y 0.0f
-#define TOWN_WALL 0.0f
+#define TOWN_BORDER_LEFT 0.0f
+#define TOWN_BORDER_RIGHT 1500.0f
 
 /*
 * Structure for all information representing a general player
@@ -92,8 +93,11 @@ public:
 		this->position.x += this->velocity.x * deltaTime;
 		this->position.y += this->velocity.y * deltaTime;
 		// Make moving out of bounds impossible
-		if (this->position.x < TOWN_WALL) {
-			this->position.x = TOWN_WALL;
+		if (this->position.x < TOWN_BORDER_LEFT) {
+			this->position.x = TOWN_BORDER_LEFT;
+		}
+		else if (this->position.x > TOWN_BORDER_RIGHT - PLAYER_DIMENSIONS.x) {
+			this->position.x = TOWN_BORDER_RIGHT - PLAYER_DIMENSIONS.x;
 		}
 		if (this->position.y < TOWN_FLOOR_Y) {
 			this->position.y = TOWN_FLOOR_Y;

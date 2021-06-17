@@ -109,6 +109,8 @@ private:
 	// The UI group for the game HUD
 	UI::UIGroup m_HUDUIGroup;
 	UI::TextArea m_statsArea;
+	// The floor sprite
+	Sprite m_floorSprite;
 
 	/*
 	* Update the stats text area

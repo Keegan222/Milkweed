@@ -95,39 +95,39 @@ void ClientPlayer::destroy() {
 
 void ClientPlayer::moveLeft(bool start) {
 	if (start) {
+		this->velocity.x = -PLAYER_SPEED_X;
 		NetMessage moveMsg;
 		moveMsg.header.ID = MOVEMENT_LEFT;
 		int tID = this->parent->getPlayerID();
-		moveMsg << tID;
+		moveMsg << tID << this->position << this->velocity;
 		MW::NETWORK.send(moveMsg);
-		this->velocity.x = -PLAYER_SPEED_X;
 	}
 	else {
+		this->velocity.x = 0.0f;
 		NetMessage moveMsg;
 		moveMsg.header.ID = MOVEMENT_STOP_LEFT;
 		int tID = this->parent->getPlayerID();
-		moveMsg << tID;
+		moveMsg << tID << this->position << this->velocity;
 		MW::NETWORK.send(moveMsg);
-		this->velocity.x = 0.0f;
 	}
 }
 
 void ClientPlayer::moveRight(bool start) {
 	if (start) {
+		this->velocity.x = PLAYER_SPEED_X;
 		NetMessage moveMsg;
 		moveMsg.header.ID = MOVEMENT_RIGHT;
 		int tID = this->parent->getPlayerID();
-		moveMsg << tID;
+		moveMsg << tID << this->position << this->velocity;
 		MW::NETWORK.send(moveMsg);
-		this->velocity.x = PLAYER_SPEED_X;
 	}
 	else {
+		this->velocity.x = 0.0f;
 		NetMessage moveMsg;
 		moveMsg.header.ID = MOVEMENT_STOP_RIGHT;
 		int tID = this->parent->getPlayerID();
-		moveMsg << tID;
+		moveMsg << tID << this->position << this->velocity;
 		MW::NETWORK.send(moveMsg);
-		this->velocity.x = 0.0f;
 	}
 }
 
@@ -142,6 +142,6 @@ void ClientPlayer::jump() {
 	NetMessage jmsg;
 	jmsg.header.ID = MessageTypes::MOVEMENT_JUMP;
 	int tID = this->parent->getPlayerID();
-	jmsg << tID;
+	jmsg << tID << this->position << this->velocity;
 	MW::NETWORK.send(jmsg);
 }

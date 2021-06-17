@@ -53,6 +53,7 @@ void TitleScene::init() {
 }
 
 void TitleScene::enter() {
+	Options::INITIALIZED = true;
 	MW::INPUT.addInputListener(this);
 	// Set directions for controller input and add components
 	if (MW::INPUT.getGamepadCount() > 0) {

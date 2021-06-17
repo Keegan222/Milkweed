@@ -8,6 +8,7 @@
 
 // Define the keys for the options
 #define OPTIONS_FILE_NAME "test_client_options.ini"
+#define INITIALIZED_KEY "initialized"
 #define DEFAULT_ADDRESS_KEY "default_address"
 #define DEFAULT_PORT_KEY "default_port"
 #define FULL_SCREEN_KEY "full_screen"
@@ -15,6 +16,7 @@
 #define VOLUME_KEY "volume"
 
 // Initialize all options to their default values
+bool Options::INITIALIZED = false;
 std::string Options::DEFAULT_ADDRESS = "127.0.0.1";
 unsigned int Options::DEFAULT_PORT = 2773;
 bool Options::FULL_SCREEN = false;
@@ -38,7 +40,10 @@ bool Options::LoadOptions() {
 			continue;
 		}
 
-		if (parts[0] == DEFAULT_ADDRESS_KEY) {
+		if (parts[0] == INITIALIZED_KEY) {
+			INITIALIZED = std::stoi(parts[1]);
+		}
+		else if (parts[0] == DEFAULT_ADDRESS_KEY) {
 			DEFAULT_ADDRESS = parts[1];
 		}
 		else if (parts[0] == DEFAULT_PORT_KEY) {
@@ -71,6 +76,7 @@ bool Options::SaveOptions() {
 	if (!optionsFile.is_open()) {
 		return false;
 	}
+	optionsFile << INITIALIZED_KEY << ": " << INITIALIZED << std::endl;
 	optionsFile << DEFAULT_ADDRESS_KEY << ": " << DEFAULT_ADDRESS << std::endl;
 	optionsFile << DEFAULT_PORT_KEY << ": " << DEFAULT_PORT << std::endl;
 	optionsFile << FULL_SCREEN_KEY << ": " << FULL_SCREEN << std::endl;

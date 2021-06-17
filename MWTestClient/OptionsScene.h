@@ -13,6 +13,7 @@ using namespace Milkweed;
 
 class Options {
 public:
+	static bool INITIALIZED;
 	static std::string DEFAULT_ADDRESS;
 	static unsigned int DEFAULT_PORT;
 	static bool FULL_SCREEN;

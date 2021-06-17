@@ -156,6 +156,7 @@
     <ClInclude Include="ClientPlayer.h" />
     <ClInclude Include="ConnectScene.h" />
     <ClInclude Include="GameScene.h" />
+    <ClInclude Include="IntroScene.h" />
     <ClInclude Include="OptionsScene.h" />
     <ClInclude Include="TestClient.h" />
     <ClInclude Include="TitleScene.h" />
@@ -164,6 +165,7 @@
     <ClCompile Include="ClientPlayer.cpp" />
     <ClCompile Include="ConnectScene.cpp" />
     <ClCompile Include="GameScene.cpp" />
+    <ClCompile Include="IntroScene.cpp" />
     <ClCompile Include="OptionsScene.cpp" />
     <ClCompile Include="TestClient.cpp" />
     <ClCompile Include="TitleScene.cpp" />

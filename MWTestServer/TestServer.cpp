@@ -60,27 +60,19 @@ void TestServer::onMessage(NetMessage& message) {
 		break;
 	}
 	case MessageTypes::MOVEMENT_LEFT: {
-		unsigned int clientID = message.owner->getID();
-		m_players[clientID].velocity.x = -PLAYER_SPEED_X;
-		sendPlayerPVUpdate(clientID);
+		sendPlayerPVUpdate(message);
 		break;
 	}
 	case MessageTypes::MOVEMENT_STOP_LEFT: {
-		unsigned int clientID = message.owner->getID();
-		m_players[clientID].velocity.x = 0.0f;
-		sendPlayerPVUpdate(clientID);
+		sendPlayerPVUpdate(message);
 		break;
 	}
 	case MessageTypes::MOVEMENT_RIGHT: {
-		unsigned int clientID = message.owner->getID();
-		m_players[clientID].velocity.x = PLAYER_SPEED_X;
-		sendPlayerPVUpdate(clientID);
+		sendPlayerPVUpdate(message);
 		break;
 	}
 	case MessageTypes::MOVEMENT_STOP_RIGHT: {
-		unsigned int clientID = message.owner->getID();
-		m_players[clientID].velocity.x = 0.0f;
-		sendPlayerPVUpdate(clientID);
+		sendPlayerPVUpdate(message);
 		break;
 	}
 	case MessageTypes::MOVEMENT_JUMP: {
@@ -88,7 +80,7 @@ void TestServer::onMessage(NetMessage& message) {
 		if (!m_players[clientID].jumping) {
 			m_players[clientID].velocity.y = PLAYER_JUMP_SPEED;
 			m_players[clientID].jumping = true;
-			sendPlayerPVUpdate(clientID);
+			sendPlayerPVUpdate(message);
 		}
 	}
 	}
@@ -149,10 +141,17 @@ int main(int argc, char** argv) {
 	return 0;
 }
 
-void TestServer::sendPlayerPVUpdate(unsigned int playerID) {
+void TestServer::sendPlayerPVUpdate(NetMessage& message) {
+	unsigned int clientID = message.owner->getID();
+	glm::vec3 position = glm::vec3();
+	glm::vec2 velocity = glm::vec2();
+	message >> velocity >> position;
+	m_players[clientID].position = position;
+	m_players[clientID].velocity = velocity;
+
 	NetMessage pvUpdate;
 	pvUpdate.header.ID = MessageTypes::PLAYER_PV_UPDATE;
-	pvUpdate << playerID << m_players[playerID].position
-		<< m_players[playerID].velocity;
+	pvUpdate << clientID << m_players[clientID].position
+		<< m_players[clientID].velocity;
 	messageAllClients(pvUpdate);
 }

@@ -359,6 +359,6 @@ namespace Milkweed {
 
 	void Renderer::setClearColor(const glm::vec3& clearColor) {
 		m_clearColor = clearColor;
-		glClearColor(clearColor.x, clearColor.y, clearColor.z, 1.0f);
+		glClearColor(clearColor.x, clearColor.y, clearColor.z, 1.0f);;
 	}
 }

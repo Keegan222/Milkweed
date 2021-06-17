@@ -51,7 +51,7 @@ private:
 	// Map from client ID numbers to player information structures
 	std::map<unsigned int, ServerPlayer> m_players;
 
-	void sendPlayerPVUpdate(unsigned int playerID);
+	void sendPlayerPVUpdate(NetMessage& message);
 };
 
 #endif

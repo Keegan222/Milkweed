@@ -82,6 +82,10 @@ void GameScene::init() {
 	m_HUDUIGroup.addComponent(&m_statsArea);
 	updateStatsArea();
 	m_statsArea.setEnabled(false);
+
+	m_floorSprite.init(glm::vec3(0.0f, -50.0f, 0.0f),
+		glm::vec2(TOWN_BORDER_RIGHT, 50.0f),
+		MW::RESOURCES.getTexture("Assets/texture/self.png"));
 }
 
 void GameScene::enter() {
@@ -123,6 +127,7 @@ void GameScene::draw() {
 	}
 	m_players[m_playerID].position.z = SELF_DEPTH;
 	MW::RENDERER.submit(m_playerPointers, &m_spriteShader);
+	MW::RENDERER.submit({ &m_floorSprite }, &m_spriteShader);
 
 	m_HUDUIGroup.draw();
 }
